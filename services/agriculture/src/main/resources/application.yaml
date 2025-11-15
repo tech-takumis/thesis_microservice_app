@@ -1,0 +1,7 @@
+spring:
+  liquibase:
+    enabled: false
+  application:
+    name: agriculture-service
+  profiles:
+    active: local

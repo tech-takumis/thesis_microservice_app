@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: rsbsa-service
+  profiles:
+    active: local

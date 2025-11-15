@@ -1,0 +1,127 @@
+spring:
+  cloud:
+    gateway:
+      default-filters:
+        - PreserveHostHeader
+      server:
+        webflux:
+          httpclient:
+            wiretap: true
+          discovery:
+            locator:
+              enabled: false
+              lower-case-service-id: true
+          routes:
+            # General WebSocket route
+            - id: ws_route
+              uri: lb://realtime-service
+              predicates:
+                - Path=/ws/**,/api/v1/notifications/**
+              filters:
+                - PreserveHostHeader
+                - RemoveRequestHeader=Cookie,Sec-WebSocket-Protocol
+                - DedupeResponseHeader=Access-Control-Allow-Origin, RETAIN_FIRST
+
+            # Other service routes
+            - id: agriculture-service
+              uri: lb://agriculture-service
+              predicates:
+                - Path=/api/v1/dashboard/**,/api/v1/agriculture/**
+
+            - id: farmer-service
+              uri: lb://farmer-service
+              predicates:
+                - Path=/api/v1/farmer/auth/**,/api/v1/farmer/**
+
+            - id: pcic-service
+              uri: lb://pcic-service
+              predicates:
+                - Path=/api/v1/pcic/auth/**,/api/v1/pcic/**
+
+            - id: application-service
+              uri: lb://application-service
+              predicates:
+                - Path=/api/v1/applications/**,/api/v1/application/types/**,/api/v1/application/fields/**,/api/v1/application/sections/**,/api/v1/providers
+
+
+            - id: document-service
+              uri: lb://document-service
+              predicates:
+                - Path=/api/v1/documents/**
+
+            - id: insurance-service
+              uri: lb://insurance-service
+              predicates:
+                - Path=/api/v1/insurance/**,/api/v1/verification/**,/api/v1/batch/**,/api/v1/claim/**,,/api/v1/inspection/**,/api/v1/pcic/policy/**
+
+            - id: verification-service
+              uri: lb://verification-service
+              predicates:
+                - Path=/api/v1/verify/**
+
+            - id: program-service
+              uri: lb://program-service
+              predicates:
+                - Path=/api/v1/programs/**,/api/v1/schedules/**
+
+            - id: rsbsa-service
+              uri: lb://rsbsa-service
+              predicates:
+                - Path=/api/v1/rsbsa/**,/api/v1/rsbsa/public/**
+
+            - id: communication-service
+              uri: lb://communication-service
+              predicates:
+                - Path=/api/v1/posts/**,/api/v1/messages/**,/api/v1/chat/**,/api/v1/communication/**
+              filters:
+                - PreserveHostHeader
+
+      filter:
+        remove-hop-by-hop-headers: false
+      sensitive-headers: [] # ✅ Allow Authorization header to pass through
+
+token:
+  secret: lJ43fZtwCfh2qNM0uFx3mHSYGh/qrfXUtrM4Vl/kiZE=
+  accessTokenExpirationMs: 14400000
+  accessTokenExpirationRememberMeMs: 2592000000
+  refreshTokenExpirationMs: 86400000
+  refreshTokenExpirationRememberMeMs: 345600000
+
+eureka:
+  client:
+    fetch-registry: true
+    register-with-eureka: true
+  instance:
+    prefer-ip-address: true
+
+logging:
+  level:
+    org.springframework.web: DEBUG
+    org.springframework.cloud.gateway: DEBUG
+    reactor.netty: DEBUG
+
+server:
+  port: 9001
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway
+  endpoint:
+    health:
+      show-details: always
+
+trusted:
+  internal-service-ids:
+    - agriculture-service
+    - notification-service
+    - farmer-service
+    - realtime-service
+    - communication-service
+    - application-service
+    - insurance-service
+    - pcic-service
+    - document-service
+    - rsbsa-service
+    - program-service

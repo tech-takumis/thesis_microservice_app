@@ -1,0 +1,82 @@
+spring:
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 20MB
+      max-request-size: 20MB
+  datasource:
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+    url: jdbc:postgresql://localhost:5432/document
+    username: agripro
+    password: agripro
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database: postgresql
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    generate-ddl: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+minio:
+  url-internal: http://localhost:9000   # used inside Docker network
+  url-external: http://localhost:9000   # used for URLs returned to clients
+  accessKey: minio
+  secretKey: minio123
+  bucket: documents
+
+app:
+  file:
+    max-file-size: 20971520  # 20MB in bytes
+    allowed-file-types:
+      - application/pdf
+      - image/jpeg
+      - image/png
+      - application/msword
+      - application/vnd.openxmlformats-officedocument.wordprocessingml.document
+
+token:
+  secret: lJ43fZtwCfh2qNM0uFx3mHSYGh/qrfXUtrM4Vl/kiZE=
+  accessTokenExpirationMs: 14400000                # 4 hours
+  accessTokenExpirationRememberMeMs: 2592000000    # 30 days
+  refreshTokenExpirationMs: 86400000               # 1 day
+  refreshTokenExpirationRememberMeMs: 345600000
+
+
+eureka:
+  client:
+    fetch-registry: true
+    register-with-eureka: true
+  instance:
+    prefer-ip-address: true
+
+trusted:
+  internal-service-ids:
+    - agriculture-service
+    - notification-service
+    - communication-service
+    - farmer-service
+    - realtime-service
+    - application-service
+    - pcic-service
+    - document-service
+    - rsbsa-service
+    - program-service
+
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+server:
+  port: 8020

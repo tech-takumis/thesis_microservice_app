@@ -1,0 +1,9 @@
+spring:
+    application:
+        name: realtime-service
+    profiles:
+        active: dev
+
+frontend:
+    - da_url: http://localhost:5173
+      pcic_url: http://localhost:3000

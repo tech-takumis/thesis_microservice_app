@@ -40,6 +40,7 @@ const useInsuranceStore = defineStore('insurance', () => {
             const response = await axios.get(`/api/v1/insurance/${id}?batch=${batch}&application=${application}&farmer=${farmer}&verification=${verification}&inspection=${inspection}&policy=${policy}&claim=${claim}`)
             if(response.status === 200){
                 insurance.value = response.data
+                console.log("Fetched insurance:", insurance.value)
                 return {success: "true", message: "Insurance fetched successfully", data: insurance.value}
             }
             return {success: "false", message: "Failed to fetch insurance", data: null}
@@ -119,6 +120,24 @@ const useBatchStore = defineStore('batch', () => {
             return {success: error.success, message: error.message, data: null}
         }finally {
             loading.value = false
+        }
+    }
+
+    const fetchBatchByApplicationId = async (applicationId,insurance) => {
+        try{
+            loading.value = true
+            error.value = null
+            const response = await axios.get(`/api/v1/batch/application-type/${applicationId}?insurance=${insurance}`)
+            if(response.status === 200){
+                batches.value = response.data
+                console.log("Fetched batch:", batches.value)
+                return {success: "true", message: "Batch fetched successfully", data: batches.value}
+            }
+            return {success: "false", message: "Failed to fetch batch", data: null}
+        }catch (error){
+            console.log("Error fetching batch:", error)
+            error.value = error.data.message
+            return {success: error.success, message: error.message, data: null}
         }
     }
 
@@ -218,6 +237,7 @@ const useBatchStore = defineStore('batch', () => {
         createBatch,
         fetchAllBatch,
         fetchBatchById,
+        fetchBatchByApplicationId,
         updateBatch,
         deleteBatch
     }

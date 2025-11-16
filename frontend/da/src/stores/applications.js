@@ -150,11 +150,16 @@ export const useApplicationTypeStore = defineStore('applicationType', () => {
         }
     }
 
-    const fetchApplicationTypes = async (provider,section,field) => {
+    const fetchAllApplicationTypes = async (provider,section,field) => {
         try{
             loading.value = true
             error.value = null
-            const response = await axios.get(`${basePath.value}?provider=${provider}&section?${section}&field?${field}`)
+            let response;
+            if(provider != null){
+                response = await axios.get(`${basePath.value}?provider=${provider}&section?${section}&field?${field}`)
+            }else{
+                response = await axios.get(`${basePath.value}?section?${section}&field?${field}`)
+            }
             if(response.status === 200){
                 applicationTypes.value = response.data
                 loading.value = false
@@ -233,7 +238,7 @@ export const useApplicationTypeStore = defineStore('applicationType', () => {
         errors,
         createApplicationType,
         fetchApplicationTypeByName,
-        fetchApplicationTypes,
+        fetchAllApplicationTypes,
         fetchApplicationTypesById,
         updateApplicationType,
         deleteApplicationType,

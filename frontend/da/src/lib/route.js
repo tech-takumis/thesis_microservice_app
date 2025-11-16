@@ -114,18 +114,27 @@ export const MUNICIPALITY_ROUTES = [
     {
         path: '/agriculturist/submit-crop-data',
         name: 'agriculturist-submit-crop-data',
-        component: () => import('@/pages/agriculturist/applications/ApplicationList.vue'),
+        component: () => import('@/pages/agriculturist/applications/ApplicationType.vue'),
         meta: {
-            title: 'Submit Crop Data',
+            title: 'Manage Applications',
             guard: 'auth'
         }
     },
     {
-        path: '/agriculturist/submit-crop-data/:id',
+        path: '/agriculturist/submit-crop-data/application-type/:id',
+        name: 'agriculturist-application-type',
+        component: () => import('@/pages/agriculturist/applications/ApplicationList.vue'),
+        meta: {
+            title: 'Application Submission',
+            guard: 'auth'
+        }
+    },
+    {
+        path: '/agriculturist/submit-crop-data/application-type/submission-detail/:id',
         name: 'agriculturist-submit-crop-data-detail',
         component: () => import('@/pages/agriculturist/applications/ApplicationDetail.vue'),
         meta: {
-            title: 'Submit Crop Data Detail',
+            title: 'Application Submission Detail',
             guard: 'auth'
         }
     },

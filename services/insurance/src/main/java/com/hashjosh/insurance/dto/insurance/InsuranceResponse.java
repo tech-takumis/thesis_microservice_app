@@ -21,9 +21,9 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class InsuranceResponse {
     private UUID insuranceId;
+    private String farmerName;
     private String policyNumber;
     private String status;
     private Double claimAmount;

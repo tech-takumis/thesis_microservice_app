@@ -38,7 +38,7 @@
           <div class="flex items-center justify-between">
             <div class="flex items-center min-w-0">
               <div class="p-3 rounded-lg bg-indigo-100 flex-shrink-0 group-hover:bg-indigo-200 transition-colors">
-                <component :is="getApplicationTypeIcon(applicationType.type)" class="h-6 w-6 text-indigo-600" />
+                <component :is="getApplicationTypeIcon(applicationType)" class="h-6 w-6 text-indigo-600" />
               </div>
               <div class="ml-4 min-w-0 flex-1">
                 <h3 class="text-lg font-semibold text-gray-900 truncate group-hover:text-indigo-600 transition-colors">
@@ -50,18 +50,18 @@
           </div>
 
           <div class="mt-4 flex items-center justify-between">
-            <div class="flex space-x-4">
-              <div class="text-center">
-                <p class="text-2xl font-bold text-gray-900">{{ applicationType.totalSubmissions || 0 }}</p>
-                <p class="text-xs text-gray-500">Total Submissions</p>
+            <div class="flex items-center space-x-4">
+              <div class="flex items-center space-x-2">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  {{ applicationType.provider }}
+                </span>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                  {{ applicationType.layout }}
+                </span>
               </div>
-              <div class="text-center">
-                <p class="text-2xl font-bold text-green-600">{{ applicationType.approvedSubmissions || 0 }}</p>
-                <p class="text-xs text-gray-500">Approved</p>
-              </div>
-              <div class="text-center">
-                <p class="text-2xl font-bold text-yellow-600">{{ applicationType.pendingSubmissions || 0 }}</p>
-                <p class="text-xs text-gray-500">Pending</p>
+              <div v-if="applicationType.printable" class="flex items-center text-green-600">
+                <PrinterIcon class="h-4 w-4 mr-1" />
+                <span class="text-xs font-medium">Printable</span>
               </div>
             </div>
             <ChevronRightIcon class="h-5 w-5 text-gray-400 group-hover:text-indigo-600 transition-colors" />
@@ -82,8 +82,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useApplicationTypeStore } from '@/stores/applications'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
 import LoadingSpinner from '@/components/others/LoadingSpinner.vue'
 import {
@@ -93,84 +94,45 @@ import {
   DocumentTextIcon,
   ClipboardDocumentListIcon,
   DocumentCheckIcon,
-  PresentationChartBarIcon
+  PresentationChartBarIcon,
+  PrinterIcon
 } from '@heroicons/vue/24/outline'
-import axios from '@/lib/axios'
 
 const router = useRouter()
-const loading = ref(false)
-const error = ref(null)
-const applicationTypes = ref([])
+const applicationTypeStore = useApplicationTypeStore()
 
-// Mock data for demonstration - replace with actual API call
-const mockApplicationTypes = [
-  {
-    id: 1,
-    name: 'Crop Insurance Application',
-    description: 'Submit applications for crop insurance coverage',
-    type: 'insurance',
-    totalSubmissions: 45,
-    approvedSubmissions: 32,
-    pendingSubmissions: 13
-  },
-  {
-    id: 2,
-    name: 'Agricultural Loan Application',
-    description: 'Apply for agricultural loans and financing',
-    type: 'loan',
-    totalSubmissions: 28,
-    approvedSubmissions: 20,
-    pendingSubmissions: 8
-  },
-  {
-    id: 3,
-    name: 'Crop Yield Report',
-    description: 'Submit seasonal crop yield reports',
-    type: 'report',
-    totalSubmissions: 67,
-    approvedSubmissions: 60,
-    pendingSubmissions: 7
-  },
-  {
-    id: 4,
-    name: 'Equipment Subsidy Application',
-    description: 'Apply for agricultural equipment subsidies',
-    type: 'subsidy',
-    totalSubmissions: 15,
-    approvedSubmissions: 10,
-    pendingSubmissions: 5
-  }
-]
+// Computed properties from store
+const loading = computed(() => applicationTypeStore.isLoading)
+const error = computed(() => applicationTypeStore.error)
+const applicationTypes = computed(() => applicationTypeStore.allApplicationTypes)
 
 const fetchApplicationTypes = async () => {
-  loading.value = true
-  error.value = null
-
-  try {
-    // Replace this with actual API call
-    // const response = await axios.get('/api/v1/application-types')
-    // applicationTypes.value = response.data
-
-    // For now, use mock data
-    await new Promise(resolve => setTimeout(resolve, 1000)) // Simulate API delay
-    applicationTypes.value = mockApplicationTypes
-  } catch (err) {
-    error.value = err.response?.data?.message || 'Failed to load application types'
-    console.error('Error fetching application types:', err)
-  } finally {
-    loading.value = false
+  const result = await applicationTypeStore.fetchAllApplicationTypes(null, null, null)
+  if (!result.success) {
+    console.error('Failed to fetch application types:', result.error)
   }
 }
 
-const getApplicationTypeIcon = (type) => {
-  const icons = {
-    insurance: DocumentCheckIcon,
-    loan: DocumentTextIcon,
-    report: PresentationChartBarIcon,
-    subsidy: ClipboardDocumentListIcon,
-    default: DocumentIcon
+const getApplicationTypeIcon = (applicationType) => {
+  // Determine icon based on name or provider
+  const name = applicationType.name?.toLowerCase() || ''
+  const provider = applicationType.provider?.toLowerCase() || ''
+
+  if (name.includes('insurance') || name.includes('crop insurance')) {
+    return DocumentCheckIcon
+  } else if (name.includes('claim') || name.includes('indemnity')) {
+    return ClipboardDocumentListIcon
+  } else if (name.includes('loan')) {
+    return DocumentTextIcon
+  } else if (name.includes('report') || name.includes('yield')) {
+    return PresentationChartBarIcon
+  } else if (provider === 'agriculture') {
+    return DocumentCheckIcon
+  } else if (provider === 'pcic') {
+    return ClipboardDocumentListIcon
   }
-  return icons[type] || icons.default
+
+  return DocumentIcon
 }
 
 const navigateToApplicationType = (id) => {

@@ -199,7 +199,7 @@ const applicationTypeStore = useApplicationTypeStore()
 const batchStore = useApplicationBatchStore()
 
 const fetchTypes = async () => {
-  const result = await applicationTypeStore.fetchApplicationTypes()
+  const result = await applicationTypeStore.fetchAllApplicationTypes()
   if (result.success) {
     applicationTypes.value = result.data
   }

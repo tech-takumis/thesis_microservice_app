@@ -2,6 +2,7 @@ package com.hashjosh.insurance.clients;
 
 import com.hashjosh.constant.program.dto.ScheduleRequestDto;
 import com.hashjosh.constant.program.dto.ScheduleResponseDto;
+import com.hashjosh.insurance.exception.ApiException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -23,11 +24,12 @@ public class ScheduleClient {
                 .build();
     }
 
-    public ScheduleResponseDto createSchedule(ScheduleRequestDto request){
+    public ScheduleResponseDto createSchedule(ScheduleRequestDto request, String userId) {
         try {
             return restClient.post()
                     .uri("") // baseUrl already has /api/v1/schedules
                     .header("X-Internal-Service", applicationName)
+                    .header("X-User-Id", userId)
                     .body(request)
                     .exchange((req, res) -> {
                         if (res.getStatusCode().is2xxSuccessful()) {
@@ -48,6 +50,21 @@ public class ScheduleClient {
         } catch (RestClientException e) {
             throw new RuntimeException("Failed to call Schedule service", e);
         }
+    }
+
+    public ScheduleResponseDto getInspectionScheduleById(String scheduleId,String userId) {
+        return restClient.get()
+                .uri("/{id}", scheduleId)
+                .header("X-Internal-Service", applicationName)
+                .header("X-User-Id",userId)
+                .retrieve()
+                .onStatus(
+                        status -> status.is4xxClientError() || status.is5xxServerError(),
+                        (request, response) -> {
+                            throw ApiException.internalError("Failed to get schedule for inspection: " + scheduleId);
+                        }
+                )
+                .body(ScheduleResponseDto.class);
     }
 
 }

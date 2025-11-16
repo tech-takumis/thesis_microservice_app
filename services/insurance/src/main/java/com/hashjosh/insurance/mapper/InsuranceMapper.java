@@ -143,7 +143,9 @@ public class InsuranceMapper {
                 .insuranceId(verification.getInsurance().getId())
                 .remarks(verification.getRemarks())
                 .verifiedAt(verification.getVerifiedAt())
-                .verifiedBy(verification.getVerifierId())
+                .verifierId(verification.getVerifierId())
+                .verifierName(verification.getVerifierName())
+                .fieldValues(verification.getFieldValues())
                 .build();
     }
 

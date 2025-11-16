@@ -64,6 +64,7 @@ public class BatchMapper {
     private InsuranceResponse mapInsuranceToBasicResponse(Insurance insurance) {
         InsuranceResponse.InsuranceResponseBuilder builder = InsuranceResponse.builder()
                 .insuranceId(insurance.getId())
+                .farmerName(insurance.getFarmerName())
                 .requiredAIProcessing(insurance.getIsAIProcessed())
                 .createdAt(insurance.getCreatedAt())
                 .updatedAt(insurance.getUpdatedAt());

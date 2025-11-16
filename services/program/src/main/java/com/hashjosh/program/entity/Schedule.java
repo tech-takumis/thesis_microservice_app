@@ -29,6 +29,7 @@ public class Schedule {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false)
+
     private ScheduleType type;
     @Column(name = "schedule_date", nullable = false)
     private LocalDateTime scheduleDate;

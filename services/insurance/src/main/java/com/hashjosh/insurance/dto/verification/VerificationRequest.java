@@ -3,27 +3,19 @@ package com.hashjosh.insurance.dto.verification;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.*;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class VerificationResponse {
+public class VerificationRequest {
 
-    private UUID id;
-
-    private UUID insuranceId;
-
-    private UUID verifierId;
-
-    private String verifierName;
-
+    @NotBlank(message = "Remarks cannot be blank")
     private String remarks;
 
+    @NotNull(message = "Field values cannot be null")
     private JsonNode fieldValues;
-
-    private LocalDateTime verifiedAt;
 }

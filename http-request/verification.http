@@ -1,0 +1,56 @@
+### Create a new verification for an insurance
+POST http://localhost:8081/api/v1/verifications/insurance/550e8400-e29b-41d4-a716-446655440000
+Content-Type: application/json
+Authorization: Bearer your-jwt-token-here
+
+{
+  "remarks": "Insurance application verified successfully. All documents are complete and valid.",
+  "fieldValues": {
+    "applicantName": "John Doe",
+    "farmArea": "5.2 hectares",
+    "cropType": "Rice",
+    "verificationStatus": "APPROVED",
+    "documentChecks": {
+      "landTitle": "verified",
+      "farmingCertificate": "verified",
+      "identityDocument": "verified"
+    }
+  }
+}
+
+### Get verification by ID
+GET http://localhost:8081/api/v1/verifications/550e8400-e29b-41d4-a716-446655440001
+Authorization: Bearer your-jwt-token-here
+
+### Get verification by insurance ID
+GET http://localhost:8081/api/v1/verifications/insurance/550e8400-e29b-41d4-a716-446655440000
+Authorization: Bearer your-jwt-token-here
+
+### Get all verifications with pagination
+GET http://localhost:8081/api/v1/verifications?page=0&size=10&sort=verifiedAt,desc
+Authorization: Bearer your-jwt-token-here
+
+### Update an existing verification
+PUT http://localhost:8081/api/v1/verifications/550e8400-e29b-41d4-a716-446655440001
+Content-Type: application/json
+Authorization: Bearer your-jwt-token-here
+
+{
+  "remarks": "Updated verification remarks after additional document review.",
+  "fieldValues": {
+    "applicantName": "John Doe",
+    "farmArea": "5.2 hectares",
+    "cropType": "Rice",
+    "verificationStatus": "APPROVED_WITH_CONDITIONS",
+    "documentChecks": {
+      "landTitle": "verified",
+      "farmingCertificate": "verified",
+      "identityDocument": "verified"
+    },
+    "additionalNotes": "Minor discrepancy in farming certificate resolved"
+  }
+}
+
+### Delete a verification
+DELETE http://localhost:8081/api/v1/verifications/550e8400-e29b-41d4-a716-446655440001
+Authorization: Bearer your-jwt-token-here

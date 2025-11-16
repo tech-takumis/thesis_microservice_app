@@ -4,139 +4,137 @@
         :role-title="roleTitle"
         page-title="Applications"
     >
-<!-- Batch/Application Summary Section -->
-<div class="flex items-center gap-6 mb-2 print:hidden">
-  <div v-if="selectedBatch">
-    <span class="text-green-700 font-semibold">
-      {{
-        batches.find(b => b.id === selectedBatch)?.name
-      }}
-    </span>
-    <span class="ml-2 text-xs text-gray-500">
-        <span class="m-2"> Total Applications:</span>
-      {{
-        batches.find(b => b.id === selectedBatch)?.totalApplications
-          ?? filteredApplications.length
-      }}
-    </span>
-    <span v-if="batches.find(b => b.id === selectedBatch)?.maxApplications" class="ml-2 text-xs text-gray-400">
-      / Max: {{ batches.find(b => b.id === selectedBatch)?.maxApplications }}
-    </span>
-  </div>
-  <div v-else>
-    <span class="font-medium text-gray-700">All Applications:</span>
-    <span class="text-green-700 font-semibold">{{ filteredApplications.length }}</span>
-  </div>
-</div>
+    <div class="h-full flex flex-col min-h-0 overflow-hidden">
+        <!-- Fixed Header Section -->
+        <div class="flex-shrink-0 mb-4 print:hidden">
+            <!-- Breadcrumb Navigation -->
+            <nav class="flex mb-4" aria-label="Breadcrumb">
+              <ol class="flex items-center space-x-4">
+                <li>
+                  <div>
+                    <router-link
+                      :to="{ name: 'agriculturist-dashboard' }"
+                      class="text-gray-400 hover:text-gray-500"
+                    >
+                      <HomeIcon class="flex-shrink-0 h-5 w-5" />
+                      <span class="sr-only">Dashboard</span>
+                    </router-link>
+                  </div>
+                </li>
+                <li>
+                  <div class="flex items-center">
+                    <ChevronRightIcon class="flex-shrink-0 h-5 w-5 text-gray-400" />
+                    <router-link
+                      :to="{ name: 'agriculturist-submit-crop-data' }"
+                      class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700"
+                    >
+                      Application Types
+                    </router-link>
+                  </div>
+                </li>
+                <li v-if="route.params.id">
+                  <div class="flex items-center">
+                    <ChevronRightIcon class="flex-shrink-0 h-5 w-5 text-gray-400" />
+                    <span class="ml-4 text-sm font-medium text-gray-900">
+                      Applications - Type {{ route.params.id }}
+                    </span>
+                  </div>
+                </li>
+                <li v-else>
+                  <div class="flex items-center">
+                    <ChevronRightIcon class="flex-shrink-0 h-5 w-5 text-gray-400" />
+                    <span class="ml-4 text-sm font-medium text-gray-900">
+                      All Applications
+                    </span>
+                  </div>
+                </li>
+              </ol>
+            </nav>
 
+            <div class="flex items-center justify-between gap-4">
+              <!-- Title -->
+              <h1 class="text-2xl font-semibold text-gray-900 flex-shrink-0">
+                Farmer Applications
+              </h1>
 
-<!-- Fixed Header - Single Row Layout -->
-<div class="flex items-center justify-between mb-4 gap-4 print:hidden">
-  <!-- Title -->
-  <h1 class="text-2xl font-semibold text-gray-900 flex-shrink-0">
-    Farmer Applications
-  </h1>
+              <!-- All Controls in One Row -->
+              <div class="flex items-center gap-3 flex-wrap">
+                <!-- Batch Management -->
+                <div class="flex items-center gap-2">
+                  <!-- Create Batch -->
+                  <button
+                    class="flex items-center justify-center p-2 bg-green-600 text-white rounded-full shadow-sm hover:bg-gray-400 transition-colors flex-shrink-0"
+                    @click="showCreateBatchModal = true"
+                  >
+                    <Plus class="w-5 h-5" />
+                  </button>
+                </div>
 
-  <!-- All Controls in One Row -->
-  <div class="flex items-center gap-3 flex-wrap">
-    <!-- Batch Management -->
-    <div class="flex items-center gap-2">
-      <!-- Create Batch -->
-      <button
-        class="flex items-center justify-center p-2 bg-green-600 text-white rounded-full shadow-sm hover:bg-gray-400 transition-colors flex-shrink-0"
-        @click="showCreateBatchModal = true"
-      >
-        <Plus class="w-5 h-5" />
-      </button>
+                <!-- Action Buttons - Show inline when applications are selected -->
+                <template v-if="selectedApplications.length > 0">
+                  <button
+                    class="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:ring-2 focus:ring-offset-2 focus:ring-red-500 flex-shrink-0"
+                    @click="handleDelete"
+                  >
+                    <Trash2 class="h-4 w-4 mr-1" />
+                    Delete ({{ selectedApplications.length }})
+                  </button>
+                </template>
 
-      <!-- Batch Dropdown -->
-      <select
-        v-model="selectedBatch"
-        class="w-40 border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-700 focus:border-green-400 focus:ring-2 focus:ring-green-400/40 transition duration-200 disabled:opacity-50"
-      >
-        <option value="">All Batches</option>
-        <option
-          v-for="batch in batches"
-          :key="batch.id"
-          :value="batch.id"
-        >
-          {{ batch.name }} ({{ batch.totalApplications }})
-        </option>
-      </select>
-    </div>
+                <!-- Utility Buttons -->
+                <div class="flex items-center gap-2">
+                  <!-- Print - Only show if there are applications requiring AI processing -->
+                  <button
+                    v-if="hasAIProcessingApplications"
+                    class="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium text-gray-700 bg-white border border-gray-300 shadow-sm hover:bg-green-600 hover:text-white focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-300 ease-in-out flex-shrink-0"
+                    @click="handlePrint"
+                  >
+                    <Printer class="h-4 w-4 mr-1" />
+                    Print
+                  </button>
 
-    <!-- Action Buttons - Show inline when applications are selected -->
-    <template v-if="selectedApplications.length > 0">
-      <button
-        class="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex-shrink-0"
-        :disabled="verificationStore.isForwarding.value"
-        @click="handleForwardToPCIC"
-      >
-        <Edit class="h-4 w-4 mr-1" />
-        <span v-if="verificationStore.isForwarding.value">Forwarding...</span>
-        <span v-else>Forward to PCIC</span>
-      </button>
-
-      <button
-        class="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:ring-2 focus:ring-offset-2 focus:ring-red-500 flex-shrink-0"
-        @click="handleDelete"
-      >
-        <Trash2 class="h-4 w-4 mr-1" />
-        Delete ({{ selectedApplications.length }})
-      </button>
-    </template>
-
-    <!-- Utility Buttons -->
-    <div class="flex items-center gap-2">
-      <!-- Print -->
-      <button
-        class="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium text-gray-700 bg-white border border-gray-300 shadow-sm hover:bg-green-600 hover:text-white focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-300 ease-in-out flex-shrink-0"
-        @click="handlePrint"
-      >
-        <Printer class="h-4 w-4 mr-1" />
-        Print
-      </button>
-
-      <!-- Filter -->
-      <button
-        class="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium text-gray-700 bg-white border border-gray-300 shadow-sm hover:bg-green-600 hover:text-white focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-300 ease-in-out flex-shrink-0"
-        @click="showFilterModal = true"
-      >
-        <Filter class="h-4 w-4 mr-1" />
-        Filter
-      </button>
-    </div>
-  </div>
-</div>
-
-
-<!-- Loading state -->
-<div 
-  v-if="loading" 
-  class="flex flex-col items-center justify-center min-h-[200px] space-y-4 print:hidden"
->
-  <!-- Spinner -->
-  <div class="relative">
-    <div class="h-14 w-14 rounded-full border-4 border-gray-200"></div>
-    <div class="absolute top-0 left-0 h-14 w-14 rounded-full border-4 border-green-600 border-t-transparent animate-spin"></div>
-  </div>
-
-  <!-- Loading Label -->
-  <p class="text-gray-600 font-medium tracking-wide">
-    Loading data…
-  </p>
-</div>
-
-
-        <!-- Error state -->
-        <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-lg p-4 print:hidden">
-            <p class="text-red-800">{{ error.message }}</p>
+                  <!-- Filter -->
+                  <button
+                    class="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium text-gray-700 bg-white border border-gray-300 shadow-sm hover:bg-green-600 hover:text-white focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-300 ease-in-out flex-shrink-0"
+                    @click="showFilterModal = true"
+                  >
+                    <Filter class="h-4 w-4 mr-1" />
+                    Filter
+                  </button>
+                </div>
+              </div>
+            </div>
         </div>
 
-        <!-- Applications table -->
-        <div v-else class="bg-white shadow-sm rounded-lg overflow-hidden print:hidden">
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
+        <!-- Main Content Area - Flex and Scrollable -->
+        <div class="flex-1 min-h-0 overflow-y-auto">
+            <!-- Loading state -->
+            <div
+              v-if="loading"
+              class="flex flex-col items-center justify-center flex-1 space-y-4 print:hidden"
+            >
+            <!-- Spinner -->
+            <div class="relative">
+                <div class="h-14 w-14 rounded-full border-4 border-gray-200"></div>
+                <div class="absolute top-0 left-0 h-14 w-14 rounded-full border-4 border-green-600 border-t-transparent animate-spin"></div>
+            </div>
+
+            <!-- Loading Label -->
+              <p class="text-gray-600 font-medium tracking-wide">
+                Loading data…
+              </p>
+            </div>
+
+
+            <!-- Error state -->
+            <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4 print:hidden">
+                <p class="text-red-800">{{ error.message }}</p>
+            </div>
+
+            <!-- Applications table -->
+            <div v-else class="bg-white shadow-sm rounded-lg overflow-hidden mb-4 print:hidden flex-1 min-h-0">
+                <div class="overflow-x-auto overflow-y-auto max-h-full">
+                    <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-100">
                     <tr>
                         <th scope="col" class="w-12 px-6 py-3">
@@ -151,13 +149,7 @@
                             Farmer Name
                         </th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Crop Type
-                        </th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Cover Type
-                        </th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Amount
+                            Batch Name
                         </th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Location
@@ -172,7 +164,7 @@
                         v-for="application in filteredApplications"
                         :key="application.id"
                         class="hover:bg-gray-50 cursor-pointer transition-colors"
-                        @click="handleRowClick(application.id, $event)"
+                        @click="handleRowClick(application.insuranceId || application.id, $event)"
                     >
                         <td class="px-6 py-4 whitespace-nowrap" @click.stop>
                             <input
@@ -184,19 +176,11 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm font-medium text-gray-900">
-                                {{ getFullName(application.dynamicFields) }}
+                                {{ application.farmerName || getFullName(application.dynamicFields) }}
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-gray-900">{{ application.dynamicFields?.crop_type || 'N/A' }}</div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-gray-900">{{ application.dynamicFields?.cover_type || 'N/A' }}</div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-gray-900">
-                                ₱{{ formatAmount(application.dynamicFields?.amount_of_cover) }}
-                            </div>
+                            <div class="text-sm text-gray-900">{{ application.batchName || 'N/A' }}</div>
                         </td>
                         <td class="px-6 py-4">
                             <div class="text-sm text-gray-900">{{ getLocation(application.dynamicFields?.lot_1_location) }}</div>
@@ -206,21 +190,22 @@
                         </td>
                     </tr>
                     </tbody>
-                </table>
-            </div>
+                    </table>
+                </div>
 
-            <!-- Empty state -->
-            <div v-if="filteredApplications.length === 0" class="text-center py-12 print:hidden">
-                <FileText class="mx-auto h-12 w-12 text-gray-400" />
-                <h3 class="mt-2 text-sm font-medium text-gray-900">No applications found</h3>
-                <p class="mt-1 text-sm text-gray-500">No farmer applications match your current filters.</p>
+                <!-- Empty state -->
+                <div v-if="filteredApplications.length === 0" class="text-center py-12 print:hidden">
+                    <FileText class="mx-auto h-12 w-12 text-gray-400" />
+                    <h3 class="mt-2 text-sm font-medium text-gray-900">No applications found</h3>
+                    <p class="mt-1 text-sm text-gray-500">No farmer applications match your current filters.</p>
+                </div>
             </div>
-        </div>
 
         <!-- Filter Modal -->
         <ApplicationFilterModal
             v-model:show="showFilterModal"
             :filters="filters"
+            :batches="batches"
             class="print:hidden"
             @apply-filters="applyFilters"
             @reset-filters="resetFilters"
@@ -518,6 +503,8 @@
                             <td class="border border-black px-0.5 py-0.5 text-xs">&nbsp;</td>
                             <td class="border border-black px-0.5 py-0.5 text-xs">&nbsp;</td>
                             <td class="border border-black px-0.5 py-0.5 text-xs">&nbsp;</td>
+                            <td class="border border-black px-0.5 py-0.5 text-xs">&nbsp;</td>
+                            <td class="border border-black px-0.5 py-0.5 text-xs">&nbsp;</td>
                         </tr>
                         <tr class="font-bold">
                             <td class="border border-black px-0.5 py-0.5 text-center text-xs" colspan="11">TOTAL</td>
@@ -556,17 +543,23 @@
                 <div v-if="chunkIndex < farmerChunks.length - 1" class="page-break"></div>
             </div>
         </div>
+        </div>
+    </div>
     </AuthenticatedLayout>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
 import ApplicationFilterModal from '@/components/modals/ApplicationFilterModal.vue'
 import CreateBatchModal from '@/components/modals/CreateBatchModal.vue'
 import { Filter, Edit, Trash2, FileText, Printer, Plus } from 'lucide-vue-next'
+import {
+  HomeIcon,
+  ChevronRightIcon
+} from '@heroicons/vue/24/outline'
 import {
     ADMIN_NAVIGATION,
     MUNICIPAL_AGRICULTURIST_NAVIGATION,
@@ -574,12 +567,15 @@ import {
 } from '@/lib/navigation'
 import { useApplicationBatchStore, useApplicationStore } from '@/stores/applications'
 import { useVerificationStore } from '@/stores/verification'
+import { useBatchStore } from '@/stores/insurance'
 
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 const applicationStore = useApplicationStore()
 const batchStore = useApplicationBatchStore()
 const verificationStore = useVerificationStore()
+const insuranceBatchStore = useBatchStore()
 
 // State
 const loading = ref(false)
@@ -588,15 +584,12 @@ const selectedApplications = ref([])
 const showFilterModal = ref(false)
 const showCreateBatchModal = ref(false)
 const filters = ref({
-    cropType: '',
-    coverType: '',
+    batchName: '',
     location: '',
     dateFrom: '',
-    dateTo: '',
-    amountMin: '',
-    amountMax: ''
+    dateTo: ''
 })
-const selectedBatch = ref('')
+
 const batches = ref([])
 
 const navigation = computed(() => {
@@ -615,30 +608,25 @@ const roleTitle = computed(() => {
 const filteredApplications = computed(() => {
     let apps = verificationStore.applications.value || []
 
-    // Apply filters
-    if (filters.value.cropType) {
-        apps = apps.filter(app => app.dynamicFields.crop_type === filters.value.cropType)
+    // Apply batch name filter
+    if (filters.value.batchName) {
+        apps = apps.filter(app => app.batchName === filters.value.batchName)
     }
-    if (filters.value.coverType) {
-        apps = apps.filter(app => app.dynamicFields.cover_type === filters.value.coverType)
-    }
+
+    // Apply location filter
     if (filters.value.location) {
         apps = apps.filter(app => {
             const location = getLocation(app.dynamicFields.lot_1_location).toLowerCase()
             return location.includes(filters.value.location.toLowerCase())
         })
     }
+
+    // Apply submitted date range filters
     if (filters.value.dateFrom) {
         apps = apps.filter(app => new Date(app.submittedAt) >= new Date(filters.value.dateFrom))
     }
     if (filters.value.dateTo) {
         apps = apps.filter(app => new Date(app.submittedAt) <= new Date(filters.value.dateTo))
-    }
-    if (filters.value.amountMin) {
-        apps = apps.filter(app => app.dynamicFields.amount_of_cover >= parseFloat(filters.value.amountMin))
-    }
-    if (filters.value.amountMax) {
-        apps = apps.filter(app => app.dynamicFields.amount_of_cover <= parseFloat(filters.value.amountMax))
     }
 
     return apps
@@ -660,17 +648,81 @@ const isAllSelected = computed(() => {
         selectedApplications.value.length === filteredApplications.value.length
 })
 
+const hasAIProcessingApplications = computed(() => {
+    return filteredApplications.value && filteredApplications.value.some(app => app.requiredAIProcessing === true)
+})
+
 // Methods
 const fetchApplicationsList = async () => {
     loading.value = true
     error.value = null
-    if (selectedBatch.value) {
-        const result = await verificationStore.fetchApplicationByBatchId(selectedBatch.value)
-        if (!result.success) error.value = result.error
+
+    // Check if we have an application type ID from URL params
+    const applicationTypeId = route.params.id
+
+    if (applicationTypeId) {
+        // Fetch batches by application type ID using insurance store
+        console.log('Fetching batches for application type ID:', applicationTypeId)
+        const result = await insuranceBatchStore.fetchBatchByApplicationId(applicationTypeId, true)
+
+        if (result.success === "true") {
+            console.log('Batches fetched successfully:', result.data)
+            const transformedApplications = []
+
+            result.data.forEach(batch => {
+                if (batch.insurances && batch.insurances.length > 0) {
+                    batch.insurances.forEach(insurance => {
+                        if (insurance.application) {
+                            // Extract farmer name from multiple possible sources
+                            let farmerName = insurance.farmerName
+
+                            // Fallback to farmer object if available
+                            if (!farmerName && insurance.application.farmer) {
+                                const farmer = insurance.application.farmer
+                                farmerName = `${farmer.firstName || ''} ${farmer.middleName || ''} ${farmer.lastName || ''}`.trim()
+                            }
+
+                            // Fallback to dynamicFields if available
+                            if (!farmerName && insurance.application.dynamicFields) {
+                                const fields = insurance.application.dynamicFields
+                                farmerName = `${fields.first_name || ''} ${fields.middle_name || ''} ${fields.last_name || ''}`.trim()
+                            }
+
+                            transformedApplications.push({
+                                ...insurance.application,
+                                batchId: batch.id,
+                                batchName: batch.batchName,
+                                insuranceId: insurance.insuranceId,
+                                requiredAIProcessing: insurance.requiredAIProcessing,
+                                farmerName: farmerName || 'N/A'
+                            })
+                        }
+                    })
+                }
+            })
+
+            // Update the verification store with transformed applications
+            console.log('Transformed applications:', transformedApplications)
+            verificationStore.applications.value = transformedApplications
+
+            // Update batches list for dropdown
+            batches.value = result.data.map(batch => ({
+                id: batch.id,
+                name: batch.batchName,
+                totalApplications: batch.totalApplications,
+                maxApplications: batch.maxApplications,
+                available: batch.available
+            }))
+        } else {
+            console.error('Failed to fetch batches:', result.message || result.error)
+            error.value = { message: result.message || 'Failed to load batches' }
+        }
     } else {
+        // Fallback to existing functionality
         const result = await verificationStore.fetchApplications()
         if (!result.success) error.value = result.error
     }
+
     loading.value = false
 }
 
@@ -681,9 +733,7 @@ const fetchBatches = async () => {
     }
 }
 
-watch(selectedBatch, async (newBatch) => {
-    await fetchApplicationsList()
-})
+
 
 const getFullName = (fields) => {
     if (!fields) return 'N/A'
@@ -789,13 +839,10 @@ const applyFilters = (newFilters) => {
 
 const resetFilters = () => {
     filters.value = {
-        cropType: '',
-        coverType: '',
+        batchName: '',
         location: '',
         dateFrom: '',
-        dateTo: '',
-        amountMin: '',
-        amountMax: ''
+        dateTo: ''
     }
     showFilterModal.value = false
 }
@@ -822,18 +869,7 @@ const handleBatchCreated = async () => {
   await fetchBatches()
 }
 
-const handleForwardToPCIC = async () => {
-    if (selectedApplications.value.length === 0) return
-    if (!confirm(`Forward ${selectedApplications.value.length} application(s) to PCIC?`)) return
-    const success = await verificationStore.forwardApplicationToPCIC(selectedApplications.value)
-    if (success) {
-        selectedApplications.value = []
-        await fetchApplicationsList()
-        alert('Applications forwarded to PCIC successfully.')
-    } else {
-        alert('Failed to forward applications to PCIC.')
-    }
-}
+
 
 onMounted(() => {
     fetchBatches()
@@ -841,32 +877,40 @@ onMounted(() => {
 })
 </script>
 <style>
-@media print {
-    @page {
-        size: letter landscape;
-        margin: 0.4in;
-    }
-
-    /* Ensure all pages break properly, not just first two */
-    .pcic-page {
-        page-break-after: always;
-    }
-
-    /* Remove overflow hidden from legends to ensure visibility */
-    .legends-section {
-        overflow: visible;
-        page-break-inside: avoid;
-    }
+/* Ensure proper layout within AuthenticatedLayout */
+.print\\:hidden {
+  height: 100%;
 }
 
-/* Hide print layout on screen */
-#print-layout {
-    display: none;
+/* Compact table styling */
+.min-w-full th,
+.min-w-full td {
+  padding: 0.5rem 1rem;
+}
+
+/* Ensure modals and print layouts don't interfere */
+@media screen {
+  #print-layout {
+    display: none !important;
+  }
 }
 
 @media print {
-    #print-layout {
-        display: block !important;
-    }
+  .print\\:hidden {
+    display: none !important;
+  }
+
+  #print-layout {
+    display: block !important;
+  }
+
+  .pcic-page {
+    page-break-after: always;
+  }
+
+  @page {
+    size: letter landscape;
+    margin: 0.4in;
+  }
 }
 </style>

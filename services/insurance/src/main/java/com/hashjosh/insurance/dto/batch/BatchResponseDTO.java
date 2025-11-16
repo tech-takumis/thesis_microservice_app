@@ -15,7 +15,6 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class BatchResponseDTO {
     UUID id;
     String batchName;

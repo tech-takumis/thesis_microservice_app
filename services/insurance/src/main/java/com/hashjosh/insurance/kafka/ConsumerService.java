@@ -94,28 +94,8 @@ public class ConsumerService {
                 .createdAt(LocalDateTime.now())
                 .build();
 
-        Insurance savedInsurance = insuranceRepository.save(insurance);
+        insuranceRepository.save(insurance);
 
-        Verification verification = Verification.builder()
-                .insurance(savedInsurance)
-                .build();
-        verificationRepository.save(verification);
-
-        Inspection inspection = Inspection.builder()
-                .insurance(savedInsurance)
-                .build();
-
-        inspectionRepository.save(inspection);
-
-        Policy policy = Policy.builder()
-                .insurance(savedInsurance)
-                .build();
-        policyRepository.save(policy);
-
-        Claim claim = Claim.builder()
-                .insurance(savedInsurance)
-                .build();
-        claimRepository.save(claim);
         log.info("Created insurance record for application: {}", event.getSubmissionId());
     }
 

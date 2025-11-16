@@ -30,6 +30,8 @@ public class Inspection {
 
     private LocalDateTime inspectedAt;
 
+    private UUID scheduleId;
+
     private List<UUID> photos;
 
     @Type(JsonBinaryType.class)

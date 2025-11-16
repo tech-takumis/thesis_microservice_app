@@ -150,6 +150,50 @@ export const useApplicationTypeStore = defineStore('applicationType', () => {
         }
     }
 
+    const fetchAllApplicationTypes = async (provider,section,field) => {
+        try{
+            loading.value = true
+            error.value = null
+            let response;
+            if(provider != null){
+                response = await axios.get(`${basePath.value}?provider=${provider}&section?${section}&field?${field}`)
+            }else{
+                response = await axios.get(`${basePath.value}?section?${section}&field?${field}`)
+            }
+            if(response.status === 200){
+                applicationTypes.value = response.data
+                loading.value = false
+                return { success: true, data: response.data, message: "Application types fetched successfully" }
+            }
+
+            return { success: false, data: null, message: "Failed to fetch application types" }
+
+        }catch (error) {
+            loading.value = false
+            error.value = error.data.message
+            return { success: false, error: error.value }
+        }
+    }
+
+    const fetchApplicationTypesById = async (applicationTypeId,section,field) => {
+        try{
+            loading.value = true
+            error.value = null
+            const response = await axios.get(`${basePath.value}/${applicationTypeId}?section?${section}&field?${field}`)
+            if(response.status === 200){
+                applicationTypes.value = response.data
+                loading.value = false
+                return { success: true, data: response.data, message: "Application types fetched successfully" }
+            }
+
+            return { success: false, data: null, message: "Failed to fetch application types" }
+        }catch (error) {
+            loading.value = false
+            error.value = error.data.message
+            return { success: false, error: error.value }
+        }
+    }
+
     const fetchApplicationTypeByName = async (name) => {
         try {
             const response = await axios.get(`${basePath.value}/name/${name}`)
@@ -194,6 +238,8 @@ export const useApplicationTypeStore = defineStore('applicationType', () => {
         errors,
         createApplicationType,
         fetchApplicationTypeByName,
+        fetchAllApplicationTypes,
+        fetchApplicationTypesById,
         updateApplicationType,
         deleteApplicationType,
     }

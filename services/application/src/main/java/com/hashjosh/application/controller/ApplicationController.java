@@ -58,28 +58,20 @@ public class ApplicationController {
 
     @GetMapping()
     public ResponseEntity<List<ApplicationResponseDto>> findAllApplications(
-            @RequestParam(value = "provider", required = false) String provider,
-            @RequestParam(value = "type", required = false) Boolean type,
-            @RequestParam(value = "field-values", required = false) Boolean fieldValues,
-            @RequestParam(value = "farmer", required = false) Boolean farmer,
-            @RequestParam(value = "files", required = false) Boolean files
+            @RequestParam(value = "provider", required = false) String provider
     ){
         if (provider != null && !provider.isEmpty()) {
-            return new ResponseEntity<>(applicationService.findAllApplication(provider, type, farmer, fieldValues, files), HttpStatus.OK);
+            return new ResponseEntity<>(applicationService.findAllApplication(provider), HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(applicationService.findAll(fieldValues,type,farmer,files), HttpStatus.OK);
+            return new ResponseEntity<>(applicationService.findAll(), HttpStatus.OK);
         }
     }
 
     @GetMapping("/{application-id}")
     public ResponseEntity<ApplicationResponseDto> findById(
-            @PathVariable("application-id") UUID applicationId,
-            @RequestParam(value = "type", required = false) Boolean type,
-            @RequestParam(value = "field-values", required = false) Boolean fieldValues,
-            @RequestParam(value = "farmer", required = false) Boolean farmer,
-            @RequestParam(value = "files", required = false) Boolean files
+            @PathVariable("application-id") UUID applicationId
     ){
-        return  ResponseEntity.ok(applicationService.getApplicationById(applicationId, type, farmer, fieldValues,files));
+        return  ResponseEntity.ok(applicationService.getApplicationById(applicationId));
     }
 
     @PutMapping("/{application-id}/update-documents")
@@ -99,10 +91,4 @@ public class ApplicationController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @GetMapping("/ai/{application_id}/test")
-    public ResponseEntity<AIResultDTO> getApplicationAIResult(
-            @PathVariable("application_id") UUID applicationId
-    ){
-        return ResponseEntity.ok(applicationService.getApplicationAIResult(applicationId));
-    }
 }

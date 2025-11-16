@@ -28,7 +28,7 @@
                       :to="{ name: 'agriculturist-submit-crop-data' }"
                       class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700"
                     >
-                      Application Types
+                      Application
                     </router-link>
                   </div>
                 </li>
@@ -36,7 +36,7 @@
                   <div class="flex items-center">
                     <ChevronRightIcon class="flex-shrink-0 h-5 w-5 text-gray-400" />
                     <span class="ml-4 text-sm font-medium text-gray-900">
-                      Applications - Type {{ route.params.id }}
+                      Applications submission
                     </span>
                   </div>
                 </li>
@@ -83,9 +83,9 @@
 
                 <!-- Utility Buttons -->
                 <div class="flex items-center gap-2">
-                  <!-- Print - Only show if there are applications requiring AI processing -->
+                  <!-- Print - Only show if application type is printable and there are applications -->
                   <button
-                    v-if="hasAIProcessingApplications"
+                    v-if="applicationTypeData?.printable && filteredApplications.length > 0"
                     class="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium text-gray-700 bg-white border border-gray-300 shadow-sm hover:bg-green-600 hover:text-white focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-300 ease-in-out flex-shrink-0"
                     @click="handlePrint"
                   >
@@ -149,10 +149,10 @@
                             Farmer Name
                         </th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Batch Name
+                            Address
                         </th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Location
+                            Farm Location
                         </th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Submitted Date
@@ -176,14 +176,14 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm font-medium text-gray-900">
-                                {{ application.farmerName || getFullName(application.dynamicFields) }}
+                                {{ application.farmerName }}
                             </div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-gray-900">{{ application.batchName || 'N/A' }}</div>
+                        <td class="px-6 py-4">
+                            <div class="text-sm text-gray-900">{{ application.address }}</div>
                         </td>
                         <td class="px-6 py-4">
-                            <div class="text-sm text-gray-900">{{ getLocation(application.dynamicFields?.lot_1_location) }}</div>
+                            <div class="text-sm text-gray-900">{{ application.location }}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm text-gray-900">{{ formatDate(application.submittedAt) }}</div>
@@ -200,7 +200,7 @@
                     <p class="mt-1 text-sm text-gray-500">No farmer applications match your current filters.</p>
                 </div>
             </div>
-
+        </div>
         <!-- Filter Modal -->
         <ApplicationFilterModal
             v-model:show="showFilterModal"
@@ -212,7 +212,11 @@
         />
 
         <!-- Create Batch Modal -->
-        <CreateBatchModal :show="showCreateBatchModal" @close="showCreateBatchModal = false" @created="handleBatchCreated" />
+        <CreateBatchModal
+            :show="showCreateBatchModal"
+            @close="showCreateBatchModal = false"
+            @created="handleBatchCreated"
+        />
 
         <!-- Print Layout (hidden, only visible when printing) -->
         <div id="print-layout">
@@ -253,7 +257,7 @@
 
                             <div class="mt-4 text-left">
                                 <p><strong>Mailing Address:</strong></p>
-                                <p class="border-b border-black mt-4">{{ chunk[0]?.dynamicFields.mailing_address }}</p>
+                                <p class="border-b border-black mt-4">{{ chunk[0]?.dynamicFields?.address || 'N/A' }}</p>
                             </div>
                         </div>
 
@@ -317,22 +321,22 @@
                         <!-- Display actual farmers from chunk -->
                         <tr v-for="(app, index) in chunk" :key="app.id">
                             <td class="border border-black px-0.5 py-0.5 text-center text-xs">{{ chunkIndex * 10 + index + 1 }}</td>
-                            <td class="border border-black px-0.5 py-0.5 text-xs">{{ app.dynamicFields.last_name }}</td>
-                            <td class="border border-black px-0.5 py-0.5 text-xs">{{ app.dynamicFields.first_name }}</td>
-                            <td class="border border-black px-0.5 py-0.5 text-xs">{{ app.dynamicFields.middle_name || 'N/A' }}</td>
-                            <td class="border border-black px-0.5 py-0.5 text-center text-xs">{{ app.dynamicFields.suffix || 'N/A' }}</td>
-                            <td class="border border-black px-0.5 py-0.5 text-center text-xs">{{ getCivilStatusShort(app.dynamicFields.civil_status) }}</td>
-                            <td class="border border-black px-0.5 py-0.5 text-center text-xs">{{ getGenderShort(app.dynamicFields.sex) }}</td>
-                            <td class="border border-black px-0.5 py-0.5 text-xs">{{ getBarangay(app.dynamicFields.lot_1_location) }}</td>
-                            <td class="border border-black px-0.5 py-0.5 text-xs">{{ app.dynamicFields.cell_phone_number }}</td>
-                            <td class="border border-black px-0.5 py-0.5 text-xs">{{ app.dynamicFields.spouse_name || '' }}</td>
-                            <td class="border border-black px-0.5 py-0.5 text-xs">{{ app.dynamicFields.primary_beneficiary }}</td>
+                            <td class="border border-black px-0.5 py-0.5 text-xs">{{ app.dynamicFields?.last_name || 'N/A' }}</td>
+                            <td class="border border-black px-0.5 py-0.5 text-xs">{{ app.dynamicFields?.first_name || 'N/A' }}</td>
+                            <td class="border border-black px-0.5 py-0.5 text-xs">{{ app.dynamicFields?.middle_name || '' }}</td>
+                            <td class="border border-black px-0.5 py-0.5 text-center text-xs">{{ app.dynamicFields?.suffix || '' }}</td>
+                            <td class="border border-black px-0.5 py-0.5 text-center text-xs">{{ getCivilStatusShort(app.dynamicFields?.civil_status) }}</td>
+                            <td class="border border-black px-0.5 py-0.5 text-center text-xs">{{ getGenderShort(app.dynamicFields?.sex) }}</td>
+                            <td class="border border-black px-0.5 py-0.5 text-xs">{{ getBarangay(app.dynamicFields?.lot_1_location) }}</td>
+                            <td class="border border-black px-0.5 py-0.5 text-xs">{{ app.dynamicFields?.cell_phone_number || 'N/A' }}</td>
+                            <td class="border border-black px-0.5 py-0.5 text-xs">{{ app.dynamicFields?.spouse_name || '' }}</td>
+                            <td class="border border-black px-0.5 py-0.5 text-xs">{{ app.dynamicFields?.primary_beneficiary || 'N/A' }}</td>
                             <td class="border border-black px-0.5 py-0.5 text-xs"></td>
-                            <td class="border border-black px-0.5 py-0.5 text-center text-xs">₱{{ formatAmount(app.dynamicFields.amount_of_cover) }}</td>
-                            <td class="border border-black px-0.5 py-0.5 text-center text-xs">{{ formatShortDate(app.dynamicFields.lot_1_date_sowing) }}</td>
-                            <td class="border border-black px-0.5 py-0.5 text-center text-xs">{{ formatShortDate(app.dynamicFields.lot_1_date_planting) }}</td>
-                            <td class="border border-black px-0.5 py-0.5 text-center text-xs">{{ formatShortDate(app.dynamicFields.lot_1_date_harvest) }}</td>
-                            <td class="border border-black px-0.5 py-0.5 text-xs">{{ app.dynamicFields.lot_1_variety }}</td>
+                            <td class="border border-black px-0.5 py-0.5 text-center text-xs">{{ app.dynamicFields?.amount_of_cover ? '₱' + formatAmount(app.dynamicFields.amount_of_cover) : '' }}</td>
+                            <td class="border border-black px-0.5 py-0.5 text-center text-xs">{{ formatShortDate(app.dynamicFields?.lot_1_date_sowing) }}</td>
+                            <td class="border border-black px-0.5 py-0.5 text-center text-xs">{{ formatShortDate(app.dynamicFields?.lot_1_date_planting) }}</td>
+                            <td class="border border-black px-0.5 py-0.5 text-center text-xs">{{ formatShortDate(app.dynamicFields?.lot_1_date_harvest) }}</td>
+                            <td class="border border-black px-0.5 py-0.5 text-xs">{{ app.dynamicFields?.lot_1_variety || 'N/A' }}</td>
                         </tr>
                         <!-- Fill empty rows if less than 10 farmers -->
                         <tr v-for="n in (10 - chunk.length)" :key="`empty-${n}`">
@@ -435,50 +439,68 @@
 
                 <!-- PAGE 2: APPLICATION INSURANCE -->
                 <div class="pcic-page page-break">
+                    <div class="table-legend-container">
                     <!-- Insurance Table -->
-                    <table class="pcic-table w-full border-collapse border border-black mb-1">
+                    <table class="pcic-table w-full border-collapse border border-black mb-1 table-fixed">
+                        <colgroup>
+                            <col style="width: 4%;">   <!-- No. -->
+                            <col style="width: 18%;">  <!-- Name -->
+                            <col style="width: 15%;">  <!-- Farm Location -->
+                            <col style="width: 6%;">   <!-- Area -->
+                            <col style="width: 10%;">  <!-- Land Category -->
+                            <col style="width: 8%;">   <!-- Tenural Status -->
+                            <col style="width: 9%;">   <!-- North -->
+                            <col style="width: 9%;">   <!-- South -->
+                            <col style="width: 9%;">   <!-- East -->
+                            <col style="width: 9%;">   <!-- West -->
+                            <col style="width: 9%;">   <!-- Signature -->
+                        </colgroup>
                         <thead>
                         <tr class="bg-gray-100">
-                            <th class="border border-black px-0.5 py-0.5 text-xs" rowspan="2">No.</th>
-                            <th class="border border-black px-0.5 py-0.5 text-xs" rowspan="2">Name of the Farmers<br/>(Follow the order on page1)</th>
-                            <th class="border border-black px-0.5 py-0.5 text-xs" rowspan="2">Farm Location</th>
-                            <th class="border border-black px-0.5 py-0.5 text-xs" rowspan="2">Area<br/>(ha)</th>
-                            <th class="border border-black px-0.5 py-0.5 text-xs" rowspan="2">Land Category<br/>/ Soil Type</th>
-                            <th class="border border-black px-0.5 py-0.5 text-xs" rowspan="2">Tenural<br/>Status</th>
-                            <th class="border border-black px-0.5 py-0.5 text-xs" colspan="4">Adjacent Lot Owners</th>
-                            <th class="border border-black px-0.5 py-0.5 text-xs" rowspan="2">Signature</th>
+                            <th class="border border-black px-0.5 py-0.5 text-xs leading-tight" rowspan="2">No.</th>
+                            <th class="border border-black px-0.5 py-0.5 text-xs leading-tight" rowspan="2">Name of Farmers<br/>(Follow order on page 1)</th>
+                            <th class="border border-black px-0.5 py-0.5 text-xs leading-tight" rowspan="2">Farm Location</th>
+                            <th class="border border-black px-0.5 py-0.5 text-xs leading-tight" rowspan="2">Area<br/>(ha)</th>
+                            <th class="border border-black px-0.5 py-0.5 text-xs leading-tight" rowspan="2">Land Cat.<br/>Soil Type</th>
+                            <th class="border border-black px-0.5 py-0.5 text-xs leading-tight" rowspan="2">Tenural<br/>Status</th>
+                            <th class="border border-black px-0.5 py-0.5 text-xs leading-tight" colspan="4">Adjacent Lot Owners</th>
+                            <th class="border border-black px-0.5 py-0.5 text-xs leading-tight" rowspan="2">Signature</th>
                         </tr>
                         <tr class="bg-gray-100">
-                            <th class="border border-black px-0.5 py-0.5 text-xs">North</th>
-                            <th class="border border-black px-0.5 py-0.5 text-xs">South</th>
-                            <th class="border border-black px-0.5 py-0.5 text-xs">East</th>
-                            <th class="border border-black px-0.5 py-0.5 text-xs">West</th>
+                            <th class="border border-black px-0.5 py-0.5 text-xs leading-tight">North</th>
+                            <th class="border border-black px-0.5 py-0.5 text-xs leading-tight">South</th>
+                            <th class="border border-black px-0.5 py-0.5 text-xs leading-tight">East</th>
+                            <th class="border border-black px-0.5 py-0.5 text-xs leading-tight">West</th>
                         </tr>
                         </thead>
                         <tbody>
                         <!-- Display actual farmers from chunk -->
                         <tr v-for="(app, index) in chunk" :key="app.id">
-                            <td class="border border-black px-0.5 py-0.5 text-center text-xs">{{ chunkIndex * 10 + index + 1 }}</td>
-                            <td class="border border-black px-0.5 py-0.5 text-xs">
-                                <div>{{ getFullName(app.dynamicFields) }}</div>
-                                <div class="mt-0.5">
-                                    IP <input type="checkbox" :checked="app.dynamicFields.indigenous_people" class="align-middle" />
-                                    Tribe: {{ app.dynamicFields.tribe }}
+                            <td class="border border-black px-0.5 py-0.5 text-center text-xs leading-tight">{{ chunkIndex * 10 + index + 1 }}</td>
+                            <td class="border border-black px-0.5 py-0.5 text-xs leading-tight">
+                                <div class="break-words">{{ getFullName(app.dynamicFields) }}</div>
+                                <div class="mt-0.5 text-xs">
+                                    IP <input type="checkbox" :checked="app.dynamicFields?.indigenous_people" class="align-middle w-2 h-2" />
+                                    {{ app.dynamicFields?.tribe ? 'T:' + app.dynamicFields.tribe.substring(0,8) : '' }}
                                 </div>
                             </td>
-                            <td class="border border-black px-0.5 py-0.5 text-xs">{{ getLocation(app.dynamicFields.lot_1_location) }}</td>
-                            <td class="border border-black px-0.5 py-0.5 text-center text-xs">{{ app.dynamicFields.lot_1_area }} ha</td>
-                            <td class="border border-black px-0.5 py-0.5 text-xs">{{ app.dynamicFields.lot_1_land_category }}<br/>{{ app.dynamicFields.lot_1_soil_type }}</td>
-                            <td class="border border-black px-0.5 py-0.5 text-center text-xs">{{ app.dynamicFields.lot_1_tenurial_status }}</td>
-                            <td class="border border-black px-0.5 py-0.5 text-xs">{{ app.dynamicFields.lot_1_boundaries?.north || 'N/A' }}</td>
-                            <td class="border border-black px-0.5 py-0.5 text-xs">{{ app.dynamicFields.lot_1_boundaries?.south || 'N/A' }}</td>
-                            <td class="border border-black px-0.5 py-0.5 text-xs">{{ app.dynamicFields.lot_1_boundaries?.east || 'N/A' }}</td>
-                            <td class="border border-black px-0.5 py-0.5 text-xs">{{ app.dynamicFields.lot_1_boundaries?.west || 'N/A' }}</td>
-                            <td class="border border-black p-0 text-center align-middle text-xs">
-                                <div class="w-[75px] h-[50px] overflow-hidden mx-auto">
+                            <td class="border border-black px-0.5 py-0.5 text-xs leading-tight break-words">{{ getLocation(app.dynamicFields?.lot_1_location) }}</td>
+                            <td class="border border-black px-0.5 py-0.5 text-center text-xs leading-tight">{{ app.dynamicFields?.lot_1_area || 'N/A' }}</td>
+                            <td class="border border-black px-0.5 py-0.5 text-xs leading-tight break-words">
+                                <div>{{ app.dynamicFields?.lot_1_land_category || ' ' }}</div>
+                                <div>{{ app.dynamicFields?.lot_1_soil_type || '' }}</div>
+                            </td>
+                            <td class="border border-black px-0.5 py-0.5 text-center text-xs leading-tight">{{ app.dynamicFields?.lot_1_tenurial_status || 'N/A' }}</td>
+                            <td class="border border-black px-0.5 py-0.5 text-xs leading-tight break-words">{{ app.dynamicFields?.lot_1_boundaries?.north || '' }}</td>
+                            <td class="border border-black px-0.5 py-0.5 text-xs leading-tight break-words">{{ app.dynamicFields?.lot_1_boundaries?.south || '' }}</td>
+                            <td class="border border-black px-0.5 py-0.5 text-xs leading-tight break-words">{{ app.dynamicFields?.lot_1_boundaries?.east || '' }}</td>
+                            <td class="border border-black px-0.5 py-0.5 text-xs leading-tight break-words">{{ app.dynamicFields?.lot_1_boundaries?.west || '' }}</td>
+                            <td class="border border-black p-0.5 text-center align-middle text-xs">
+                                <div class="w-[40px] h-[30px] overflow-hidden mx-auto">
                                     <img
+                                        v-if="app.fileUploads && app.fileUploads[0]"
                                         :src="app.fileUploads[0]"
-                                        alt="Farmer Signature"
+                                        alt="Signature"
                                         class="w-full h-full object-cover"
                                         @error="handleImageError"
                                     />
@@ -487,24 +509,20 @@
                         </tr>
                         <!-- Fill empty rows if less than 10 farmers -->
                         <tr v-for="n in (10 - chunk.length)" :key="`empty-${n}`">
-                            <td class="border border-black px-0.5 py-0.5 text-center text-xs">{{ chunkIndex * 10 + chunk.length + n }}</td>
-                            <td class="border border-black px-0.5 py-0.5 text-xs">
+                            <td class="border border-black px-0.5 py-0.5 text-center text-xs leading-tight">{{ chunkIndex * 10 + chunk.length + n }}</td>
+                            <td class="border border-black px-0.5 py-0.5 text-xs leading-tight">
                                 <div>&nbsp;</div>
-                                <div class="mt-0.5">IP <input type="checkbox" class="align-middle" /> Tribe: ___________</div>
+                                <div class="mt-0.5 text-xs">IP <input type="checkbox" class="align-middle w-2 h-2" /> T:_____</div>
                             </td>
-                            <td class="border border-black px-0.5 py-0.5 text-xs">&nbsp;</td>
-                            <td class="border border-black px-0.5 py-0.5 text-xs">&nbsp;</td>
-                            <td class="border border-black px-0.5 py-0.5 text-xs">&nbsp;</td>
-                            <td class="border border-black px-0.5 py-0.5 text-xs">&nbsp;</td>
-                            <td class="border border-black px-0.5 py-0.5 text-xs">&nbsp;</td>
-                            <td class="border border-black px-0.5 py-0.5 text-xs">&nbsp;</td>
-                            <td class="border border-black px-0.5 py-0.5 text-xs">&nbsp;</td>
-                            <td class="border border-black px-0.5 py-0.5 text-xs">&nbsp;</td>
-                            <td class="border border-black px-0.5 py-0.5 text-xs">&nbsp;</td>
-                            <td class="border border-black px-0.5 py-0.5 text-xs">&nbsp;</td>
-                            <td class="border border-black px-0.5 py-0.5 text-xs">&nbsp;</td>
-                            <td class="border border-black px-0.5 py-0.5 text-xs">&nbsp;</td>
-                            <td class="border border-black px-0.5 py-0.5 text-xs">&nbsp;</td>
+                            <td class="border border-black px-0.5 py-0.5 text-xs leading-tight">&nbsp;</td>
+                            <td class="border border-black px-0.5 py-0.5 text-xs leading-tight">&nbsp;</td>
+                            <td class="border border-black px-0.5 py-0.5 text-xs leading-tight">&nbsp;</td>
+                            <td class="border border-black px-0.5 py-0.5 text-xs leading-tight">&nbsp;</td>
+                            <td class="border border-black px-0.5 py-0.5 text-xs leading-tight">&nbsp;</td>
+                            <td class="border border-black px-0.5 py-0.5 text-xs leading-tight">&nbsp;</td>
+                            <td class="border border-black px-0.5 py-0.5 text-xs leading-tight">&nbsp;</td>
+                            <td class="border border-black px-0.5 py-0.5 text-xs leading-tight">&nbsp;</td>
+                            <td class="border border-black px-0.5 py-0.5 text-xs leading-tight">&nbsp;</td>
                         </tr>
                         <tr class="font-bold">
                             <td class="border border-black px-0.5 py-0.5 text-center text-xs" colspan="11">TOTAL</td>
@@ -513,49 +531,49 @@
                     </table>
 
                     <!-- Legends -->
-                    <div class="text-xs border border-black p-1 legends-section">
-                    <div class="grid grid-cols-3 gap-2">
+                    <div class="text-xs border border-black p-1 legends-section print:text-xs">
+                    <div class="grid grid-cols-3 gap-1">
                         <div>
-                            <p class="font-bold">LAND CATEGORY/SOIL TYPE:</p>
-                            <p class="mt-0.5"><strong>For Rice Crop (Land Category):</strong></p>
-                            <p class="leading-tight">(1) Irrigated - Irrigated</p>
-                            <p class="leading-tight">(2) Irrigated - Pump Well Pump/Shallow Tube Well (STW)</p>
-                            <p class="leading-tight">(3) Irrigated - Open Source (Swlp, Creek, River)</p>
-                            <p class="leading-tight">(4) Rainfed</p>
+                            <p class="font-bold text-xs">LAND CATEGORY/SOIL TYPE:</p>
+                            <p class="font-bold text-xs">For Rice Crop (Land Category):</p>
+                            <p class="leading-none text-xs">(1) Irrigated - Irrigated</p>
+                            <p class="leading-none text-xs">(2) Irrigated - Pump Well Pump/STW</p>
+                            <p class="leading-none text-xs">(3) Irrigated - Open Source (Creek, River)</p>
+                            <p class="leading-none text-xs">(4) Rainfed</p>
                         </div>
                         <div>
-                            <p class="font-bold">&nbsp;</p>
-                            <p class="mt-0.5"><strong>For Corn Crop (Soil Type/Topography):</strong></p>
-                            <p class="leading-tight">(A) Broad Plain - Clay Loam</p>
-                            <p class="leading-tight">(B) Broad Plain - Silty Clay Loam</p>
-                            <p class="leading-tight">(C) Broad Plain - Silty Loam</p>
-                            <p class="leading-tight">(E) Rolling/Upland</p>
+                            <p class="font-bold text-xs">&nbsp;</p>
+                            <p class="font-bold text-xs">For Corn Crop (Soil Type/Topography):</p>
+                            <p class="leading-none text-xs">(A) Broad Plain - Clay Loam</p>
+                            <p class="leading-none text-xs">(B) Broad Plain - Silty Clay Loam</p>
+                            <p class="leading-none text-xs">(C) Broad Plain - Silty Loam</p>
+                            <p class="leading-none text-xs">(E) Rolling/Upland</p>
                         </div>
                         <div>
-                            <p class="font-bold">TENURAL STATUS:</p>
-                            <p class="mt-0.5 leading-tight">(1) Landowner (2) Lessee (3) Other (please specify)</p>
+                            <p class="font-bold text-xs">TENURAL STATUS:</p>
+                            <p class="leading-none text-xs">(1) Landowner (2) Lessee (3) Other (please specify)</p>
                         </div>
                     </div>
-                </div>
+                    </div>
                 </div>
 
                 <!-- Page break after each chunk except the last one -->
                 <div v-if="chunkIndex < farmerChunks.length - 1" class="page-break"></div>
             </div>
         </div>
-        </div>
+    </div>
     </div>
     </AuthenticatedLayout>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
 import ApplicationFilterModal from '@/components/modals/ApplicationFilterModal.vue'
 import CreateBatchModal from '@/components/modals/CreateBatchModal.vue'
-import { Filter, Edit, Trash2, FileText, Printer, Plus } from 'lucide-vue-next'
+import { Filter, Trash2, FileText, Printer, Plus } from 'lucide-vue-next'
 import {
   HomeIcon,
   ChevronRightIcon
@@ -565,7 +583,7 @@ import {
     MUNICIPAL_AGRICULTURIST_NAVIGATION,
     AGRICULTURAL_EXTENSION_WORKER_NAVIGATION
 } from '@/lib/navigation'
-import { useApplicationBatchStore, useApplicationStore } from '@/stores/applications'
+import { useApplicationBatchStore, useApplicationStore, useApplicationTypeStore } from '@/stores/applications'
 import { useVerificationStore } from '@/stores/verification'
 import { useBatchStore } from '@/stores/insurance'
 
@@ -573,6 +591,7 @@ const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
 const applicationStore = useApplicationStore()
+const applicationTypeStore = useApplicationTypeStore()
 const batchStore = useApplicationBatchStore()
 const verificationStore = useVerificationStore()
 const insuranceBatchStore = useBatchStore()
@@ -591,6 +610,8 @@ const filters = ref({
 })
 
 const batches = ref([])
+const applicationTypeData = ref(null)
+const applications = ref([])
 
 const navigation = computed(() => {
     const role = authStore.userData?.roles?.[0]?.name
@@ -606,7 +627,7 @@ const roleTitle = computed(() => {
 })
 
 const filteredApplications = computed(() => {
-    let apps = verificationStore.applications.value || []
+    let apps = applications.value || []
 
     // Apply batch name filter
     if (filters.value.batchName) {
@@ -616,7 +637,7 @@ const filteredApplications = computed(() => {
     // Apply location filter
     if (filters.value.location) {
         apps = apps.filter(app => {
-            const location = getLocation(app.dynamicFields.lot_1_location).toLowerCase()
+            const location = app.location?.toLowerCase() || ''
             return location.includes(filters.value.location.toLowerCase())
         })
     }
@@ -648,79 +669,120 @@ const isAllSelected = computed(() => {
         selectedApplications.value.length === filteredApplications.value.length
 })
 
-const hasAIProcessingApplications = computed(() => {
-    return filteredApplications.value && filteredApplications.value.some(app => app.requiredAIProcessing === true)
-})
+
+// Helper Functions
+const formatLocation = (dynamicFields) => {
+    if (!dynamicFields) return 'N/A'
+
+    // Check if farm_location exists as string (for claim applications)
+    if (dynamicFields.farm_location && typeof dynamicFields.farm_location === 'string') {
+        return dynamicFields.farm_location
+    }
+
+    // Check if lot_1_location exists as object (for crop insurance applications)
+    if (dynamicFields.lot_1_location && typeof dynamicFields.lot_1_location === 'object') {
+        const locationObject = dynamicFields.lot_1_location
+        const parts = []
+        if (locationObject.barangay) parts.push(locationObject.barangay)
+        if (locationObject.city) parts.push(locationObject.city)
+        if (locationObject.province) parts.push(locationObject.province)
+        if (locationObject.region) parts.push(locationObject.region)
+
+        return parts.length > 0 ? parts.join(', ') : 'N/A'
+    }
+
+    return 'N/A'
+}
+
+const getFormattedFarmerName = (dynamicFields) => {
+    if (!dynamicFields) return 'N/A'
+
+    if (dynamicFields.farmer_name) {
+        return dynamicFields.farmer_name
+    }
+
+    // Otherwise construct from first_name, middle_name, last_name (for crop insurance applications)
+    const firstName = dynamicFields.first_name || ''
+    const middleName = dynamicFields.middle_name || ''
+    const lastName = dynamicFields.last_name || ''
+
+    const fullName = `${firstName} ${middleName} ${lastName}`.trim()
+    return fullName || 'N/A'
+}
+
+const getFormattedAddress = (dynamicFields) => {
+    if (!dynamicFields) return 'N/A'
+    return dynamicFields.address || 'N/A'
+}
 
 // Methods
 const fetchApplicationsList = async () => {
     loading.value = true
     error.value = null
 
-    // Check if we have an application type ID from URL params
     const applicationTypeId = route.params.id
 
     if (applicationTypeId) {
-        // Fetch batches by application type ID using insurance store
-        console.log('Fetching batches for application type ID:', applicationTypeId)
-        const result = await insuranceBatchStore.fetchBatchByApplicationId(applicationTypeId, true)
+        try {
+            // Fetch application type data first
+            console.log('Fetching application type data for ID:', applicationTypeId)
+            const appTypeResult = await applicationTypeStore.fetchApplicationTypesById(applicationTypeId,true)
 
-        if (result.success === "true") {
-            console.log('Batches fetched successfully:', result.data)
-            const transformedApplications = []
+            if (appTypeResult.success) {
+                applicationTypeData.value = appTypeResult.data
+                console.log('Application type data fetched:', appTypeResult.data)
 
-            result.data.forEach(batch => {
-                if (batch.insurances && batch.insurances.length > 0) {
-                    batch.insurances.forEach(insurance => {
-                        if (insurance.application) {
-                            // Extract farmer name from multiple possible sources
-                            let farmerName = insurance.farmerName
-
-                            // Fallback to farmer object if available
-                            if (!farmerName && insurance.application.farmer) {
-                                const farmer = insurance.application.farmer
-                                farmerName = `${farmer.firstName || ''} ${farmer.middleName || ''} ${farmer.lastName || ''}`.trim()
-                            }
-
-                            // Fallback to dynamicFields if available
-                            if (!farmerName && insurance.application.dynamicFields) {
-                                const fields = insurance.application.dynamicFields
-                                farmerName = `${fields.first_name || ''} ${fields.middle_name || ''} ${fields.last_name || ''}`.trim()
-                            }
-
-                            transformedApplications.push({
-                                ...insurance.application,
-                                batchId: batch.id,
-                                batchName: batch.batchName,
-                                insuranceId: insurance.insuranceId,
-                                requiredAIProcessing: insurance.requiredAIProcessing,
-                                farmerName: farmerName || 'N/A'
-                            })
-                        }
-                    })
+                // Use the applications from the application type response
+                if (appTypeResult.data.applications && appTypeResult.data.applications.length > 0) {
+                    applications.value = appTypeResult.data.applications.map(app => ({
+                        ...app,
+                        farmerName: getFormattedFarmerName(app.dynamicFields),
+                        address: getFormattedAddress(app.dynamicFields),
+                        location: formatLocation(app.dynamicFields),
+                        isPrintable: applicationTypeData.value?.printable || false
+                    }))
+                } else {
+                    applications.value = []
                 }
-            })
 
-            // Update the verification store with transformed applications
-            console.log('Transformed applications:', transformedApplications)
-            verificationStore.applications.value = transformedApplications
+                // Fetch batches for this application type
+                console.log('Fetching batches for application type ID:', applicationTypeId)
+                const batchResult = await insuranceBatchStore.fetchBatchByApplicationTypeId(applicationTypeId)
 
-            // Update batches list for dropdown
-            batches.value = result.data.map(batch => ({
-                id: batch.id,
-                name: batch.batchName,
-                totalApplications: batch.totalApplications,
-                maxApplications: batch.maxApplications,
-                available: batch.available
-            }))
-        } else {
-            console.error('Failed to fetch batches:', result.message || result.error)
-            error.value = { message: result.message || 'Failed to load batches' }
+                if (batchResult.success === "true") {
+                    console.log('Batches fetched successfully:', batchResult.data)
+                    batches.value = batchResult.data.map(batch => ({
+                        id: batch.id,
+                        name: batch.batchName,
+                        totalApplications: batch.totalApplications,
+                        maxApplications: batch.maxApplications,
+                        available: batch.available
+                    }))
+                } else {
+                    console.log('No batches found or failed to fetch batches')
+                    batches.value = []
+                }
+            } else {
+                console.error('Failed to fetch application type:', appTypeResult.message || appTypeResult.error)
+                error.value = { message: appTypeResult.message || 'Failed to load application type' }
+                applications.value = []
+                batches.value = []
+            }
+        } catch (err) {
+            console.error('Error in fetchApplicationsList:', err)
+            error.value = { message: err.message || 'An unexpected error occurred' }
+            applications.value = []
+            batches.value = []
         }
     } else {
         // Fallback to existing functionality
         const result = await verificationStore.fetchApplications()
-        if (!result.success) error.value = result.error
+        if (!result.success) {
+            error.value = result.error
+            applications.value = []
+        } else {
+            applications.value = result.data || []
+        }
     }
 
     loading.value = false
@@ -811,11 +873,7 @@ const handleRowClick = (id, event) => {
     router.push({ name: 'agriculturist-submit-crop-data-detail', params: { id } })
 }
 
-const handleUpdate = () => {
-    if (selectedApplications.value.length === 1) {
-        router.push({ name: 'agriculturist-submit-crop-data-detail', params: { id: selectedApplications.value[0] } })
-    }
-}
+
 
 const handleDelete = async () => {
     if (!confirm(`Are you sure you want to delete ${selectedApplications.value.length} application(s)?`)) {
@@ -846,6 +904,7 @@ const resetFilters = () => {
     }
     showFilterModal.value = false
 }
+
 
 const handlePrint = () => {
     window.print()
@@ -878,7 +937,7 @@ onMounted(() => {
 </script>
 <style>
 /* Ensure proper layout within AuthenticatedLayout */
-.print\\:hidden {
+.application-list-container {
   height: 100%;
 }
 
@@ -886,6 +945,27 @@ onMounted(() => {
 .min-w-full th,
 .min-w-full td {
   padding: 0.5rem 1rem;
+}
+
+/* Print table specific styles */
+.pcic-table {
+  table-layout: fixed;
+  width: 100% !important;
+  font-size: 10px !important;
+}
+
+.pcic-table th,
+.pcic-table td {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
+  padding: 2px !important;
+  line-height: 1.2 !important;
+}
+
+.pcic-table .text-xs {
+  font-size: 9px !important;
 }
 
 /* Ensure modals and print layouts don't interfere */
@@ -896,7 +976,7 @@ onMounted(() => {
 }
 
 @media print {
-  .print\\:hidden {
+  .print\:hidden {
     display: none !important;
   }
 
@@ -906,11 +986,95 @@ onMounted(() => {
 
   .pcic-page {
     page-break-after: always;
+    margin: 0;
+    padding: 8px;
+    width: 100%;
+    max-width: 100%;
+    min-height: 95vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .pcic-table {
+    width: 100% !important;
+    table-layout: fixed !important;
+    font-size: 9px !important;
+    margin-bottom: 3px !important;
+  }
+
+  .pcic-table th,
+  .pcic-table td {
+    padding: 2px 3px !important;
+    font-size: 9px !important;
+    line-height: 1.1 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .pcic-table .text-xs {
+    font-size: 9px !important;
+  }
+
+  .pcic-table .leading-tight {
+    line-height: 1.1 !important;
+  }
+
+  .table-legend-container {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    display: block !important;
+    flex: 1 !important;
+  }
+
+  .legends-section {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    margin-top: 3px !important;
+    padding: 3px !important;
+    font-size: 9px !important;
+    border: 1px solid black !important;
+    background-color: white !important;
+  }
+
+  .legends-section p {
+    margin: 0 0 2px 0 !important;
+    line-height: 1.2 !important;
+    font-size: 9px !important;
+    color: black !important;
+  }
+
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Ensure Page 2 content appears properly */
+  .pcic-page.page-break {
+    display: block !important;
+    page-break-before: always !important;
+    padding: 8px !important;
+  }
+
+  /* Ensure legend is visible */
+  .legends-section {
+    display: block !important;
+    visibility: visible !important;
+    margin-top: 4px !important;
+  }
+
+  /* Ensure print layout is visible */
+  #print-layout {
+    display: block !important;
   }
 
   @page {
     size: letter landscape;
-    margin: 0.4in;
+    margin: 0.4in 0.2in;
   }
 }
 </style>

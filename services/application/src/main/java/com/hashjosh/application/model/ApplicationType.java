@@ -37,6 +37,10 @@ public class ApplicationType {
     @Column(name = "name", length = 255)
     private String name;
 
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "workflow_id", referencedColumnName = "id")
+    private ApplicationWorkflow applicationWorkflow;
+
     @Column(name = "created_at")
     @CreationTimestamp
     private LocalDateTime createdAt = LocalDateTime.now();

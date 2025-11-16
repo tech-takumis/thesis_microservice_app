@@ -22,21 +22,23 @@ public class InsuranceController {
 
     @GetMapping
     public ResponseEntity<List<InsuranceResponse>> getAllInsurance(
-            InsuranceFilterRequest filterRequest
     ){
-        InsuranceFilter filter = filterRequest.toInsuranceFilter();
-        return ResponseEntity.ok(insuranceService.findAll(filter));
+        return ResponseEntity.ok(insuranceService.findAll());
     }
 
     @GetMapping("/{insurance-Id}")
     public ResponseEntity<InsuranceResponse> getInsuranceById(
-                @PathVariable("insurance-Id") UUID insuranceId,
-                InsuranceFilterRequest filterRequest
+                @PathVariable("insurance-Id") UUID insuranceId
     ){
-        InsuranceFilter filter = filterRequest.toInsuranceFilter();
-        return ResponseEntity.ok(insuranceService.findById(insuranceId, filter));
+        return ResponseEntity.ok(insuranceService.findById(insuranceId));
     }
 
+    @GetMapping("/application-type/{application-type}")
+    public ResponseEntity<List<InsuranceResponse>> getInsuranceByApplicationTypeId(
+            @PathVariable("application-type") UUID applicationTypeId
+    ){
+        return ResponseEntity.ok(insuranceService.findByApplicationTypeId(applicationTypeId));
+    }
 
     @PutMapping("/{insurance-Id}")
     public ResponseEntity<InsuranceResponse> updateInsurance(

@@ -32,8 +32,8 @@
         <div
           v-for="applicationType in applicationTypes"
           :key="applicationType.id"
-          @click="navigateToApplicationType(applicationType.id)"
           class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md hover:border-indigo-300 transition-all duration-200 cursor-pointer group"
+          @click="navigateToApplicationType(applicationType.id)"
         >
           <div class="flex items-center justify-between">
             <div class="flex items-center min-w-0">
@@ -107,7 +107,7 @@ const error = computed(() => applicationTypeStore.error)
 const applicationTypes = computed(() => applicationTypeStore.allApplicationTypes)
 
 const fetchApplicationTypes = async () => {
-  const result = await applicationTypeStore.fetchAllApplicationTypes(null, null, null)
+  const result = await applicationTypeStore.fetchAllApplicationTypes(null, true)
   if (!result.success) {
     console.error('Failed to fetch application types:', result.error)
   }

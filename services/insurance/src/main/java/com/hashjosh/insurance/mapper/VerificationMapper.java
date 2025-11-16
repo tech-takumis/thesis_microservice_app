@@ -42,4 +42,5 @@ public class VerificationMapper {
         verification.setFieldValues(request.getFieldValues());
         verification.setVerifiedAt(LocalDateTime.now());
     }
+
 }

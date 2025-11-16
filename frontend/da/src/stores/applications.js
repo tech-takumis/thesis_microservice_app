@@ -150,15 +150,15 @@ export const useApplicationTypeStore = defineStore('applicationType', () => {
         }
     }
 
-    const fetchAllApplicationTypes = async (provider,section,field) => {
+    const fetchAllApplicationTypes = async (provider,includeApplicationResponse) => {
         try{
             loading.value = true
             error.value = null
             let response;
             if(provider != null){
-                response = await axios.get(`${basePath.value}?provider=${provider}&section?${section}&field?${field}`)
+                response = await axios.get(`${basePath.value}?provider=${provider}&application=${includeApplicationResponse}`)
             }else{
-                response = await axios.get(`${basePath.value}?section?${section}&field?${field}`)
+                response = await axios.get(`${basePath.value}?application=${includeApplicationResponse}`)
             }
             if(response.status === 200){
                 applicationTypes.value = response.data
@@ -175,11 +175,11 @@ export const useApplicationTypeStore = defineStore('applicationType', () => {
         }
     }
 
-    const fetchApplicationTypesById = async (applicationTypeId,section,field) => {
+    const fetchApplicationTypesById = async (applicationTypeId,includeApplicationResponse) => {
         try{
             loading.value = true
             error.value = null
-            const response = await axios.get(`${basePath.value}/${applicationTypeId}?section?${section}&field?${field}`)
+            const response = await axios.get(`${basePath.value}/${applicationTypeId}?application=${includeApplicationResponse}`)
             if(response.status === 200){
                 applicationTypes.value = response.data
                 loading.value = false
@@ -194,16 +194,6 @@ export const useApplicationTypeStore = defineStore('applicationType', () => {
         }
     }
 
-    const fetchApplicationTypeByName = async (name) => {
-        try {
-            const response = await axios.get(`${basePath.value}/name/${name}`)
-            applicationTypes.value = response.data
-            return { success: true, data: response.data }
-        } catch (error) {
-            console.error("Error fetching application types:", error.response?.data || error.message)
-            return { success: false, error: error.response?.data || error.message }
-        }
-    }
 
     const updateApplicationType = async (id, applicationType) => {
         try {
@@ -237,7 +227,6 @@ export const useApplicationTypeStore = defineStore('applicationType', () => {
         isLoading,
         errors,
         createApplicationType,
-        fetchApplicationTypeByName,
         fetchAllApplicationTypes,
         fetchApplicationTypesById,
         updateApplicationType,

@@ -3,6 +3,7 @@ package com.hashjosh.constant.application;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.hashjosh.constant.ai.AIResultDTO;
 import com.hashjosh.constant.farmer.FarmerReponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,8 +21,7 @@ import java.util.UUID;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApplicationResponseDto{
     UUID id;
-    ApplicationTypeResponseDto applicationType;
-    FarmerReponse farmer;
+    UUID applicationTypeId;
     List<String> fileUploads;
     @JsonProperty("dynamicFields")
     JsonNode jsonDynamicFields;

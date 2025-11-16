@@ -1,20 +1,23 @@
 package com.hashjosh.application.mapper;
 
 import com.hashjosh.application.dto.type.ApplicationTypeRequestDto;
-import com.hashjosh.constant.application.ApplicationSectionResponseDto;
-import com.hashjosh.constant.application.ApplicationFieldsResponseDto;
-import com.hashjosh.constant.application.ApplicationTypeResponseDto;
+import com.hashjosh.application.model.Application;
 import com.hashjosh.application.model.ApplicationType;
-import com.hashjosh.application.model.ApplicationSection;
-import com.hashjosh.application.model.ApplicationField;
+import com.hashjosh.application.model.ApplicationWorkflow;
+import com.hashjosh.constant.application.ApplicationResponseDto;
+import com.hashjosh.constant.application.ApplicationTypeResponseDto;
+import com.hashjosh.constant.workflow.ApplicationWorkflowResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
 @RequiredArgsConstructor
 public class ApplicationTypeMapper {
+
+    private final ApplicationMapper applicationMapper;
 
     public ApplicationType toApplicationType(ApplicationTypeRequestDto dto) {
         return ApplicationType.builder()
@@ -24,53 +27,47 @@ public class ApplicationTypeMapper {
                 .build();
     }
 
-    public ApplicationTypeResponseDto toApplicationResponse(ApplicationType applicationType, Boolean includeSections, Boolean includeFields) {
-        List<ApplicationSectionResponseDto> sections = null;
+    public ApplicationTypeResponseDto toApplicationResponse(
+            ApplicationType applicationType,
+            Boolean includeApplicationResponse
+    ) {
 
-        if (Boolean.TRUE.equals(includeSections) && applicationType.getSections() != null) {
-            sections = applicationType.getSections().stream()
-                    .map(section -> mapSection(section, includeFields))
-                    .toList();
+        List<ApplicationResponseDto> applications = new ArrayList<>();
+
+        if(applicationType.getApplications() != null) {
+            for (Application app : applicationType.getApplications()) {
+                applications.add(applicationMapper.toApplicationResponseDto(app));
+            }
         }
 
-        return new ApplicationTypeResponseDto(
-                applicationType.getId(),
-                applicationType.getName(),
-                applicationType.getDescription(),
-                applicationType.getProvider().getName(),
-                applicationType.getLayout(),
-                applicationType.getPrintable(),
-                sections
-        );
-    }
+        ApplicationTypeResponseDto responseDto = ApplicationTypeResponseDto.builder()
+                .id(applicationType.getId())
+                .name(applicationType.getName())
+                .description(applicationType.getDescription())
+                .provider(applicationType.getProvider().getName())
+                .layout(applicationType.getLayout())
+                .printable(applicationType.getPrintable())
+                .workflow(mapToApplicationWorkflowResponse(applicationType.getApplicationWorkflow()))
+                .build();
 
-    private ApplicationSectionResponseDto mapSection(ApplicationSection section, Boolean includeFields) {
-        List<ApplicationFieldsResponseDto> fields = null;
-
-        if (Boolean.TRUE.equals(includeFields) && section.getFields() != null) {
-            fields = section.getFields().stream()
-                    .map(this::mapField)
-                    .toList();
+        if(includeApplicationResponse != null && includeApplicationResponse) {
+            responseDto.setApplications(applications);
         }
 
-        return new ApplicationSectionResponseDto(
-                section.getId(),
-                section.getTitle(),
-                fields
-        );
+        return responseDto;
     }
 
-    private ApplicationFieldsResponseDto mapField(ApplicationField field) {
-        return new ApplicationFieldsResponseDto(
-                field.getId(),
-                field.getKey(),
-                field.getFieldName(),
-                com.hashjosh.constant.application.FieldType.valueOf(field.getFieldType().name()),
-                field.getRequired(),
-                field.getDefaultValue(),
-                field.getChoices(),
-                field.getValidationRegex(),
-                field.getRequiredAIAnalysis()
-        );
+    private ApplicationWorkflowResponse mapToApplicationWorkflowResponse(ApplicationWorkflow applicationWorkflow) {
+        return ApplicationWorkflowResponse.builder()
+                .id(applicationWorkflow.getId())
+                .claim_enabled(applicationWorkflow.isClaimEnabled())
+                .verification_enabled(applicationWorkflow.isVerificationEnabled())
+                .inspection_enabled(applicationWorkflow.isInspectionEnabled())
+                .policy_enabled(applicationWorkflow.isPolicyEnabled())
+                .createdAt(applicationWorkflow.getCreatedAt())
+                .updatedAt(applicationWorkflow.getUpdatedAt())
+                .build();
     }
+
+
 }

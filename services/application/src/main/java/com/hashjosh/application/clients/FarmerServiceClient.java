@@ -27,12 +27,12 @@ public class FarmerServiceClient {
                 .build();
     }
 
-    public FarmerReponse getFarmerById(UUID farmerId, String userId) {
+    public FarmerReponse getFarmerById(UUID farmerId, UUID userId) {
         try {
             FarmerReponse response = restClient.get()
                     .uri("/{farmer-id}", farmerId)
                     .header(INTERNAL_SERVICE_HEADER, applicationName)
-                    .header(USERID_HEADER, userId)
+                    .header(USERID_HEADER, String.valueOf(userId))
                     .retrieve()
                     .onStatus(
                             status -> status.is4xxClientError() || status.is5xxServerError(),

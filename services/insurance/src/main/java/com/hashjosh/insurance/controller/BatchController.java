@@ -31,29 +31,27 @@ public class BatchController {
 
     @GetMapping
     public ResponseEntity<List<BatchResponseDTO>> getAllBatches(
-            @RequestParam(name = "insurance", required = false) Boolean insurance
     ) {
         log.info("Fetching all batches");
-        List<BatchResponseDTO> batches = batchService.getAllBatches(insurance);
+        List<BatchResponseDTO> batches = batchService.getAllBatches();
         return ResponseEntity.ok(batches);
     }
 
+
     @GetMapping("/{batch_id}")
     public ResponseEntity<BatchResponseDTO> getBatchById(
-            @PathVariable("batch_id") UUID batchId,
-            @RequestParam(name = "insurance", required = false) Boolean insurance
+            @PathVariable("batch_id") UUID batchId
     ) {
         log.info("Fetching batch with ID: {}", batchId);
-        BatchResponseDTO batch = batchService.getBatchById(batchId,insurance);
+        BatchResponseDTO batch = batchService.getBatchById(batchId);
         return ResponseEntity.ok(batch);
     }
 
     @GetMapping("/application-type/{applicationTypeId}")
     public ResponseEntity<List<BatchResponseDTO>> getBatchByApplicationTypeId(
-            @PathVariable("applicationTypeId") UUID applicationTypeId,
-            @RequestParam(name = "insurance", required = false) Boolean insurance
+            @PathVariable("applicationTypeId") UUID applicationTypeId
     ){
-        return ResponseEntity.ok(batchService.findBacthesByApplicationTypeId(applicationTypeId,insurance));
+        return ResponseEntity.ok(batchService.findBacthesByApplicationTypeId(applicationTypeId));
     }
 
 }

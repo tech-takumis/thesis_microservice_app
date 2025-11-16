@@ -4,6 +4,7 @@ package com.hashjosh.application.runner;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.hashjosh.application.repository.ApplicationWorkflowRepository;
 import com.hashjosh.constant.application.FieldType;
 import com.hashjosh.application.model.*;
 import com.hashjosh.application.repository.ApplicationProviderRepository;
@@ -28,6 +29,8 @@ public class ApplicationTypeInitializer implements CommandLineRunner {
     private final ApplicationTypeRepository applicationTypeRepository;
     private final ObjectMapper objectMapper;
     private final ApplicationProviderRepository applicationProviderRepository;
+    private final ApplicationWorkflowRepository workflowRepository;
+
     public boolean isApplicationNotNull(){
         return applicationTypeRepository.count() > 0;
     }
@@ -54,6 +57,16 @@ public class ApplicationTypeInitializer implements CommandLineRunner {
 
         applicationProviderRepository.save(provider2);
 
+        ApplicationWorkflow cropInsuranceWorkflow = ApplicationWorkflow.builder()
+                .verificationEnabled(true)
+                .inspectionEnabled(false)
+                .policyEnabled(true)
+                .claimEnabled(false)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+
+        ApplicationWorkflow savedCropWorkflow = workflowRepository.save(cropInsuranceWorkflow);
 
         // Application Type 1: Crop Insurance Application
         ApplicationType cropInsurance = ApplicationType.builder()
@@ -64,6 +77,7 @@ public class ApplicationTypeInitializer implements CommandLineRunner {
                 .provider(provider1)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
+                .applicationWorkflow(savedCropWorkflow)
                 .sections(new ArrayList<>())
                 .build();
 
@@ -144,6 +158,16 @@ public class ApplicationTypeInitializer implements CommandLineRunner {
 
         entityManager.persist(cropInsurance);
 
+        ApplicationWorkflow claimInsuranceWorkflow = ApplicationWorkflow.builder()
+                .verificationEnabled(true)
+                .inspectionEnabled(true)
+                .policyEnabled(false)
+                .claimEnabled(true)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+        ApplicationWorkflow savedClaimWorkflow = workflowRepository.save(claimInsuranceWorkflow);
+
         // Application Type 2: Claim for Indemnity
         ApplicationType claimIndemnity = ApplicationType.builder()
                 .name("Claim for Indemnity")
@@ -153,6 +177,7 @@ public class ApplicationTypeInitializer implements CommandLineRunner {
                 .provider(provider2)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
+                .applicationWorkflow(savedClaimWorkflow)
                 .sections(new ArrayList<>())
                 .build();
 

@@ -1,10 +1,9 @@
 package com.hashjosh.insurance.dto.verification;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import jakarta.validation.constraints.*;
 import lombok.*;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 
 @Getter
 @Setter

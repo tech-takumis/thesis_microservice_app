@@ -12,4 +12,5 @@ import java.util.UUID;
 public interface InsuranceRepository extends JpaRepository<Insurance, UUID> {
 
     List<Insurance> findByBatch_ApplicationTypeId(UUID batchApplicationTypeId);
+
 }

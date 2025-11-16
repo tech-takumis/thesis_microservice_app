@@ -40,14 +40,6 @@ public class AIClient {
 
     @Setter
     @Getter
-    public static class DataWrapper {
-        private int total_results;
-        private int application_id;
-        private List<AIResultDTO> results;
-
-    }
-    @Setter
-    @Getter
     public static class SingleResultWrapper {
         private boolean success;
         private AIResultDTO data;

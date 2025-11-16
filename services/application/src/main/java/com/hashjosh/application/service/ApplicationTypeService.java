@@ -31,7 +31,7 @@ public class ApplicationTypeService {
 
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = RuntimeException.class)
-    public ApplicationTypeResponseDto create(ApplicationTypeRequestDto dto, Boolean sections, Boolean fields) {
+    public ApplicationTypeResponseDto create(ApplicationTypeRequestDto dto) {
         ApplicationProvider provider = applicationProviderRepository
                 .findByName(dto.providerName())
                 .orElseThrow(() -> ApiException.badRequest("Application provider not found"));
@@ -55,36 +55,33 @@ public class ApplicationTypeService {
         }
 
         applicationType.setSections(applicationSections);
-        return applicationTypeMapper.toApplicationResponse(applicationType, sections, fields);
+        return applicationTypeMapper.toApplicationResponse(applicationType,false);
     }
 
-    public List<ApplicationTypeResponseDto> findAll(Boolean sections, Boolean fields) {
+    public List<ApplicationTypeResponseDto> findAll(Boolean includeApplicationResponse) {
         return applicationTypeRepository.findAll().stream()
-                .map(applicationType -> applicationTypeMapper
-                        .toApplicationResponse(applicationType, sections, fields))
+                .map(application -> applicationTypeMapper.toApplicationResponse(application,includeApplicationResponse))
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public List<ApplicationTypeResponseDto> findAllWithFilter(
+    public List<ApplicationTypeResponseDto> findByProvider(
             String provider,
-            Boolean sections,
-            Boolean fields
+            Boolean includeApplicationResponse
     ) {
         return applicationTypeRepository.findAllByProvider_Name(provider)
-                .stream().map(appType -> applicationTypeMapper.toApplicationResponse(appType, sections, fields))
+                .stream().map(application -> applicationTypeMapper.toApplicationResponse(application,includeApplicationResponse))
                 .toList();
     }
 
     @Transactional(readOnly = true)
     public ApplicationTypeResponseDto findById(
             UUID id,
-            Boolean sections,
-            Boolean fields
+            Boolean includeApplicationResponse
     ) {
         ApplicationType applicationType = applicationTypeRepository.findById(id)
                 .orElseThrow(() -> ApiException.notFound("Application type not found"));
-        return applicationTypeMapper.toApplicationResponse(applicationType, sections, fields);
+        return applicationTypeMapper.toApplicationResponse(applicationType,includeApplicationResponse);
     }
 
     @Transactional(readOnly = true)

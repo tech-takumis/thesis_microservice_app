@@ -116,7 +116,7 @@ public class ApplicationService {
                 throw ApiException.badRequest("Validation failed: " + validationErrors);
             }
 
-            FarmerReponse farmer = getFarmerInfo(submission.getUseId(), submission.getUseId().toString());
+            FarmerReponse farmer = getFarmerInfo(submission.getUseId(), submission.getUseId());
             submission.setFullName(farmer.getFirstName() + " " + farmer.getLastName());
             Application application = applicationMapper.toEntity(submission, applicationType);
             Application savedApplication = applicationRepository.save(application);
@@ -144,40 +144,29 @@ public class ApplicationService {
 
     @Transactional(readOnly = true)
     public ApplicationResponseDto getApplicationById(
-            UUID applicationId,
-            Boolean applicationType,
-            Boolean farmer,
-            Boolean fieldValues,
-            Boolean includeFiles
+            UUID applicationId
     ) {
         Application application = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> ApiException.notFound("Application not found with id "+ applicationId));
 
-        return applicationMapper.toApplicationResponseDto(application, applicationType, farmer, fieldValues,includeFiles);
+        return applicationMapper.toApplicationResponseDto(application);
     }
 
 
     @Transactional(readOnly = true)
     public List<ApplicationResponseDto> findAll(
-            Boolean fieldValues,
-            Boolean applicationType,
-            Boolean farmer,
-            Boolean includeFiles
     ) {
+
         return applicationRepository.findAll()
                 .stream()
-                .map(application -> applicationMapper.toApplicationResponseDto(application, applicationType, farmer, fieldValues,includeFiles))
+                .map(applicationMapper::toApplicationResponseDto)
                 .collect(Collectors.toList());
     }
 
 
     @Transactional(readOnly = true)
     public List<ApplicationResponseDto> findAllApplication(
-            String provider,
-            Boolean applicationType,
-            Boolean farmer,
-            Boolean fieldValues,
-            Boolean includeFiles
+            String provider
     ) {
 
         ApplicationType type = applicationTypeRepository.findByProvider_Name(provider)
@@ -186,7 +175,7 @@ public class ApplicationService {
         List<Application> applications = applicationRepository.findAllByApplicationTypeId(type.getId());
 
         return applications.stream()
-                .map(application -> applicationMapper.toApplicationResponseDto(application, applicationType, farmer, fieldValues,includeFiles))
+                .map(applicationMapper::toApplicationResponseDto)
                 .collect(Collectors.toList());
     }
 
@@ -318,7 +307,11 @@ public class ApplicationService {
         return  aiClient.getAIResultByApplicationId(String.valueOf(applicationId));
     }
 
-    private FarmerReponse getFarmerInfo(UUID farmerId, String userId) {
+    private FarmerReponse getFarmerInfo(UUID farmerId, UUID userId) {
         return farmerClient.getFarmerById(farmerId, userId);
+    }
+
+    private String getPresignedUrl(UUID documentId, UUID userId) {
+        return documentServiceClient.generatePresignedUrl(userId,documentId,60);
     }
 }

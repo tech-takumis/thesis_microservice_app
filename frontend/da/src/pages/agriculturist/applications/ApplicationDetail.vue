@@ -24,7 +24,7 @@
                   to="/agriculturist/submit-crop-data"
                   class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700"
                 >
-                  Application Types
+                  Application
                 </router-link>
               </div>
             </li>
@@ -32,10 +32,10 @@
               <div class="flex items-center">
                 <ChevronRightIcon class="flex-shrink-0 h-5 w-5 text-gray-400" />
                 <button
-                  @click="goBack"
                   class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700"
+                  @click="goBack"
                 >
-                  Applications
+                  Application submission
                 </button>
               </div>
             </li>
@@ -59,8 +59,8 @@
           </div>
           <div class="flex space-x-3">
             <button
-              @click="goBack"
               class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+              @click="goBack"
             >
               <ArrowLeftIcon class="h-4 w-4 mr-2" />
               Back
@@ -322,8 +322,8 @@
                       <span class="text-sm font-medium text-gray-900">Supporting File {{ index + 1 }}</span>
                     </div>
                     <button
-                      @click="downloadFile(file)"
                       class="text-indigo-600 hover:text-indigo-800 text-sm font-medium"
+                      @click="downloadFile(file)"
                     >
                       Download
                     </button>
@@ -392,8 +392,8 @@
     >
       <div class="relative max-w-4xl max-h-4xl p-4">
         <button
-          @click="closeImageModal"
           class="absolute top-2 right-2 z-10 p-2 rounded-full bg-black bg-opacity-50 text-white hover:bg-opacity-75 transition-all"
+          @click="closeImageModal"
         >
           <XMarkIcon class="h-6 w-6" />
         </button>

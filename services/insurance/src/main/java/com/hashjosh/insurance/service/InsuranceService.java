@@ -24,22 +24,29 @@ public class InsuranceService {
 
     @Transactional(readOnly = true)
     public List<InsuranceResponse> findAll(
-         InsuranceFilter filter
     ) {
         return insuranceRepository.findAll().stream()
-                .map(insurance -> insuranceMapper.toInsuranceResponse(insurance,filter))
+                .map(insuranceMapper::toInsuranceResponse)
                 .toList();
     }
 
     @Transactional(readOnly = true)
     public InsuranceResponse findById(
-            UUID insuranceId,
-           InsuranceFilter filter
+            UUID insuranceId
     ) {
         Insurance insurance = insuranceRepository.findById(insuranceId)
                 .orElseThrow(() -> ApiException.notFound("Insurance not found"));
 
-        return insuranceMapper.toInsuranceResponse(insurance, filter);
+        return insuranceMapper.toInsuranceResponse(insurance);
+    }
+
+    public List<InsuranceResponse> findByApplicationTypeId(UUID applicationTypeId) {
+
+        List<Insurance> insurances = insuranceRepository.findByBatch_ApplicationTypeId(applicationTypeId);
+
+        return insurances.stream()
+                .map(insuranceMapper::toInsuranceResponse)
+                .toList();
     }
 
     public InsuranceResponse update(UUID insuranceId, @Valid InsuranceRequestDTO request) {
@@ -52,6 +59,5 @@ public class InsuranceService {
 
         insuranceRepository.delete(insurance);
     }
-
 
 }

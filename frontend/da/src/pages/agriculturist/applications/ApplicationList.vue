@@ -135,7 +135,7 @@
             <div v-else class="bg-white shadow-sm rounded-lg overflow-hidden mb-4 print:hidden flex-1 min-h-0" :key="route.params.id">
                 <div class="overflow-x-auto overflow-y-auto max-h-full">
                     <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-100">
+                    <thead class="bg-gray-50">
                     <tr>
                         <th scope="col" class="w-12 px-6 py-3">
                             <input

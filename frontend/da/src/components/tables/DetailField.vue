@@ -1,6 +1,6 @@
 <template>
     <div :class="className">
-        <dt class="text-sm font-medium text-gray-500">{{ label }}</dt>
+        <dt class="text-sm font-medium text-green-600">{{ label }}</dt>
         <dd class="mt-1 text-sm text-gray-900">{{ displayValue }}</dd>
     </div>
 </template>

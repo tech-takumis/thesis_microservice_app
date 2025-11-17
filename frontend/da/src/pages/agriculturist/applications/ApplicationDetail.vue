@@ -41,7 +41,7 @@
 
         <div class="flex items-center justify-between">
           <div>
-            <h1 class="text-3xl font-bold text-gray-900">Application Submission Details</h1>
+            <h1 class="text-3xl font-bold text-gray-700">Application Submission Details</h1>
             <p class="mt-1 text-sm text-gray-600">
               {{ getApplicationTitle() }}
             </p>
@@ -69,90 +69,182 @@
           </div>
         </div>
 
-        <!-- Application Details -->
-        <div v-else-if="applicationData" :key="route.params.id" class="space-y-4">
-          <!-- Application Type Information -->
-          <div v-if="applicationTypeData" class="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
-            <div class="px-4 py-3 border-b border-gray-200">
-              <h3 class="text-base font-medium text-gray-900">Application Type</h3>
-            </div>
-            <div class="px-4 py-3">
-              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <DetailField label="Name" :value="applicationTypeData.name" />
-                <DetailField label="Description" :value="applicationTypeData.description" />
-              </div>
-            </div>
-          </div>
+<!-- Application Details -->
+<div v-else-if="applicationData" :key="route.params.id" class="space-y-4">
 
-          <!-- Batch Information -->
-          <div v-if="insuranceData?.batch" class="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200">
-              <h3 class="text-lg font-medium text-gray-900">Batch Information</h3>
-            </div>
-            <div class="px-6 py-4">
-              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <DetailField label="Batch Name" :value="insuranceData.batch.batchName" />
-                <DetailField label="Description" :value="insuranceData.batch.description" />
-                <DetailField label="Start Date" :value="formatDate(insuranceData.batch.startDate)" />
-                <DetailField label="End Date" :value="formatDate(insuranceData.batch.endDate)" />
-              </div>
-            </div>
-          </div>
+  <!-- Application Type Information -->
+  <div
+    v-if="applicationTypeData"
+    class="bg-white border border-gray-200 rounded-xl overflow-hidden"
+  >
 
-          <!-- Application Information -->
-          <div class="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200">
-              <h3 class="text-lg font-medium text-gray-900">Application Information</h3>
-            </div>
-            <div class="px-6 py-4">
-              <div v-if="filteredDynamicFields.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <DetailField
-                  v-for="field in filteredDynamicFields"
-                  :key="field.key"
-                  :label="field.label"
-                  :value="field.value"
-                />
-              </div>
-              <div v-else class="flex items-center justify-center py-8">
-                <div class="text-center">
-                  <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-gray-100">
-                    <DocumentIcon class="h-6 w-6 text-gray-400" />
-                  </div>
-                  <h3 class="mt-2 text-sm font-medium text-gray-900">No Information Available</h3>
-                  <p class="mt-1 text-sm text-gray-500">No application information has been provided for this submission.</p>
-                </div>
-              </div>
-            </div>
-          </div>
+    <!-- Header -->
+    <div class="px-5 py-4 border-b border-gray-200 flex items-center gap-3 bg-gray-50">
+      <DocumentIcon class="w-5 h-5 text-gray-700" />
 
-          <!-- File Uploads -->
-          <div v-if="applicationData.fileUploads?.length > 0" class="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200">
-              <h3 class="text-lg font-medium text-gray-900">Uploaded Files</h3>
-            </div>
-            <div class="px-6 py-4">
-              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div
-                  v-for="(file, index) in applicationData.fileUploads"
-                  :key="index"
-                  class="aspect-square bg-gray-100 rounded-lg overflow-hidden"
-                >
-                  <img
-                    :src="file"
-                    :alt="`Uploaded file ${index + 1}`"
-                    class="w-full h-full object-cover hover:scale-105 transition-transform cursor-pointer"
-                    @click="openImageModal(file)"
-                    @error="handleImageError"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
+      <h3 class="text-lg font-semibold text-gray-700">
+        Application Type
+      </h3>
+    </div>
+
+    <!-- Content -->
+    <div class="px-5 py-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+        <!-- DetailField Box -->
+        <div class="p-4 border rounded-lg bg-gray-50 shadow-sm">
+          <DetailField label="Name" :value="applicationTypeData.name" />
+        </div>
+
+        <div class="p-4 border rounded-lg bg-gray-50 shadow-sm">
+          <DetailField label="Description" :value="applicationTypeData.description" />
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+<!-- Batch Information -->
+<div
+  v-if="insuranceData?.batch"
+  class="bg-white shadow-md border border-gray-200 rounded-xl overflow-hidden"
+>
+  <!-- Header -->
+  <div class="px-5 py-4 border-b border-gray-200 flex items-center gap-3 bg-gray-50">
+    <!-- Choose any icon -->
+    <FolderIcon class="w-5 h-5 text-gray-700" />
+
+    <h3 class="text-lg font-semibold text-gray-700">
+      Batch Information
+    </h3>
+  </div>
+
+  <!-- Content -->
+  <div class="px-5 py-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+      <!-- Boxed DetailField items -->
+      <div class="p-4 border rounded-lg bg-gray-50 shadow-sm">
+        <DetailField label="Batch Name" :value="insuranceData.batch.batchName" />
+      </div>
+
+      <div class="p-4 border rounded-lg bg-gray-50 shadow-sm">
+        <DetailField label="Description" :value="insuranceData.batch.description" />
+      </div>
+
+      <div class="p-4 border rounded-lg bg-gray-50 shadow-sm">
+        <DetailField label="Start Date" :value="formatDate(insuranceData.batch.startDate)" />
+      </div>
+
+      <div class="p-4 border rounded-lg bg-gray-50 shadow-sm">
+        <DetailField label="End Date" :value="formatDate(insuranceData.batch.endDate)" />
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Application Information -->
+<div class="bg-white shadow-md border border-gray-200 rounded-xl overflow-hidden">
+
+  <!-- Header -->
+  <div class="px-5 py-4 border-b border-gray-200 flex items-center gap-3 bg-gray-50">
+    <DocumentIcon class="w-5 h-5 text-gray-700" />
+
+    <h3 class="text-lg font-semibold text-gray-700">
+      Application Information
+    </h3>
+  </div>
+
+  <!-- Content -->
+  <div class="px-5 py-4">
+
+    <!-- Dynamic Fields -->
+    <div v-if="filteredDynamicFields.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+      <div
+        v-for="field in filteredDynamicFields"
+        :key="field.key"
+        class="p-4 border rounded-lg bg-gray-50 shadow-sm"
+      >
+        <DetailField :label="field.label" :value="field.value" />
+      </div>
+
+    </div>
+
+    <!-- Empty State -->
+    <div v-else class="flex items-center justify-center py-10">
+      <div class="text-center space-y-2">
+
+        <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-gray-100">
+          <DocumentIcon class="h-6 w-6 text-gray-400" />
+        </div>
+
+        <h3 class="text-sm font-medium text-gray-900">
+          No Information Available
+        </h3>
+
+        <p class="text-sm text-gray-500">
+          No application information has been provided for this submission.
+        </p>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- File Uploads -->
+<div
+  v-if="applicationData.fileUploads?.length > 0"
+  class="bg-white shadow-md border border-gray-200 rounded-xl overflow-hidden"
+>
+
+  <!-- Header -->
+  <div class="px-5 py-4 border-b border-gray-200 flex items-center gap-3 bg-gray-50">
+    <DocumentIcon class="w-5 h-5 text-gray-700" />
+
+    <h3 class="text-lg font-semibold text-gray-700">
+      Uploaded Files
+    </h3>
+  </div>
+
+  <!-- Content -->
+  <div class="px-5 py-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+
+      <!-- File Item -->
+      <div
+        v-for="(file, index) in applicationData.fileUploads"
+        :key="index"
+        class="border rounded-lg bg-gray-50 shadow-sm p-2 hover:shadow-md transition-all"
+      >
+        <div class="aspect-square rounded-md overflow-hidden bg-gray-100">
+          <img
+            :src="file"
+            :alt="`Uploaded file ${index + 1}`"
+            class="w-full h-full object-cover transition-transform duration-300 hover:scale-105 cursor-pointer"
+            @click="openImageModal(file)"
+            @error="handleImageError"
+          />
+        </div>
+
+        <div class="mt-2 text-sm text-gray-600 truncate text-center">
+          File {{ index + 1 }}
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
 
           <!-- Verification Information -->
           <div v-if="shouldShowVerification" class="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-200">
-              <h3 class="text-lg font-medium text-gray-900">Verification Information</h3>
+              <h3 class="text-lg font-medium text-gray-700">Verification Information</h3>
             </div>
             <div class="px-6 py-4">
               <div v-if="insuranceData?.verification && insuranceData.verification.verifiedBy" class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -219,7 +311,7 @@
           <!-- Policy Information -->
           <div v-if="shouldShowPolicy" class="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-200">
-              <h3 class="text-lg font-medium text-gray-900">Policy Information</h3>
+              <h3 class="text-lg font-medium text-gray-700">Policy Information</h3>
             </div>
             <div class="px-6 py-4">
               <div v-if="insuranceData?.policy && insuranceData.policy.policyNumber" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -290,7 +382,7 @@
           <!-- Application Metadata -->
           <div class="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-200">
-              <h3 class="text-lg font-medium text-gray-900">Application Metadata</h3>
+              <h3 class="text-lg font-medium text-gray-700">Application Metadata</h3>
             </div>
             <div class="px-6 py-4">
               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -360,7 +452,8 @@ import {
   ChevronRightIcon,
   ExclamationTriangleIcon,
   DocumentIcon,
-  XMarkIcon
+  XMarkIcon,
+  FolderIcon 
 } from '@heroicons/vue/24/outline'
 
 // Composables

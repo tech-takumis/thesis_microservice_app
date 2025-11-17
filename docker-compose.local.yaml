@@ -62,7 +62,7 @@ services:
     container_name: minio
     ports:
       - "9000:9000"   # API for SDKs (Spring, MinioClient)
-      - "9090:9090"   # Console UI in browser
+      - "9191:9090"   # Console UI in browser
     environment:
       MINIO_ROOT_USER: minio
       MINIO_ROOT_PASSWORD: minio123
@@ -82,7 +82,10 @@ networks:
 volumes:
   agripro_postgres:
     name: agripro_psql
+    external: true
   kafka-data:
     name: agripro_kafka_data
+    external: true
   minio_data:
     name: agripro_minio_data
+    external: true

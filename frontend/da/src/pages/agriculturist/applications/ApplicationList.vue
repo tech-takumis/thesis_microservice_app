@@ -132,7 +132,7 @@
             </div>
 
             <!-- Applications table -->
-            <div v-else class="bg-white shadow-sm rounded-lg overflow-hidden mb-4 print:hidden flex-1 min-h-0">
+            <div v-else class="bg-white shadow-sm rounded-lg overflow-hidden mb-4 print:hidden flex-1 min-h-0" :key="route.params.id">
                 <div class="overflow-x-auto overflow-y-auto max-h-full">
                     <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-100">
@@ -567,7 +567,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
@@ -719,6 +719,10 @@ const getFormattedAddress = (dynamicFields) => {
 const fetchApplicationsList = async () => {
     loading.value = true
     error.value = null
+
+    // Reset data before fetching
+    applicationTypeData.value = null
+    applications.value = []
 
     const applicationTypeId = route.params.id
 
@@ -930,6 +934,25 @@ const handleBatchCreated = async () => {
 
 
 
+// Watch for route changes to reload data
+watch(() => route.params.id, (newId, oldId) => {
+    console.log('ApplicationList: Route param changed from', oldId, 'to', newId)
+    if (newId !== oldId) {
+        // Reset state immediately
+        applicationTypeData.value = null
+        applications.value = []
+        batches.value = []
+        error.value = null
+        fetchBatches()
+        fetchApplicationsList()
+    }
+}, { immediate: false })
+
+// Also watch for full route changes to catch breadcrumb navigation
+watch(() => route.fullPath, (newPath, oldPath) => {
+    console.log('ApplicationList: Route path changed from', oldPath, 'to', newPath)
+}, { immediate: false })
+
 onMounted(() => {
     fetchBatches()
     fetchApplicationsList()
@@ -937,9 +960,6 @@ onMounted(() => {
 </script>
 <style>
 /* Ensure proper layout within AuthenticatedLayout */
-.application-list-container {
-  height: 100%;
-}
 
 /* Compact table styling */
 .min-w-full th,

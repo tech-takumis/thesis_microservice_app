@@ -49,11 +49,13 @@ public class ApplicationMapper {
         return Application.builder()
                 .type(type)
                 .userId(submission.getUseId())
+                .coordinates(submission.getCoordinates())
                 .fullName(submission.getFullName())
                 .dynamicFields(dynamicFieldsNode)
                 .documents(submission.getDocuments())
                 .submittedAt(LocalDateTime.now())
                 .build();
     }
+
 
 }

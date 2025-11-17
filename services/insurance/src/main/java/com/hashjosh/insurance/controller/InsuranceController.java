@@ -1,7 +1,5 @@
 package com.hashjosh.insurance.controller;
 
-import com.hashjosh.insurance.dto.InsuranceFilter;
-import com.hashjosh.insurance.dto.InsuranceFilterRequest;
 import com.hashjosh.insurance.dto.insurance.InsuranceRequestDTO;
 import com.hashjosh.insurance.dto.insurance.InsuranceResponse;
 import com.hashjosh.insurance.service.InsuranceService;
@@ -31,6 +29,13 @@ public class InsuranceController {
                 @PathVariable("insurance-Id") UUID insuranceId
     ){
         return ResponseEntity.ok(insuranceService.findById(insuranceId));
+    }
+
+    @GetMapping("/application/{application-id}")
+    public ResponseEntity<InsuranceResponse> getInsuranceByApplicationId(
+            @PathVariable("application-id") UUID applicationId
+    ){
+        return ResponseEntity.ok(insuranceService.findByApplicationId(applicationId));
     }
 
     @GetMapping("/application-type/{application-type}")

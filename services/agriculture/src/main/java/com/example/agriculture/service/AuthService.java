@@ -145,17 +145,6 @@ public class AuthService {
     }
 
 
-    private String generateUniquePassword() {
-        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()";
-        StringBuilder sb = new StringBuilder(12);
-        for (int i = 0; i < 12; i++) {
-            int idx = (int) (Math.random() * chars.length());
-            sb.append(chars.charAt(idx));
-        }
-        return sb.toString();
-    }
-
-
     private Map<String,Object> buildClaims(Agriculture agriculture) {
 
         // Extract permissions first

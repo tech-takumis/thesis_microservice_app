@@ -53,6 +53,26 @@ const useInsuranceStore = defineStore('insurance', () => {
         }
     }
 
+    const fetchInsuranceByApplicationId = async (applicationId) => {
+        try{
+            loading.value = true
+            error.value = null
+            const response = await axios.get(`/api/v1/insurance/application/${applicationId}`)
+            if(response.status === 200){
+                insurance.value = response.data
+                console.log("Fetched insurance:", insurance.value)
+                return {success: "true", message: "Insurance fetched successfully", data: insurance.value}
+            }
+            return {success: "false", message: "Failed to fetch insurance", data: null}
+        }catch (error){
+            console.log("Error fetching insurance:", error)
+            error.value = error.data.message
+            return {success: error.success, message: error.message, data: null}
+        }finally {
+            loading.value = false
+        }
+    }
+
     const fetchInsuranceByApplicationTypeIds = async (applicationTypeId) => {
         try{
             loading.value = true
@@ -111,6 +131,7 @@ const useInsuranceStore = defineStore('insurance', () => {
         hasError,
         fetchAllInsurance,
         fetchInsuranceById,
+        fetchInsuranceByApplicationId,
         fetchInsuranceByApplicationTypeIds,
         updateInsurance,
         deleteInsurance

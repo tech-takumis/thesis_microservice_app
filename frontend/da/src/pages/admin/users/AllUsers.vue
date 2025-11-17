@@ -7,7 +7,6 @@
     <!-- Users Content -->
     <div class="space-y-6">
       <!-- Search and Filter -->
-      <div class="bg-white rounded-lg shadow-sm border border-gray-200">
         <div class="p-3 flex items-center justify-between gap-4">
           <div class="relative w-64">
             <Search class="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -15,13 +14,13 @@
               v-model="searchTerm"
               type="text"
               placeholder="Search users..."
-              class="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
+              class="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-300 rounded-md focus:border-green-400 focus:ring-2 focus:ring-green-400/40 transition duration-200 disabled:opacity-50"
               @input="handleSearch"
             />
           </div>
           <select
             v-model="selectedRole"
-            class="text-sm px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 min-w-[160px]"
+            class="text-sm px-3 py-1.5 border border-gray-300 rounded-md focus:border-green-400 focus:ring-2 focus:ring-green-400/40 transition duration-200 disabled:opacity-50 min-w-[160px]"
             @change="handleRoleFilter"
           >
             <option value="">All Roles</option>
@@ -34,7 +33,7 @@
             </option>
           </select>
         </div>
-      </div>
+
 
       <!-- Loading State -->
       <div v-if="userStore.isLoading && (!userStore.allAgricultureUsers || userStore.allAgricultureUsers.length === 0)" class="bg-white rounded-lg shadow-sm border border-gray-200">
@@ -81,7 +80,7 @@
               </button>
               <!-- Add New User Button triggers modal -->
               <button
-                class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700"
+                class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700"
                 @click="showInviteModal = true"
               >
                 <UserPlus class="h-4 w-4 mr-2" />
@@ -99,7 +98,7 @@
                   <input
                     type="checkbox"
                     :checked="isAllSelected"
-                    class="h-4 w-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                    class="h-4 w-4 text-green-600 border-green-300 rounded focus:ring-green-600"
                     @change="toggleAllSelection"
                   />
                 </th>
@@ -125,15 +124,15 @@
                   <input
                     type="checkbox"
                     :checked="isUserSelected(agriculture)"
-                    class="h-4 w-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                    class="h-4 w-4 text-green-600 border-green-300 rounded focus:ring-green-600"
                     @change="toggleUserSelection(agriculture)"
                   />
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex items-center">
                     <div class="flex-shrink-0 h-10 w-10">
-                      <div class="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center">
-                        <span class="text-sm font-medium text-purple-600">
+                      <div class="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
+                        <span class="text-sm font-medium text-gray-600">
                           {{ getUserInitials(agriculture) }}
                         </span>
                       </div>

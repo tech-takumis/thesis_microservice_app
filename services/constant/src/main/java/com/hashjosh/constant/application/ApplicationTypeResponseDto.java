@@ -18,6 +18,8 @@ public class ApplicationTypeResponseDto{
     private String provider;
     private String layout;
     private Boolean printable;
+    private Boolean requiresAIAnalysis;
     private ApplicationWorkflowResponse workflow;
     private List<ApplicationResponseDto> applications;
+    private List<ApplicationSectionResponseDto> sections;
 }

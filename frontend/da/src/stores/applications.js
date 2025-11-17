@@ -194,6 +194,11 @@ export const useApplicationTypeStore = defineStore('applicationType', () => {
         }
     }
 
+    // Alias for fetchApplicationTypesById for better clarity
+    const fetchById = async (applicationTypeId, includeApplicationResponse = false) => {
+        return fetchApplicationTypesById(applicationTypeId, includeApplicationResponse)
+    }
+
 
     const updateApplicationType = async (id, applicationType) => {
         try {
@@ -229,6 +234,7 @@ export const useApplicationTypeStore = defineStore('applicationType', () => {
         createApplicationType,
         fetchAllApplicationTypes,
         fetchApplicationTypesById,
+        fetchById,
         updateApplicationType,
         deleteApplicationType,
     }

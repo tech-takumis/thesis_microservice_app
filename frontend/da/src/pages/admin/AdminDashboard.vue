@@ -63,7 +63,7 @@
             <h2 class="text-lg font-semibold text-gray-900">Recent System Activity</h2>
             <router-link 
               to="/admin/settings/audit-logs"
-              class="text-sm text-purple-600 hover:text-purple-700 font-medium"
+              class="text-sm text-green-600 hover:text-purple-700 font-medium"
             >
               View all logs
             </router-link>

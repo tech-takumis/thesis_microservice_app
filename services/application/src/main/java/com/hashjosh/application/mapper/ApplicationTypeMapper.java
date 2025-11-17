@@ -13,11 +13,14 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.util.stream.Collectors.toList;
+
 @Component
 @RequiredArgsConstructor
 public class ApplicationTypeMapper {
 
     private final ApplicationMapper applicationMapper;
+    private final ApplicationSectionMapper applicationSectionMapper;
 
     public ApplicationType toApplicationType(ApplicationTypeRequestDto dto) {
         return ApplicationType.builder()
@@ -29,7 +32,8 @@ public class ApplicationTypeMapper {
 
     public ApplicationTypeResponseDto toApplicationResponse(
             ApplicationType applicationType,
-            Boolean includeApplicationResponse
+            Boolean includeApplicationResponse,
+            Boolean includeSections
     ) {
 
         List<ApplicationResponseDto> applications = new ArrayList<>();
@@ -46,12 +50,19 @@ public class ApplicationTypeMapper {
                 .description(applicationType.getDescription())
                 .provider(applicationType.getProvider().getName())
                 .layout(applicationType.getLayout())
+                .requiresAIAnalysis(applicationType.getRequiredAIAnalysis())
                 .printable(applicationType.getPrintable())
                 .workflow(mapToApplicationWorkflowResponse(applicationType.getApplicationWorkflow()))
                 .build();
 
         if(includeApplicationResponse != null && includeApplicationResponse) {
             responseDto.setApplications(applications);
+        }
+
+        if(includeSections != null && includeSections) {
+            responseDto.setSections(applicationType.getSections().stream()
+                    .map(applicationSectionMapper::toApplicationSectionResponseDto)
+                    .toList());
         }
 
         return responseDto;

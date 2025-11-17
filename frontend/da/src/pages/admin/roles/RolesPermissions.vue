@@ -27,8 +27,8 @@
       <div v-else class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div class="flex items-center">
-            <div class="p-3 rounded-lg bg-indigo-100">
-              <Shield class="h-6 w-6 text-indigo-600" />
+            <div class="p-3 rounded-lg bg-yellow-100">
+              <Shield class="h-6 w-6 text-yellow-600" />
             </div>
             <div class="ml-4">
               <h3 class="text-lg font-semibold text-gray-900">{{ roles.length }}</h3>
@@ -51,8 +51,8 @@
         
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div class="flex items-center">
-            <div class="p-3 rounded-lg bg-blue-100">
-              <Users class="h-6 w-6 text-blue-600" />
+            <div class="p-3 rounded-lg bg-red-100">
+              <Users class="h-6 w-6 text-red-600" />
             </div>
             <div class="ml-4">
               <h3 class="text-lg font-semibold text-gray-900">{{ Object.keys(groupedAuthorities).length }}</h3>
@@ -74,7 +74,7 @@
                   v-model="searchQuery"
                   type="text"
                   placeholder="Search roles..."
-                  class="pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  class="pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-green-400 focus:ring-2 focus:ring-green-400/40 transition duration-200 disabled:opacity-50"
                 />
               </div>
               <button
@@ -86,7 +86,7 @@
                 Delete Selected ({{ selectedRoles.length }})
               </button>
               <button
-                class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+                class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-indigo-700"
                 @click="editRole(null)"
               >
                 <Plus class="h-4 w-4 mr-2" />
@@ -104,7 +104,7 @@
                   <input
                     type="checkbox"
                     :checked="isAllSelected"
-                    class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                    class="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
                     @change="toggleAllSelection"
                   />
                 </th>
@@ -130,14 +130,14 @@
                   <input
                     type="checkbox"
                     :checked="isRoleSelected(role)"
-                    class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                    class="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
                     @change="toggleRoleSelection(role)"
                   />
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex items-center">
-                    <div class="p-2 rounded-lg bg-indigo-100 mr-3">
-                      <Shield class="h-4 w-4 text-indigo-600" />
+                    <div class="p-2 rounded-lg bg-yellow-100 mr-3">
+                      <Shield class="h-4 w-4 text-yellow-600" />
                     </div>
                     <div>
                       <div class="text-sm font-medium text-gray-900">{{ role.name }}</div>
@@ -146,7 +146,7 @@
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-500 text-white">
                    {{ role.permissions ? role.permissions.length : 0 }} permissions
                   </span>
                 </td>

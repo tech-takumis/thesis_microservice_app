@@ -29,11 +29,11 @@ public class DocumentServiceClient {
                 .build();
     }
 
-    public String generatePresignedUrl(String userId,UUID documentId, int expiry) {
+    public String generatePresignedUrl(UUID userId,UUID documentId, int expiry) {
         return restClient.get()
                 .uri("/{id}/download-url?expiryMinutes={expiry}", documentId, expiry)
                 .header("X-Internal-Service", applicationName)
-                .header("X-User-Id",userId)
+                .header("X-User-Id", String.valueOf(userId))
                 .retrieve()
                 .onStatus(
                         status -> status.is4xxClientError() || status.is5xxServerError(),

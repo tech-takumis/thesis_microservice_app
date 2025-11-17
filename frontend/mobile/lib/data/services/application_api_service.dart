@@ -68,7 +68,7 @@ class ApplicationApiService {
     try {
       print('🚀 Fetching application type: $id');
       final response = await _dio.get(
-        '/application/types/$id?sections=true&fields=true',
+        '/application/types/$id?sections=true',
         options: Options(
           headers: {
             'Content-Type': 'application/json',
@@ -92,10 +92,9 @@ class ApplicationApiService {
         print('User not logged in, skipping fetchApplications');
         return null;
       }
-      print('🚀 [DEBUG] ApplicationApiService baseUrl: $baseUrl');
-      print('🚀 Fetching applications from: $baseUrl/application/types');
+
       final response = await _dio.get(
-        '/application/types?sections=true&fields=true',
+        '/application/types?sections=true',
         options: Options(
           headers: {
             'Content-Type': 'application/json',

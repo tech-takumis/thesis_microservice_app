@@ -30,14 +30,15 @@ public class ApplicationTypeController {
     @GetMapping()
     public ResponseEntity<List<ApplicationTypeResponseDto>> getAll(
             @RequestParam(name = "provider", required = false) String provider,
+            @RequestParam(name = "sections", required = false) Boolean sections,
             @RequestParam(name = "application", required = false) Boolean application
     ){
 
         if(provider != null && !provider.isBlank()){
-            List<ApplicationTypeResponseDto> allApplicationType = applicationTypeService.findByProvider(provider,application);
+            List<ApplicationTypeResponseDto> allApplicationType = applicationTypeService.findByProvider(provider,application,sections);
             return new ResponseEntity<>(allApplicationType,HttpStatus.OK);
         }else{
-            List<ApplicationTypeResponseDto> allApplicationType = applicationTypeService.findAll(application);
+            List<ApplicationTypeResponseDto> allApplicationType = applicationTypeService.findAll(application,sections);
             return new ResponseEntity<>(allApplicationType,HttpStatus.OK);
         }
 
@@ -46,9 +47,10 @@ public class ApplicationTypeController {
     @GetMapping("/{id}")
     public ResponseEntity<ApplicationTypeResponseDto> getById(
             @PathVariable UUID id,
+            @RequestParam(name = "sections", required = false) Boolean sections,
             @RequestParam(name = "application", required = false) Boolean application
     ){
-       return new ResponseEntity<>(applicationTypeService.findById(id,application),HttpStatus.OK);
+       return new ResponseEntity<>(applicationTypeService.findById(id,application,sections),HttpStatus.OK);
     }
 
     @GetMapping("/{id}/requires-ai-analysis")

@@ -10,6 +10,7 @@ import com.hashjosh.insurance.repository.InsuranceRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -39,7 +40,15 @@ public class InsuranceService {
 
         return insuranceMapper.toInsuranceResponse(insurance);
     }
+    @Transactional(readOnly = true)
+    public InsuranceResponse findByApplicationId(UUID applicationId) {
+        Insurance insurance = insuranceRepository.findBySubmissionId(applicationId)
+                .orElseThrow(() -> ApiException.notFound("Insurance not found"));
 
+        return insuranceMapper.toInsuranceResponse(insurance);
+    }
+
+    @Transactional(readOnly = true)
     public List<InsuranceResponse> findByApplicationTypeId(UUID applicationTypeId) {
 
         List<Insurance> insurances = insuranceRepository.findByBatch_ApplicationTypeId(applicationTypeId);
@@ -49,10 +58,12 @@ public class InsuranceService {
                 .toList();
     }
 
+    @Transactional(propagation = Propagation.REQUIRED)
     public InsuranceResponse update(UUID insuranceId, @Valid InsuranceRequestDTO request) {
         return null;
     }
 
+    @Transactional(readOnly = true)
     public void delete(UUID insuranceId) {
         Insurance insurance = insuranceRepository.findById(insuranceId)
                 .orElseThrow(() -> ApiException.notFound("Insurance not found"));

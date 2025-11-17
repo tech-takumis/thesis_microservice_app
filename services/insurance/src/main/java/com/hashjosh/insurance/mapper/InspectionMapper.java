@@ -37,7 +37,7 @@ public class InspectionMapper {
                 .inspectorId(inspection.getInspectorId())
                 .inspectorName(inspection.getInspectorName())
                 .inspectedAt(inspection.getInspectedAt())
-                .photos(convertPhotosToStrings(inspection.getPhotos(), String.valueOf(inspection.getInspectorId()), 60))
+                .photos(convertPhotosToStrings(inspection.getPhotos(), inspection.getInspectorId(), 60))
                 .fieldValues(inspection.getFieldValues())
                 .schedule(schedule)
                 .build();
@@ -62,7 +62,7 @@ public class InspectionMapper {
                 .toList();
     }
 
-    private List<String> convertPhotosToStrings(List<UUID> photos,String userId,int expiryInMinutes) {
+    private List<String> convertPhotosToStrings(List<UUID> photos,UUID userId,int expiryInMinutes) {
         if (photos == null) return null;
         return photos.stream()
                 .map(id -> {

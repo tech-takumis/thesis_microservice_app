@@ -1,11 +1,10 @@
 package com.hashjosh.application.controller;
 
-import com.hashjosh.constant.ai.AIResultDTO;
-import com.hashjosh.constant.application.ApplicationResponseDto;
 import com.hashjosh.application.dto.submission.ApplicationSubmissionDto;
 import com.hashjosh.application.dto.submission.ApplicationSubmissionResponse;
 import com.hashjosh.application.model.Application;
 import com.hashjosh.application.service.ApplicationService;
+import com.hashjosh.constant.application.ApplicationResponseDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

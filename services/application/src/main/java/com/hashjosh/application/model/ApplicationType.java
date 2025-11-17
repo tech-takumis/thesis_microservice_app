@@ -28,7 +28,11 @@ public class ApplicationType {
     @Column(name = "layout", length = 255)
     private String layout;
 
+    @Column(name = "printable")
     private Boolean printable;
+
+    @Column(name = "required_ai_analysis")
+    private Boolean requiredAIAnalysis;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "provider_id", referencedColumnName = "id")

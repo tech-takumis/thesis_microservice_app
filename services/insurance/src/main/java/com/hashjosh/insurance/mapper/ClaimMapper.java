@@ -13,15 +13,23 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ClaimMapper {
 
-    public ClaimResponse toResponse(Claim claim, List<String> documentUrls) {
+    private final DocumentServiceClient documentServiceClient;
+    public ClaimResponse toResponse(Claim claim) {
         return ClaimResponse.builder()
                 .id(claim.getId())
                 .insuranceId(claim.getInsurance().getId())
                 .filedAt(claim.getFiledAt())
                 .damageAssessment(claim.getDamageAssessment())
                 .claimAmount(claim.getClaimAmount())
-                .supportingFiles(documentUrls)
+                .supportingFiles(getPresignedUrl(claim))
                 .fieldValues(claim.getFieldValues())
                 .build();
+    }
+
+    private List<String> getPresignedUrl(Claim claim) {
+
+        return claim.getSupportingFiles().stream()
+                .map(documentId -> documentServiceClient.generatePresignedUrl(claim.getInsurance().getFarmerId(), documentId, 60))
+                .toList();
     }
 }

@@ -28,15 +28,25 @@ public class Application implements Serializable {
     @JsonProperty("id")
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "applicationType_id", nullable = false)
-    private ApplicationType type;
-
     @Column(name = "user_id", nullable = false)
     @JsonProperty("userId")
     private UUID userId;
 
+    @Column(name = "full_name", nullable = false)
     private String fullName;
+
+    @Column(name = "coordinates", nullable = false)
+    private String coordinates;
+
+    @Type(JsonBinaryType.class)
+    @Column(name = "dynamic_fields", columnDefinition = "jsonb", nullable = false)
+    @JsonProperty("dynamicFields")
+    private JsonNode dynamicFields;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "applicationType_id", nullable = false)
+    private ApplicationType type;
+
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -45,11 +55,6 @@ public class Application implements Serializable {
             inverseJoinColumns = @JoinColumn(name = "document_id")
     )
     private List<Document> documents;
-
-    @Type(JsonBinaryType.class)
-    @Column(name = "dynamic_fields", columnDefinition = "jsonb", nullable = false)
-    @JsonProperty("dynamicFields")
-    private JsonNode dynamicFields;
 
     @CreationTimestamp
     @Column(name = "submitted_at", updatable = false)

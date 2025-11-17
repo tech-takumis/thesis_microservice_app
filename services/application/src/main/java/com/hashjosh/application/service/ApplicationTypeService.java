@@ -39,6 +39,7 @@ public class ApplicationTypeService {
         ApplicationType applicationType = applicationTypeMapper.toApplicationType(dto);
         applicationType.setProvider(provider);
         ApplicationType savedApplicationType = applicationTypeRepository.save(applicationType);
+        boolean requiredAIAnalysis = false;
 
         List<ApplicationSection> applicationSections = new ArrayList<>();
         for (ApplicationSectionRequestDto sectionRequestDto : dto.sections()) {
@@ -50,38 +51,46 @@ public class ApplicationTypeService {
                 applicationFields.add(savedField);
             }
 
+            if(applicationFields.stream().anyMatch(field -> Boolean.TRUE.equals(field.getRequiredAIAnalysis()))){
+                requiredAIAnalysis = true;
+            }
+
             section.setFields(applicationFields);
             applicationSections.add(section);
         }
 
+        applicationType.setRequiredAIAnalysis(requiredAIAnalysis);
         applicationType.setSections(applicationSections);
-        return applicationTypeMapper.toApplicationResponse(applicationType,false);
+        return applicationTypeMapper.toApplicationResponse(applicationType,false,false);
     }
 
-    public List<ApplicationTypeResponseDto> findAll(Boolean includeApplicationResponse) {
+    public List<ApplicationTypeResponseDto> findAll(Boolean includeApplicationResponse,
+                                                    Boolean includeSections) {
         return applicationTypeRepository.findAll().stream()
-                .map(application -> applicationTypeMapper.toApplicationResponse(application,includeApplicationResponse))
+                .map(application -> applicationTypeMapper.toApplicationResponse(application,includeApplicationResponse,includeSections))
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public List<ApplicationTypeResponseDto> findByProvider(
             String provider,
-            Boolean includeApplicationResponse
+            Boolean includeApplicationResponse,
+            Boolean includeSections
     ) {
         return applicationTypeRepository.findAllByProvider_Name(provider)
-                .stream().map(application -> applicationTypeMapper.toApplicationResponse(application,includeApplicationResponse))
+                .stream().map(application -> applicationTypeMapper.toApplicationResponse(application,includeApplicationResponse,includeSections))
                 .toList();
     }
 
     @Transactional(readOnly = true)
     public ApplicationTypeResponseDto findById(
             UUID id,
-            Boolean includeApplicationResponse
+            Boolean includeApplicationResponse,
+            Boolean includeSections
     ) {
         ApplicationType applicationType = applicationTypeRepository.findById(id)
                 .orElseThrow(() -> ApiException.notFound("Application type not found"));
-        return applicationTypeMapper.toApplicationResponse(applicationType,includeApplicationResponse);
+        return applicationTypeMapper.toApplicationResponse(applicationType,includeApplicationResponse,includeSections);
     }
 
     @Transactional(readOnly = true)

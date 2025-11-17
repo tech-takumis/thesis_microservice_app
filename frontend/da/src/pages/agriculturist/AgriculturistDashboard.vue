@@ -129,7 +129,7 @@
                     <div class="relative select-none">
                         <!-- Profile Button -->
                         <button
-                            class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 transition-colors"
+                            class="flex items-center space-x-3 p-2 rounded-lg"
                             @click.stop="
                                 showProfileDropdown = !showProfileDropdown
                             ">

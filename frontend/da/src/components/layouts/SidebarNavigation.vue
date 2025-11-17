@@ -89,7 +89,7 @@
                         <transition name="slide">
                             <div
                                 v-show="expandedGroups.includes(item.title)"
-                                class="pl-3 mt-1 space-y-1 border-l border-gray-200">
+                                class="pl-3 mt-1 space-y-1 border-l border-gray-300">
                                 <router-link
                                     v-for="child in item.children"
                                     :key="child.title"

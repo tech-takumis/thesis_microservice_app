@@ -14,7 +14,7 @@
               v-model="searchQuery"
               type="text"
               placeholder="Search by name, description..."
-              class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-green-400 focus:ring-2 focus:ring-green-400/40 transition duration-200 disabled:opacity-50"
             />
           </div>
           <button
@@ -53,7 +53,7 @@
           </button>
           <router-link
             to="/admin/applications/new"
-            class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+            class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700"
           >
             <Plus class="h-4 w-4 mr-2" />
             Create New
@@ -159,7 +159,7 @@
         <!-- Empty State -->
         <div v-else class="flex-1 flex items-center justify-center">
           <div class="text-center py-12">
-            <FileText class="h-12 w-12 mx-auto text-gray-300 mb-4" />
+            <FileText class="h-12 w-12 mx-auto text-green-600 mb-4" />
             <h3 class="text-lg font-medium text-gray-900 mb-2">
               {{ searchQuery ? 'No applications found' : 'No applications yet' }}
             </h3>
@@ -172,7 +172,7 @@
             <router-link
               v-if="!searchQuery"
               to="/admin/applications/new"
-              class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+              class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700"
             >
               <Plus class="h-4 w-4 mr-2" />
               Create First Application

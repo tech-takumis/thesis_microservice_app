@@ -25,7 +25,7 @@
         </div>
         <div class="p-6">
           <div class="text-center py-12">
-            <FileCheck class="mx-auto h-12 w-12 text-gray-400" />
+            <FileCheck class="mx-auto h-12 w-12 text-green-600" />
             <h3 class="mt-2 text-sm font-medium text-gray-900">Approvals Management</h3>
             <p class="mt-1 text-sm text-gray-500">
               This page will display pending applications requiring approval.

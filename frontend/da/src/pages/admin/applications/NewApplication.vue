@@ -26,7 +26,7 @@
                       type="text"
                       id="name"
                       required
-                      class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-green-400 focus:ring-2 focus:ring-green-400/40 transition duration-200 disabled:opacity-50"
                       placeholder="e.g., Crop Insurance"
                     />
                   </div>
@@ -38,7 +38,7 @@
                       v-model="applicationType.layout"
                       id="layout"
                       required
-                      class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-green-400 focus:ring-2 focus:ring-green-400/40 transition duration-200 disabled:opacity-50"
                     >
                       <option value="">Select Layout</option>
                       <option value="single-step">Single Step</option>
@@ -55,7 +55,7 @@
                     v-model="applicationType.description"
                     id="description"
                     rows="3"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-green-400 focus:ring-2 focus:ring-green-400/40 transition duration-200 disabled:opacity-50"
                     placeholder="A brief description of what this application type is for."
                   ></textarea>
                 </div>
@@ -75,7 +75,7 @@
                   <button
                     type="button"
                     @click="openSectionModal()"
-                    class="inline-flex items-center px-3 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    class="inline-flex items-center px-3 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                   >
                     <Plus class="h-4 w-4 mr-1" />
                     Add
@@ -86,7 +86,7 @@
               <!-- Scrollable Sections List -->
               <div class="flex-1 overflow-y-auto p-4">
                 <div v-if="sections.length === 0" class="text-center text-gray-500 py-8">
-                  <Layers class="h-12 w-12 mx-auto text-gray-300 mb-4" />
+                  <Layers class="h-12 w-12 mx-auto text-green-600 mb-4" />
                   <p class="text-sm font-medium">No sections yet</p>
                   <p class="text-xs">Click "Add" to create a section</p>
                 </div>

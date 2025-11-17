@@ -130,11 +130,20 @@ export const MUNICIPALITY_ROUTES = [
         }
     },
     {
-        path: '/agriculturist/submit-crop-data/application-type/submission-detail/:id',
+        path: '/agriculturist/submit-crop-data/application-type/submission-detail/:id/:applicationTypeId',
         name: 'agriculturist-submit-crop-data-detail',
         component: () => import('@/pages/agriculturist/applications/ApplicationDetail.vue'),
         meta: {
             title: 'Application Submission Detail',
+            guard: 'auth'
+        }
+    },
+    {
+        path: '/agriculturist/ai/damage-result/:applicationId/:applicationTypeId',
+        name: 'agriculturist-damage-report',
+        component: () => import('@/pages/agriculturist/applications/DamageClaimReview.vue'),
+        meta: {
+            title: 'AI Damage Analysis',
             guard: 'auth'
         }
     },

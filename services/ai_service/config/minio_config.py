@@ -13,6 +13,9 @@ MINIO_SECURE = os.getenv("MINIO_SECURE", "false").lower() == "true"
 # Default bucket for AI service
 DEFAULT_BUCKET = os.getenv("MINIO_BUCKET", "ai-service-bucket")
 
+# Document bucket for reading uploaded documents
+DOCUMENT_BUCKET = os.getenv("DOCUMENT_BUCKET", "documents")
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

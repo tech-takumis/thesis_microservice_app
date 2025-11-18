@@ -118,7 +118,7 @@
       </template>
     </nav>
 
-    <!-- User Profile Section -->
+    <!-- Logout Section -->
     <div class="flex-shrink-0 border-t border-green-700 px-4 py-4 bg-green-600">
       <button
         @click="$emit('logout')"
@@ -147,18 +147,6 @@ const props = defineProps({
   roleTitle: {
     type: String,
     default: 'Staff Portal'
-  },
-  userFullName: {
-    type: String,
-    default: ''
-  },
-  userEmail: {
-    type: String,
-    default: ''
-  },
-  userInitials: {
-    type: String,
-    default: ''
   }
 })
 

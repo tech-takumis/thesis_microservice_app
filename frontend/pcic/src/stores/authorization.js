@@ -1,144 +1,76 @@
-import axios from "@/lib/axios"
 import { defineStore } from "pinia"
-import { ref, computed } from "vue"
+import { computed } from "vue"
+import { useRoleStore } from "@/stores/role"
+import { usePermissionStore } from "@/stores/permission"
 
-// Permission Store - Composition API style
-export const usePermissionStore = defineStore("permission", () => {
-  const permissions = ref([])
-  const loading = ref(false)
-  const error = ref(null)
+// Authorization Store - Composition API style using composite pattern
+export const useAuthorizationStore = defineStore("authorization", () => {
+  const roleStore = useRoleStore()
+  const permissionStore = usePermissionStore()
 
-  const availablePermissions = computed(() => permissions.value)
-  const getPermissionById = (id) => permissions.value.find(permission => permission.id === id)
-  const getPermissionByName = (name) => permissions.value.find(permission => permission.name === name)
-  const groupedPermissions = computed(() => {
-    const grouped = {}
-    permissions.value.forEach(permission => {
-      const category = permission.name.split('_')[1] || 'Other'
-      if (!grouped[category]) grouped[category] = []
-      grouped[category].push(permission)
-    })
-    return grouped
-  })
-
-  async function fetchPermissions() {
-    try {
-      loading.value = true
-      error.value = null
-      const response = await axios.get("/api/v1/permissions")
-      permissions.value = response.data
-      return { success: true, data: response.data }
-    } catch (err) {
-      error.value = err.response?.data?.message || err.message
-      return { success: false, error: error.value }
-    } finally {
-      loading.value = false
-    }
-  }
-
-  return {
-    permissions,
-    loading,
-    error,
-    availablePermissions,
-    getPermissionById,
-    getPermissionByName,
-    groupedPermissions,
-    fetchPermissions,
-  }
-})
-
-// Role Store - Composition API style
-export const useRoleStore = defineStore("role", () => {
-  const roles = ref([])
-  const loading = ref(false)
-  const error = ref(null)
-
-  const allRoles = computed(() => roles.value)
-  const getRoleById = (id) => roles.value.find(role => role.id === id)
-  const getRoleByName = (name) => roles.value.find(role => role.name === name)
-  const getRolePermissions = (roleId) => {
-    const role = roles.value.find(role => role.id === roleId)
-    return role ? role.permissions || [] : []
-  }
-  const roleHasPermission = (roleId, permissionName) => {
-    const role = roles.value.find(role => role.id === roleId)
-    if (!role || !role.permissions) return false
-    return role.permissions.some(permission => permission.name === permissionName)
-  }
-  const rolesWithPermissionCounts = computed(() => {
-    return roles.value.map(role => ({
+  // Computed properties that combine role and permission data
+  const allRolesWithPermissions = computed(() => {
+    return roleStore.allRoles.map(role => ({
       ...role,
-      permissionCount: role.permissions ? role.permissions.length : 0
+      permissionDetails: role.permissions?.map(permissionId =>
+        permissionStore.getPermissionById(permissionId)
+      ).filter(Boolean) || []
     }))
   })
 
-  async function fetchRoles() {
-    try {
-      loading.value = true
-      error.value = null
-      const response = await axios.get("/api/v1/roles")
-      roles.value = response.data
-      return { success: true, data: response.data }
-    } catch (err) {
-      error.value = err.response?.data?.message || err.message
-      return { success: false, error: error.value }
-    } finally {
-      loading.value = false
-    }
+  const userHasPermission = (userRoles, permissionName) => {
+    if (!Array.isArray(userRoles)) return false
+    return userRoles.some(roleId =>
+      roleStore.roleHasPermission(roleId, permissionName)
+    )
   }
 
-  async function createRole(roleData) {
-    try {
-      loading.value = true
-      error.value = null
-      const payload = {
-        name: roleData.name,
-        permissionIds: roleData.permissionIds || []
-      }
-      const response = await axios.post("/api/v1/roles", payload)
-      roles.value.push(response.data)
-      return { success: true, data: response.data }
-    } catch (err) {
-      error.value = err.response?.data?.message || err.message
-      return { success: false, error: error.value }
-    } finally {
-      loading.value = false
-    }
+  const getUserPermissions = (userRoles) => {
+    if (!Array.isArray(userRoles)) return []
+    const allPermissions = new Set()
+    userRoles.forEach(roleId => {
+      const permissions = roleStore.getRolePermissions(roleId)
+      permissions.forEach(permission => allPermissions.add(permission))
+    })
+    return Array.from(allPermissions)
   }
 
-  async function updateRole(roleId, roleData) {
-    try {
-      loading.value = true
-      error.value = null
-      const payload = {
-        name: roleData.name,
-        permissionIds: roleData.permissionIds || []
-      }
-      const response = await axios.put(`/api/v1/roles/${roleId}`, payload)
-      const idx = roles.value.findIndex(role => role.id === roleId)
-      if (idx !== -1) roles.value[idx] = response.data
-      return { success: true, data: response.data }
-    } catch (err) {
-      error.value = err.response?.data?.message || err.message
-      return { success: false, error: error.value }
-    } finally {
-      loading.value = false
+  // Initialize both stores
+  const initializeStores = async () => {
+    const [roleResult, permissionResult] = await Promise.all([
+      roleStore.fetchRoles(),
+      permissionStore.fetchPermissions()
+    ])
+
+    return {
+      roles: roleResult,
+      permissions: permissionResult,
+      success: roleResult.success && permissionResult.success
     }
   }
 
   return {
-    roles,
-    loading,
-    error,
-    allRoles,
-    getRoleById,
-    getRoleByName,
-    getRolePermissions,
-    roleHasPermission,
-    rolesWithPermissionCounts,
-    fetchRoles,
-    createRole,
-    updateRole,
+    // Expose role store properties and methods
+    ...roleStore,
+    // Expose permission store properties and methods with prefixes to avoid conflicts
+    permissions: permissionStore.permissions,
+    permissionLoading: permissionStore.loading,
+    permissionError: permissionStore.error,
+    availablePermissions: permissionStore.availablePermissions,
+    getPermissionById: permissionStore.getPermissionById,
+    getPermissionByName: permissionStore.getPermissionByName,
+    groupedPermissions: permissionStore.groupedPermissions,
+    fetchPermissions: permissionStore.fetchPermissions,
+
+    // Combined computed properties and methods
+    allRolesWithPermissions,
+    userHasPermission,
+    getUserPermissions,
+    initializeStores,
   }
 })
+
+// Re-export individual stores for direct access if needed
+export { useRoleStore } from "@/stores/role"
+export { usePermissionStore } from "@/stores/permission"
+

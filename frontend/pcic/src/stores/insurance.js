@@ -40,6 +40,49 @@ export const useInsuranceStore = defineStore("insuranceStore",() => {
 
     }
 
+    const fetchVerifiedInsurance = async () => {
+        try{
+            loading.value = true
+            error.value = null
+
+            const response = await axios.get(`${basePath.value}/verified`);
+
+            if(response.data && response.data.length > 0){
+                insurance.value = response.data;
+                return {success: "true", message: "Successfully fetch all verified insurance", data: insurance.value}
+            }
+
+            return {success: "false", message: "No verified insurance found",data:null}
+        }catch (error){
+            console.log("Failed to fetch verified insurance");
+            error.value = error.data.message;
+            loading.value = false
+            return {success: "false", message: error.value, data: null}
+        }finally {
+            loading.value = false
+        }
+    }
+
+    const fetchInsuranceById = async (id) => {
+        try{
+            loading.value = true
+            error.value = null
+
+            const response = await axios.get(`${basePath.value}/${id}`);
+
+            if(response.data && response.data.insuranceId){
+                return {success: "true", message: "Successfully fetch insurance by id", data: response.data}
+            }
+            return {success: "false", message: "Insurance not found", data: null}
+        }catch (error){
+            loading.value = false
+            error.value = error.data.message;
+            return {success: "false", message: error.value, data: null}
+        }finally {
+            loading.value = false
+        }
+    }
+
     const updateInsurance = async (id, data) => {
         try{
             loading.value = true
@@ -88,6 +131,8 @@ export const useInsuranceStore = defineStore("insuranceStore",() => {
         isLoading,
         hasError,
         fetchAllInsurance,
+        fetchVerifiedInsurance,
+        fetchInsuranceById,
         updateInsurance,
         deleteInsurance,
     }

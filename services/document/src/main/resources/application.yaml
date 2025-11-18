@@ -3,3 +3,4 @@ spring:
     name: document-service
   profiles:
     active: local
+

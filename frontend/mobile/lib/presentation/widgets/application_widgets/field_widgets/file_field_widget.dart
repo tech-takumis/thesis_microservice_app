@@ -10,6 +10,7 @@ class FileFieldWidget extends StatefulWidget {
   final PlatformFile? selectedFile;
   final void Function(PlatformFile?) onFileSelected;
   final String? Function(PlatformFile?)? validator;
+  final bool allowGalleryUpload; 
 
   const FileFieldWidget({
     super.key,
@@ -17,6 +18,7 @@ class FileFieldWidget extends StatefulWidget {
     this.selectedFile,
     required this.onFileSelected,
     this.validator,
+    this.allowGalleryUpload = true, // <-- Default: allow both
   });
 
   @override
@@ -58,8 +60,19 @@ class _FileFieldWidgetState extends State<FileFieldWidget> {
       _isUploading = true;
       _errorMessage = null;
     });
+
     final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.camera);
+    // Choose source based on flag
+    final source = widget.allowGalleryUpload
+        ? await _showSourceDialog()
+        : ImageSource.camera;
+
+    if (source == null) {
+      setState(() { _isUploading = false; });
+      return;
+    }
+
+    final pickedFile = await picker.pickImage(source: source);
     if (pickedFile != null) {
       final fileBytes = await pickedFile.readAsBytes();
       final fileSize = fileBytes.length;
@@ -119,6 +132,26 @@ class _FileFieldWidgetState extends State<FileFieldWidget> {
     setState(() {
       _isUploading = false;
     });
+  }
+
+  // Helper to show dialog for source selection
+  Future<ImageSource?> _showSourceDialog() async {
+    return showDialog<ImageSource>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Select Source'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, ImageSource.camera),
+            child: const Text('Camera'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, ImageSource.gallery),
+            child: const Text('Gallery'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showPreview() {

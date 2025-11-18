@@ -27,6 +27,7 @@ public class DocumentServiceClient {
         this.restClient = builder
                 .baseUrl("http://localhost:8020/api/v1/documents")
                 .build();
+
     }
 
     public String generatePresignedUrl(UUID userId,UUID documentId, int expiry) {
@@ -46,6 +47,10 @@ public class DocumentServiceClient {
 
     public DocumentResponse uploadDocument(MultipartFile file, String userId) {
         try {
+            log.info("Uploading document: {} for user: {}", file.getOriginalFilename(), userId);
+            log.info("File size: {} bytes, Content-Type: {}", file.getSize(), file.getContentType());
+            log.info("Sending headers: X-Internal-Service={}, X-User-Id={}", applicationName, userId);
+
             MultipartBodyBuilder builder = new MultipartBodyBuilder();
             builder.part("file", new ByteArrayResource(file.getBytes()) {
                         @Override
@@ -59,18 +64,34 @@ public class DocumentServiceClient {
                     .contentType(MediaType.MULTIPART_FORM_DATA)
                     .body(builder.build())
                     .header("X-Internal-Service", applicationName)
-                    .header("X-User-Id",userId)
+                    .header("X-User-Id", userId)
                     .retrieve()
                     .onStatus(
                             status -> status.is4xxClientError() || status.is5xxServerError(),
                             (request, response) -> {
-                                throw ApiException.internalError("Failed to upload document: " + file.getOriginalFilename());
+                                String responseBody = "";
+                                try {
+                                    responseBody = new String(response.getBody().readAllBytes());
+                                    log.error("Document service error response: Status={}, Body={}", response.getStatusCode(), responseBody);
+                                } catch (Exception e) {
+                                    log.error("Failed to read error response body", e);
+                                }
+                                throw ApiException.internalError("Failed to upload document: " + file.getOriginalFilename() +
+                                    ". Status: " + response.getStatusCode() + ", Response: " + responseBody);
                             }
                     )
                     .body(DocumentResponse.class);
-        } catch (RestClientException | java.io.IOException e) {
-            log.error("Error uploading document: {}", file.getOriginalFilename(), e);
-            throw ApiException.internalError("Failed to upload document: " + file.getOriginalFilename());
+        } catch (ApiException e) {
+            throw e;
+        } catch (RestClientException e) {
+            log.error("RestClient error uploading document: {}", file.getOriginalFilename(), e);
+            throw ApiException.internalError("Failed to upload document due to connection error: " + e.getMessage());
+        } catch (java.io.IOException e) {
+            log.error("IO error reading file: {}", file.getOriginalFilename(), e);
+            throw ApiException.internalError("Failed to read file: " + e.getMessage());
+        } catch (Exception e) {
+            log.error("Unexpected error uploading document: {}", file.getOriginalFilename(), e);
+            throw ApiException.internalError("Unexpected error uploading document: " + e.getMessage());
         }
     }
 }

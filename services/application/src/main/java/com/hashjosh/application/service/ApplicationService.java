@@ -7,6 +7,7 @@ import com.hashjosh.application.clients.AIClient;
 import com.hashjosh.application.clients.FarmerServiceClient;
 import com.hashjosh.application.configs.CustomUserDetails;
 import com.hashjosh.application.dto.submission.ApplicationSubmissionDto;
+import com.hashjosh.application.dto.update.ApplicationUpdateDto;
 import com.hashjosh.application.dto.validation.ValidationError;
 import com.hashjosh.application.dto.validation.ValidationErrors;
 import com.hashjosh.application.exceptions.ApiException;
@@ -313,5 +314,136 @@ public class ApplicationService {
 
     private String getPresignedUrl(UUID documentId, UUID userId) {
         return documentServiceClient.generatePresignedUrl(userId,documentId,60);
+    }
+
+    @Transactional
+    public Application updateApplication(
+            UUID applicationId,
+            ApplicationUpdateDto updateDto,
+            Map<String, MultipartFile> fileMap
+    ) {
+        try {
+            CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder
+                    .getContext().getAuthentication().getPrincipal();
+
+            // Find the existing application
+            Application application = findApplicationById(applicationId);
+
+            // Verify the user owns this application
+            if (!application.getUserId().equals(UUID.fromString(userDetails.getUserId()))) {
+                throw ApiException.unauthorized("You can only update your own applications");
+            }
+
+            // Update basic fields if provided
+            if (updateDto.getFullName() != null && !updateDto.getFullName().trim().isEmpty()) {
+                application.setFullName(updateDto.getFullName().trim());
+            }
+
+            if (updateDto.getCoordinates() != null && !updateDto.getCoordinates().trim().isEmpty()) {
+                application.setCoordinates(updateDto.getCoordinates().trim());
+            }
+
+            // Update dynamic fields if provided
+            if (updateDto.getDynamicFields() != null && !updateDto.getDynamicFields().isEmpty()) {
+                ObjectMapper objectMapper = new ObjectMapper();
+
+                // Get current dynamic fields
+                JsonNode currentDynamicFields = application.getDynamicFields();
+                @SuppressWarnings("unchecked")
+                Map<String, Object> currentFieldsMap = objectMapper.convertValue(currentDynamicFields, Map.class);
+
+                // Merge with new fields (only update provided fields)
+                updateDto.getDynamicFields().forEach((key, value) -> {
+                    if (value != null) {
+                        currentFieldsMap.put(key, value);
+                    }
+                });
+
+                // Convert back to JsonNode and update
+                JsonNode updatedDynamicFields = objectMapper.valueToTree(currentFieldsMap);
+                application.setDynamicFields(updatedDynamicFields);
+            }
+
+            // Handle document updates if files are provided
+            if (fileMap != null && !fileMap.isEmpty()) {
+                List<Document> newDocuments = new ArrayList<>();
+
+                // Get application type for AI analysis fields
+                List<String> aiAnalysisFieldKey = application.getType().getSections().stream()
+                        .flatMap(section -> section.getFields().stream())
+                        .filter(field -> Boolean.TRUE.equals(field.getRequiredAIAnalysis()))
+                        .map(ApplicationField::getKey)
+                        .toList();
+
+                List<String> objectKeysForAIAnalysis = new ArrayList<>();
+
+                for (Map.Entry<String, MultipartFile> entry : fileMap.entrySet()) {
+                    String documentKey = entry.getKey();
+                    MultipartFile file = entry.getValue();
+
+                    // Upload new document
+                    DocumentResponse docResponse = documentServiceClient.uploadDocument(file, userDetails.getUserId());
+                    Document document = Document.builder()
+                            .documentId(docResponse.getDocumentId())
+                            .fileName(docResponse.getFileName())
+                            .fileType(docResponse.getFileType())
+                            .coordinates(application.getCoordinates())
+                            .uploadedAt(docResponse.getUploadedAt())
+                            .documentKey(documentKey)
+                            .objectKey(docResponse.getObjectKey())
+                            .build();
+
+                    documentRepository.save(document);
+
+                    if (aiAnalysisFieldKey.contains(documentKey)) {
+                        objectKeysForAIAnalysis.add(document.getObjectKey());
+                    }
+
+                    newDocuments.add(document);
+                }
+
+                // Replace or add documents based on document keys
+                List<Document> existingDocuments = new ArrayList<>(application.getDocuments());
+
+                for (Document newDoc : newDocuments) {
+                    // Remove existing document with same key if exists
+                    existingDocuments.removeIf(existing ->
+                        existing.getDocumentKey() != null &&
+                        existing.getDocumentKey().equals(newDoc.getDocumentKey())
+                    );
+                    existingDocuments.add(newDoc);
+                }
+
+                application.setDocuments(existingDocuments);
+
+                // Publish update event if AI analysis is needed
+                if (!objectKeysForAIAnalysis.isEmpty()) {
+                    applicationProducer.publishEvent("application-updated",
+                            ApplicationSubmittedEvent.builder()
+                                    .submissionId(application.getId())
+                                    .applicationTypeId(application.getType().getId())
+                                    .fullName(application.getFullName())
+                                    .provider(application.getType().getProvider().getName())
+                                    .objectKeysForAIAnalysis(objectKeysForAIAnalysis)
+                                    .documentIds(newDocuments.stream().map(Document::getDocumentId).collect(Collectors.toList()))
+                                    .userId(application.getUserId())
+                                    .submittedAt(LocalDateTime.now())
+                                    .build()
+                    );
+                }
+            }
+
+            // Save the updated application
+            Application updatedApplication = applicationRepository.save(application);
+
+            log.info("Successfully updated application {} by user {}", applicationId, userDetails.getUserId());
+            return updatedApplication;
+
+        } catch (ApiException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Failed to update application {}: {}", applicationId, e.getMessage(), e);
+            throw ApiException.internalError("Failed to update application: " + e.getMessage());
+        }
     }
 }

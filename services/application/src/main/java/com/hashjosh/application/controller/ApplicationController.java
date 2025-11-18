@@ -2,6 +2,8 @@ package com.hashjosh.application.controller;
 
 import com.hashjosh.application.dto.submission.ApplicationSubmissionDto;
 import com.hashjosh.application.dto.submission.ApplicationSubmissionResponse;
+import com.hashjosh.application.dto.update.ApplicationUpdateDto;
+import com.hashjosh.application.dto.update.ApplicationUpdateResponse;
 import com.hashjosh.application.model.Application;
 import com.hashjosh.application.service.ApplicationService;
 import com.hashjosh.constant.application.ApplicationResponseDto;
@@ -34,7 +36,6 @@ public class ApplicationController {
     ) {
         Map<String, MultipartFile> fileMap = new HashMap<>();
 
-        // Get all file parts except submission
         var fileNames = request.getFileNames();
         while (fileNames.hasNext()) {
             String paramName = fileNames.next();
@@ -80,6 +81,67 @@ public class ApplicationController {
     ){
         applicationService.updateApplicationDocuments(applicationId,files);
         return new ResponseEntity<>("Application documents updated successfully",HttpStatus.OK);
+    }
+
+    @PutMapping(value = "/{application-id}", consumes = {"multipart/form-data"})
+    public ResponseEntity<ApplicationUpdateResponse> updateApplication(
+            @PathVariable("application-id") UUID applicationId,
+            @Valid @RequestPart(value = "update", required = false) ApplicationUpdateDto updateDto,
+            MultipartHttpServletRequest request
+    ) {
+        // Handle file uploads
+        Map<String, MultipartFile> fileMap = new HashMap<>();
+
+        var fileNames = request.getFileNames();
+        while (fileNames.hasNext()) {
+            String paramName = fileNames.next();
+            if (!"update".equals(paramName)) {
+                MultipartFile file = request.getFile(paramName);
+                if (file != null && !file.isEmpty()) {
+                    fileMap.put(paramName, file);
+                    log.info("Received file for update: {} -> {}", paramName, file.getOriginalFilename());
+                }
+            }
+        }
+
+        // If no updateDto is provided, create an empty one
+        if (updateDto == null) {
+            updateDto = new ApplicationUpdateDto();
+        }
+
+        Application updatedApplication = applicationService.updateApplication(applicationId, updateDto, fileMap);
+
+        return ResponseEntity.ok(ApplicationUpdateResponse.builder()
+                .applicationId(updatedApplication.getId())
+                .success(true)
+                .message("Application updated successfully")
+                .version(updatedApplication.getVersion())
+                .build());
+    }
+
+    @PatchMapping(value = "/{application-id}/field", consumes = {"application/json"})
+    public ResponseEntity<ApplicationUpdateResponse> updateSingleField(
+            @PathVariable("application-id") UUID applicationId,
+            @RequestParam("fieldName") String fieldName,
+            @RequestBody Object fieldValue
+    ) {
+        ApplicationUpdateDto updateDto = new ApplicationUpdateDto();
+
+        // Handle basic fields or dynamic fields
+        switch (fieldName) {
+            case "fullName" -> updateDto.setFullName(fieldValue.toString());
+            case "coordinates" -> updateDto.setCoordinates(fieldValue.toString());
+            default -> updateDto.setDynamicField(fieldName, fieldValue);
+        }
+
+        Application updatedApplication = applicationService.updateApplication(applicationId, updateDto, null);
+
+        return ResponseEntity.ok(ApplicationUpdateResponse.builder()
+                .applicationId(updatedApplication.getId())
+                .success(true)
+                .message("Field '" + fieldName + "' updated successfully")
+                .version(updatedApplication.getVersion())
+                .build());
     }
 
     @DeleteMapping("/{application-id}")

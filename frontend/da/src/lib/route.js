@@ -148,6 +148,15 @@ export const MUNICIPALITY_ROUTES = [
         }
     },
     {
+        path: '/agriculturist/application/verification/:applicationId/:applicationTypeId',
+        name: 'agriculturist-application-verification',
+        component: () => import('@/pages/agriculturist/applications/ApplicationVerificationPage.vue'),
+        meta: {
+            title: 'Application Verification',
+            guard: 'auth'
+        }
+    },
+    {
         path: '/agriculturist/voucher',
         name: 'agriculturist-voucher-program',
         component: () => import('@/pages/agriculturist/operations/AgriculturistVoucher.vue'),
@@ -157,29 +166,11 @@ export const MUNICIPALITY_ROUTES = [
         }
     },
     {
-        path: '/agriculturist/coordinate-agencies',
-        name: 'agriculturist-coordinate-agencies',
-        component: () => import('@/pages/agriculturist/operations/AgriculturistCoordinateAgencies.vue'),
+        path: '/agriculturist/transactions',
+        name: 'agriculturist-transaction',
+        component: () => import('@/pages/agriculturist/operations/AgriculturistTransaction.vue'),
         meta: {
             title: 'Coordinate Agencies',
-            guard: 'auth'
-        }
-    },
-    {
-        path: '/agriculturist/provide-infrastructure',
-        name: 'agriculturist-provide-infrastructure',
-        component: () => import('@/pages/agriculturist/operations/AgriculturistProvideInfrastructure.vue'),
-        meta: {
-            title: 'Provide Infrastructure',
-            guard: 'auth'
-        }
-    },
-    {
-        path: '/agriculturist/technical-advice',
-        name: 'agriculturist-technical-advice',
-        component: () => import('@/pages/agriculturist/operations/AgriculturistTechnicalAdvice.vue'),
-        meta: {
-            title: 'Provide Technical Advice',
             guard: 'auth'
         }
     },
@@ -193,29 +184,11 @@ export const MUNICIPALITY_ROUTES = [
         }
     },
     {
-        path: '/agriculturist/conduct-surveys',
-        name: 'agriculturist-conduct-surveys',
-        component: () => import('@/pages/agriculturist/survey/AgriculturistConductSurveys.vue'),
-        meta: {
-            title: 'Conduct Surveys',
-            guard: 'auth'
-        }
-    },
-    {
         path: '/agriculturist/process-claims',
         name: 'agriculturist-process-claims',
         component: () => import('@/pages/agriculturist/claims/AgriculturistProcessClaims.vue'),
         meta: {
             title: 'Process Claims',
-            guard: 'auth'
-        }
-    },
-    {
-        path: '/agriculturist/reports',
-        name: 'agriculturist-reports',
-        component: () => import('@/pages/agriculturist/report/AgriculturistReports.vue'),
-        meta: {
-            title: 'Reports',
             guard: 'auth'
         }
     },

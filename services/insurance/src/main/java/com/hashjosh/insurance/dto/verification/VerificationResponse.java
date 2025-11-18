@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -24,6 +25,8 @@ public class VerificationResponse {
     private String remarks;
 
     private JsonNode fieldValues;
+
+    private List<UUID> verificationDocuments;
 
     private LocalDateTime verifiedAt;
 }

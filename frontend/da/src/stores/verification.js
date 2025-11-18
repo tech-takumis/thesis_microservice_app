@@ -1,73 +1,164 @@
 import axios from '../lib/axios'
-import { ref,computed } from 'vue'
+import { ref, computed } from 'vue'
 
 export function useVerificationStore() {
-  const applications = ref([])
-  const isForwarding = ref(false)
+  const verifications = ref([])
+  const verification = ref(null)
   const loading = ref(false)
   const errors = ref([])
-  const basePath = ref("/api/v1/verification")
+  const basePath = ref("/api/v1/verifications")
 
-  const allApplications = computed(() => applications.value || [])
+  const allVerifications = computed(() => verifications.value || [])
+  const currentVerification = computed(() => verification.value)
   const isLoading = computed(() => loading.value)
   const errorsList = computed(() => errors.value || [])
-  const isForwardingStatus = computed(() => isForwarding.value)
 
-
-  async function forwardApplicationToPCIC(applicationIds) {
-    isForwarding.value = true
-    errors.value = null
+  // Create verification for submission with files
+  const createVerification = async (submissionId, verificationData) => {
+    loading.value = true
+    errors.value = []
     try {
-      await axios.post(`${basePath.value}/forwards`, applicationIds)
-      isForwarding.value = false
-      return true
-    } catch (e) {
-      errors.value = e
-      isForwarding.value = false
-      return false
+      // Don't set Content-Type for FormData - let axios handle it automatically
+      const config = {}
+
+      const response = await axios.post(`${basePath.value}/submission/${submissionId}/with-files`, verificationData, config)
+      verification.value = response.data
+      return response.data
+    } catch (error) {
+      errors.value = error.response?.data?.errors || ['Failed to create verification']
+      throw error
+    } finally {
+      loading.value = false
     }
   }
 
-  const fetchApplications = async () => {
+  // Get verification by ID
+  const getVerificationById = async (verificationId) => {
+    loading.value = true
+    errors.value = []
     try {
-      const response = await axios.get(basePath.value)
-      applications.value = response.data
-      return { success: true, data: response.data }
-    } catch (e) {
-      console.error("Error fetching verification applications:", e.response?.data)
-      errors.value = e.response?.data?.message
-      return { success: false, error: e.response?.data || e.message }
+      const response = await axios.get(`${basePath.value}/${verificationId}`)
+      verification.value = response.data
+      return response.data
+    } catch (error) {
+      errors.value = error.response?.data?.errors || ['Failed to fetch verification']
+      throw error
+    } finally {
+      loading.value = false
     }
   }
 
-  const fetchApplicationByBatchId = async (batchId) => {
+  const getVerificationBySubmissionId = async (submissionId) => {
       try{
-        loading.value = true
-        errors.value = null
-        const response = await axios.get(`${basePath.value}/batch/${batchId}`)
-        applications.value = response.data
-        return { success: true, data: response.data }
-      }catch(err){
-        loading.value = false
-        errors.value = err.error
-        console.error("Error fetching applications by batch ID:", err.response?.data || err.message)
-        return { success: false, error: err.response?.data || err.message }
-      }finally {
-        loading.value = false
-        errors.value = null
+          loading.value = true
+          errors.value = []
+          const response = await axios.get(`${basePath.value}/submission/${submissionId}`)
+          if(response.status === 200){
+              errors.value = []
+              verification.value = response.data
+              return {success: true, data: response.data, message: "Verification fetched successfully"}
+          }
+          return {success: false, data: null, message: "Failed to fetch verification"}
+      }catch (error){
+          errors.value = error.response?.data?.errors || ['Failed to fetch verification']
+          return {success: false, data: null, message: error.response?.data?.errors || ['Failed to fetch verification']}
+      }
+      finally {
+          loading.value = false
       }
   }
 
+  // Get all verifications with pagination
+  const getAllVerifications = async (params = {}) => {
+    loading.value = true
+    errors.value = []
+    try {
+      const response = await axios.get(basePath.value, { params })
+      verifications.value = response.data.content || response.data
+      return response.data
+    } catch (error) {
+      errors.value = error.response?.data?.errors || ['Failed to fetch verifications']
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // Update verification
+  const updateVerification = async (verificationId, verificationData) => {
+    loading.value = true
+    errors.value = []
+    try {
+      const response = await axios.put(`${basePath.value}/${verificationId}`, verificationData)
+      verification.value = response.data
+
+      // Update in the list if it exists
+      const index = verifications.value.findIndex(v => v.id === verificationId)
+      if (index !== -1) {
+        verifications.value[index] = response.data
+      }
+
+      return response.data
+    } catch (error) {
+      errors.value = error.response?.data?.errors || ['Failed to update verification']
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // Delete verification
+  const deleteVerification = async (verificationId) => {
+    loading.value = true
+    errors.value = []
+    try {
+      await axios.delete(`${basePath.value}/${verificationId}`)
+
+      // Remove from the list if it exists
+      verifications.value = verifications.value.filter(v => v.id !== verificationId)
+
+      // Clear current verification if it's the one being deleted
+      if (verification.value?.id === verificationId) {
+        verification.value = null
+      }
+
+      return true
+    } catch (error) {
+      errors.value = error.response?.data?.errors || ['Failed to delete verification']
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // Clear errors
+  const clearErrors = () => {
+    errors.value = []
+  }
+
+  // Reset store
+  const resetStore = () => {
+    verifications.value = []
+    verification.value = null
+    loading.value = false
+    errors.value = []
+  }
+
   return {
-    applications,
-    allApplications,
+    // State
+    allVerifications,
+    currentVerification,
     isLoading,
     errorsList,
-    isForwardingStatus,
-    isForwarding,
-    errors,
-    forwardApplicationToPCIC,
-    fetchApplications,
-    fetchApplicationByBatchId
+
+    // Actions
+    createVerification,
+    getVerificationById,
+      getVerificationBySubmissionId,
+    getAllVerifications,
+    updateVerification,
+    deleteVerification,
+    clearErrors,
+    resetStore
   }
 }

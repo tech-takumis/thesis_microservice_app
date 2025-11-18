@@ -259,11 +259,36 @@
               <h3 class="text-lg font-medium text-gray-700">Verification Information</h3>
             </div>
             <div class="px-6 py-4">
-              <div v-if="insuranceData?.verification && insuranceData.verification.verifiedBy" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <DetailField label="Verified By" :value="insuranceData.verification.verifiedBy" />
-                <DetailField label="Verified At" :value="formatDate(insuranceData.verification.verifiedAt)" />
-                <DetailField label="Remarks" :value="insuranceData.verification.remarks" />
+              <!-- Verification Complete -->
+              <div v-if="insuranceData?.verification" class="space-y-6">
+                <!-- Success Header with Icon -->
+                <div class="flex items-center space-x-3 p-4 bg-green-50 rounded-lg border border-green-200">
+                  <div class="flex-shrink-0">
+                    <CheckCircleIcon class="h-8 w-8 text-green-600" />
+                  </div>
+                  <div class="flex-1">
+                    <h4 class="text-lg font-medium text-green-800">Application Verified Successfully</h4>
+                    <p class="text-sm text-green-600 mt-1">This application has been verified and approved by authorized personnel.</p>
+                  </div>
+                </div>
+
+                <!-- Verification Details -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <DetailField label="Verifier Name" :value="insuranceData.verification.verifierName || 'Not Available'" />
+                  <DetailField label="Verified At" :value="formatDate(insuranceData.verification.verifiedAt)" />
+                  <div class="md:col-span-2">
+                    <DetailField label="Verification Remarks" :value="insuranceData.verification.remarks || 'No remarks provided'" />
+                  </div>
+                </div>
+
+                <!-- Additional Verification Information -->
+                <div v-if="insuranceData.verification.fieldValues" class="bg-gray-50 p-4 rounded-lg">
+                  <h5 class="text-sm font-medium text-gray-900 mb-2">Verified Field Information</h5>
+                  <p class="text-sm text-gray-600">Field values have been verified and validated as part of this verification process.</p>
+                </div>
               </div>
+
+              <!-- Verification Not Complete -->
               <div v-else class="flex items-center justify-center py-8">
                 <div class="text-center">
                   <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100">
@@ -271,6 +296,12 @@
                   </div>
                   <h3 class="mt-2 text-sm font-medium text-gray-900">Verification Not Completed</h3>
                   <p class="mt-1 text-sm text-gray-500">This application is awaiting verification from an authorized personnel. The verification process has not been completed yet.</p>
+                  <router-link
+                    :to="{ name: 'agriculturist-application-verification', params: { applicationId: applicationData.id, applicationTypeId: route.params.applicationTypeId } }"
+                    class="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    Start Verification
+                  </router-link>
                 </div>
               </div>
             </div>
@@ -326,10 +357,34 @@
               <h3 class="text-lg font-medium text-gray-700">Policy Information</h3>
             </div>
             <div class="px-6 py-4">
-              <div v-if="insuranceData?.policy && insuranceData.policy.policyNumber" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <DetailField label="Policy Number" :value="insuranceData.policy.policyNumber" />
-                <DetailField label="Effective Date" :value="formatDate(insuranceData.policy.effectiveDate)" />
-                <DetailField label="Expiry Date" :value="formatDate(insuranceData.policy.expiryDate)" />
+              <!-- Policy Complete -->
+              <div v-if="insuranceData?.policy" class="space-y-6">
+                <!-- Success Header with Icon -->
+                <div class="flex items-center space-x-3 p-4 bg-purple-50 rounded-lg border border-purple-200">
+                  <div class="flex-shrink-0">
+                    <CheckCircleIcon class="h-8 w-8 text-purple-600" />
+                  </div>
+                  <div class="flex-1">
+                    <h4 class="text-lg font-medium text-purple-800">Policy Issued Successfully</h4>
+                    <p class="text-sm text-purple-600 mt-1">Insurance policy has been generated and is now active.</p>
+                  </div>
+                </div>
+
+                <!-- Policy Details -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <DetailField label="Policy Number" :value="insuranceData.policy.policyNumber || 'Not Available'" />
+                  <DetailField label="Effective Date" :value="formatDate(insuranceData.policy.effectiveDate)" />
+                  <DetailField label="Expiry Date" :value="formatDate(insuranceData.policy.expiryDate)" />
+                  <div v-if="insuranceData.policy.coverageAmount" class="md:col-span-2 lg:col-span-1">
+                    <DetailField label="Coverage Amount" :value="insuranceData.policy.coverageAmount" />
+                  </div>
+                </div>
+
+                <!-- Additional Policy Information -->
+                <div v-if="insuranceData.policy.terms || insuranceData.policy.conditions" class="bg-gray-50 p-4 rounded-lg">
+                  <h5 class="text-sm font-medium text-gray-900 mb-2">Policy Information</h5>
+                  <p class="text-sm text-gray-600">Policy terms and conditions are active. Please refer to your policy document for complete details.</p>
+                </div>
               </div>
               <div v-else class="flex items-center justify-center py-8">
                 <div class="text-center">
@@ -349,21 +404,37 @@
               <h3 class="text-lg font-medium text-gray-900">Claim Information</h3>
             </div>
             <div class="px-6 py-4">
-              <div v-if="insuranceData?.claim && insuranceData.claim.filedAt">
+              <!-- Claim Complete -->
+              <div v-if="insuranceData?.claim" class="space-y-6">
+                <!-- Success Header with Icon -->
+                <div class="flex items-center space-x-3 p-4 bg-orange-50 rounded-lg border border-orange-200">
+                  <div class="flex-shrink-0">
+                    <CheckCircleIcon class="h-8 w-8 text-orange-600" />
+                  </div>
+                  <div class="flex-1">
+                    <h4 class="text-lg font-medium text-orange-800">Claim Filed Successfully</h4>
+                    <p class="text-sm text-orange-600 mt-1">Insurance claim has been filed and is being processed.</p>
+                  </div>
+                </div>
+
+                <!-- Claim Details -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   <DetailField label="Filed At" :value="formatDate(insuranceData.claim.filedAt)" />
-                  <DetailField label="Damage Assessment" :value="insuranceData.claim.damageAssessment" />
-                  <DetailField label="Claim Amount" :value="formatCurrency(insuranceData.claim.claimAmount)" />
+                  <DetailField label="Damage Assessment" :value="insuranceData.claim.damageAssessment || 'Pending Assessment'" />
+                  <DetailField label="Claim Amount" :value="formatCurrency(insuranceData.claim.claimAmount) || 'To be determined'" />
+                  <div v-if="insuranceData.claim.status" class="md:col-span-2 lg:col-span-1">
+                    <DetailField label="Status" :value="insuranceData.claim.status" />
+                  </div>
                 </div>
 
                 <!-- Supporting Files -->
-                <div v-if="insuranceData.claim.supportingFiles?.length > 0" class="mt-6">
-                  <h4 class="text-sm font-medium text-gray-900 mb-3">Supporting Files</h4>
+                <div v-if="insuranceData.claim.supportingFiles?.length > 0" class="bg-gray-50 p-4 rounded-lg">
+                  <h4 class="text-sm font-medium text-gray-900 mb-3">Supporting Files ({{ insuranceData.claim.supportingFiles.length }})</h4>
                   <div class="space-y-2">
                     <div
                       v-for="(file, index) in insuranceData.claim.supportingFiles"
                       :key="index"
-                      class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                      class="flex items-center justify-between p-3 bg-white rounded border"
                     >
                       <div class="flex items-center space-x-3">
                         <DocumentIcon class="h-5 w-5 text-gray-400" />
@@ -377,6 +448,12 @@
                       </button>
                     </div>
                   </div>
+                </div>
+
+                <!-- Additional Claim Information -->
+                <div v-if="insuranceData.claim.remarks" class="bg-gray-50 p-4 rounded-lg">
+                  <h5 class="text-sm font-medium text-gray-900 mb-2">Claim Remarks</h5>
+                  <p class="text-sm text-gray-600">{{ insuranceData.claim.remarks }}</p>
                 </div>
               </div>
               <div v-else class="flex items-center justify-center py-8">
@@ -467,7 +544,8 @@ import {
   ExclamationTriangleIcon,
   DocumentIcon,
   XMarkIcon,
-  FolderIcon 
+  FolderIcon,
+  CheckCircleIcon
 } from '@heroicons/vue/24/outline'
 
 // Composables

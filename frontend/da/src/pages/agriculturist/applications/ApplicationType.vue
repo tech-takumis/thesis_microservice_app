@@ -8,7 +8,7 @@
                     <FileText class="w-6 h-6 text-green-600" />
                     <h1
                         class="text-2xl font-semibold text-gray-900 leading-tight">
-                        Submit Crop Data
+                        Application Workspace
                     </h1>
                 </div>
             </div>

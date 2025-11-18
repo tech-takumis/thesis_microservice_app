@@ -7,6 +7,7 @@ import com.hashjosh.insurance.entity.Verification;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Component
@@ -18,6 +19,19 @@ public class VerificationMapper {
                 .verifierName(verifierName)
                 .remarks(request.getRemarks())
                 .fieldValues(request.getFieldValues())
+                .verificationDocuments(request.getVerificationDocuments())
+                .verifiedAt(LocalDateTime.now())
+                .insurance(insurance)
+                .build();
+    }
+
+    public Verification toEntity(VerificationRequest request, Insurance insurance, UUID verifierId, String verifierName, List<UUID> documentIds) {
+        return Verification.builder()
+                .verifierId(verifierId)
+                .verifierName(verifierName)
+                .remarks(request.getRemarks())
+                .fieldValues(request.getFieldValues())
+                .verificationDocuments(documentIds)
                 .verifiedAt(LocalDateTime.now())
                 .insurance(insurance)
                 .build();
@@ -31,6 +45,7 @@ public class VerificationMapper {
                 .verifierName(verification.getVerifierName())
                 .remarks(verification.getRemarks())
                 .fieldValues(verification.getFieldValues())
+                .verificationDocuments(verification.getVerificationDocuments())
                 .verifiedAt(verification.getVerifiedAt())
                 .build();
     }
@@ -40,6 +55,18 @@ public class VerificationMapper {
         verification.setVerifierName(verifierName);
         verification.setRemarks(request.getRemarks());
         verification.setFieldValues(request.getFieldValues());
+        if (request.getVerificationDocuments() != null) {
+            verification.setVerificationDocuments(request.getVerificationDocuments());
+        }
+        verification.setVerifiedAt(LocalDateTime.now());
+    }
+
+    public void updateEntity(Verification verification, VerificationRequest request, UUID verifierId, String verifierName, List<UUID> documentIds) {
+        verification.setVerifierId(verifierId);
+        verification.setVerifierName(verifierName);
+        verification.setRemarks(request.getRemarks());
+        verification.setFieldValues(request.getFieldValues());
+        verification.setVerificationDocuments(documentIds);
         verification.setVerifiedAt(LocalDateTime.now());
     }
 

@@ -22,7 +22,7 @@
             </h3>
             <button
               @click="closeModal"
-              class="p-2 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+              class="p-2 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-100"
             >
               <X class="h-5 w-5" />
             </button>
@@ -42,7 +42,7 @@
                 type="text"
                 id="roleName"
                 required
-                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-green-400 focus:ring-2 focus:ring-green-400/40 transition duration-200 disabled:opacity-50"
                 placeholder="e.g., Content Manager"
               />
             </div>
@@ -61,7 +61,7 @@
                     v-model="searchQuery"
                     type="text"
                     placeholder="Search permissions..."
-                    class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-green-400 focus:ring-2 focus:ring-green-400/40 transition duration-200 disabled:opacity-50"
                   />
                 </div>
               </div>
@@ -105,7 +105,7 @@
                         <button
                           type="button"
                           @click="toggleCategorySelection(category, authorities)"
-                          class="text-xs text-indigo-600 hover:text-indigo-700"
+                          class="text-xs text-green-600 hover:text-red-600"
                         >
                           {{ isCategoryFullySelected(authorities) ? 'Deselect All' : 'Select All' }}
                         </button>
@@ -126,7 +126,7 @@
                         v-model="selectedPermissions"
                         :value="authority.id"
                         type="checkbox"
-                        class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                        class="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
                       />
                       <label 
                         :for="`permission-${authority.id}`" 
@@ -163,7 +163,7 @@
             <button
               @click="saveRole"
               :disabled="!roleData.name || selectedPermissions.length === 0"
-              class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50"
+              class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-indigo-700 disabled:opacity-50"
             >
               {{ isEditing ? 'Update' : 'Create' }} Role
             </button>

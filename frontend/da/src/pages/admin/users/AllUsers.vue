@@ -117,7 +117,7 @@
               <tr
                 v-for="agriculture in filteredUsers"
                 :key="agriculture.id"
-                class="hover:bg-gray-50 cursor-pointer"
+                class="hover:bg-green-50 cursor-pointer"
                 @click="viewUser(agriculture)"
               >
                 <td class="px-6 py-4 whitespace-nowrap" @click.stop>

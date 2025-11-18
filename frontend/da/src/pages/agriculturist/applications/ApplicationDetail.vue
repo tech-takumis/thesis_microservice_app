@@ -254,8 +254,8 @@
               </div>
               <div v-else class="flex items-center justify-center py-8">
                 <div class="text-center">
-                  <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100">
-                    <ExclamationTriangleIcon class="h-6 w-6 text-blue-600" />
+                  <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                    <ExclamationTriangleIcon class="h-6 w-6 text-red-600" />
                   </div>
                   <h3 class="mt-2 text-sm font-medium text-gray-900">Verification Not Completed</h3>
                   <p class="mt-1 text-sm text-gray-500">This application is awaiting verification from an authorized personnel. The verification process has not been completed yet.</p>
@@ -321,8 +321,8 @@
               </div>
               <div v-else class="flex items-center justify-center py-8">
                 <div class="text-center">
-                  <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-amber-100">
-                    <DocumentIcon class="h-6 w-6 text-amber-600" />
+                  <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                    <DocumentIcon class="h-6 w-6 text-red-600" />
                   </div>
                   <h3 class="mt-2 text-sm font-medium text-gray-900">Policy Not Issued Yet</h3>
                   <p class="mt-1 text-sm text-gray-500">The insurance policy for this application has not been issued yet. Please wait for policy generation.</p>

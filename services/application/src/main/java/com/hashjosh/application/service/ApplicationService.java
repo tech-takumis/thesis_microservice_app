@@ -10,13 +10,12 @@ import com.hashjosh.application.dto.submission.ApplicationSubmissionDto;
 import com.hashjosh.application.dto.update.ApplicationUpdateDto;
 import com.hashjosh.application.dto.validation.ValidationError;
 import com.hashjosh.application.dto.validation.ValidationErrors;
+import com.hashjosh.application.dto.workflow.ApplicationWorkflowResponse;
 import com.hashjosh.application.exceptions.ApiException;
 import com.hashjosh.application.kafka.ApplicationProducer;
 import com.hashjosh.application.mapper.ApplicationMapper;
-import com.hashjosh.application.model.Application;
-import com.hashjosh.application.model.ApplicationField;
-import com.hashjosh.application.model.ApplicationType;
-import com.hashjosh.application.model.Document;
+import com.hashjosh.application.mapper.WorkflowMapper;
+import com.hashjosh.application.model.*;
 import com.hashjosh.application.repository.ApplicationRepository;
 import com.hashjosh.application.repository.ApplicationTypeRepository;
 import com.hashjosh.application.repository.DocumentRepository;
@@ -54,8 +53,8 @@ public class ApplicationService {
     private final ApplicationProducer  applicationProducer;
     private final DocumentServiceClient documentServiceClient;
     private final DocumentRepository documentRepository;
-    private final AIClient aiClient;
     private final FarmerServiceClient farmerClient;
+    private final WorkflowMapper workflowMapper;
 
     @Transactional(propagation = Propagation.REQUIRED)
     public Application processSubmission(
@@ -304,8 +303,10 @@ public class ApplicationService {
                 .orElseThrow(() -> ApiException.notFound("Application not found with id "+ applicationId));
     }
 
-    public AIResultDTO getApplicationAIResult(UUID applicationId) {
-        return  aiClient.getAIResultByApplicationId(String.valueOf(applicationId));
+    public ApplicationWorkflowResponse getApplicationWorkflow(UUID applicationId) {
+        ApplicationWorkflow workflow = applicationRepository.findAllWorkflowsByApplicationId(applicationId);
+
+        return workflowMapper.toWorkflowResponse(workflow);
     }
 
     private FarmerReponse getFarmerInfo(UUID farmerId, UUID userId) {
@@ -446,4 +447,5 @@ public class ApplicationService {
             throw ApiException.internalError("Failed to update application: " + e.getMessage());
         }
     }
+
 }

@@ -22,11 +22,17 @@ public class InsuranceService {
 
     private final InsuranceRepository insuranceRepository;
     private final InsuranceMapper insuranceMapper;
-
     @Transactional(readOnly = true)
     public List<InsuranceResponse> findAll(
     ) {
         return insuranceRepository.findAll().stream()
+                .map(insuranceMapper::toInsuranceResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<InsuranceResponse> findAllVerified() {
+        return insuranceRepository.findByVerificationIsNotNull().stream()
                 .map(insuranceMapper::toInsuranceResponse)
                 .toList();
     }
@@ -40,6 +46,7 @@ public class InsuranceService {
 
         return insuranceMapper.toInsuranceResponse(insurance);
     }
+
     @Transactional(readOnly = true)
     public InsuranceResponse findByApplicationId(UUID applicationId) {
         Insurance insurance = insuranceRepository.findBySubmissionId(applicationId)

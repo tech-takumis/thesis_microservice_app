@@ -6,15 +6,13 @@ import com.example.agriculture.dto.transaction.TransactionResponse;
 import com.example.agriculture.service.TransactionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -29,17 +27,28 @@ public class TransactionController {
         return ResponseEntity.ok(transactionService.createTransaction(request));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<TransactionResponse> getTransaction(@PathVariable UUID id) {
-        return ResponseEntity.ok(transactionService.getTransaction(id));
+    // Specific paths MUST come before generic path variables
+    @GetMapping("/type/{type}")
+    public ResponseEntity<List<TransactionResponse>> getTransactionsByType(
+            @PathVariable String type) {
+        return ResponseEntity.ok(transactionService.findTransactionsByType(type));
+    }
+
+    @GetMapping("/date-range")
+    public ResponseEntity<List<TransactionResponse>> getTransactionsByDateRange(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
+        return ResponseEntity.ok(transactionService.findTransactionsByDateRange(startDate, endDate));
     }
 
     @GetMapping
-    public ResponseEntity<Page<TransactionResponse>> getAllTransactions(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("date").descending());
-        return ResponseEntity.ok(transactionService.getAllTransactions(pageable));
+    public ResponseEntity<List<TransactionResponse>> getAllTransactions() {
+        return ResponseEntity.ok(transactionService.getAllTransactions());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<TransactionResponse> getTransaction(@PathVariable UUID id) {
+        return ResponseEntity.ok(transactionService.getTransaction(id));
     }
 
     @PutMapping("/{id}")
@@ -53,24 +62,5 @@ public class TransactionController {
     public ResponseEntity<Void> deleteTransaction(@PathVariable UUID id) {
         transactionService.deleteTransaction(id);
         return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/type/{type}")
-    public ResponseEntity<Page<TransactionResponse>> getTransactionsByType(
-            @PathVariable String type,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("date").descending());
-        return ResponseEntity.ok(transactionService.findTransactionsByType(type, pageable));
-    }
-
-    @GetMapping("/date-range")
-    public ResponseEntity<Page<TransactionResponse>> getTransactionsByDateRange(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("date").descending());
-        return ResponseEntity.ok(transactionService.findTransactionsByDateRange(startDate, endDate, pageable));
     }
 }

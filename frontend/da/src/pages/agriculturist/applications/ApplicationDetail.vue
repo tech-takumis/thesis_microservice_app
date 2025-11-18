@@ -46,6 +46,18 @@
               {{ getApplicationTitle() }}
             </p>
           </div>
+          <div v-if="shouldShowAIAnalysis">
+            <router-link
+              :to="{ name: 'agriculturist-damage-report', params: { applicationId: applicationData.id, applicationTypeId: route.params.applicationTypeId } }"
+              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+            >
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+              </svg>
+              View AI Analysis
+            </router-link>
+          </div>
         </div>
       </div>
 
@@ -247,11 +259,36 @@
               <h3 class="text-lg font-medium text-gray-700">Verification Information</h3>
             </div>
             <div class="px-6 py-4">
-              <div v-if="insuranceData?.verification && insuranceData.verification.verifiedBy" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <DetailField label="Verified By" :value="insuranceData.verification.verifiedBy" />
-                <DetailField label="Verified At" :value="formatDate(insuranceData.verification.verifiedAt)" />
-                <DetailField label="Remarks" :value="insuranceData.verification.remarks" />
+              <!-- Verification Complete -->
+              <div v-if="insuranceData?.verification" class="space-y-6">
+                <!-- Success Header with Icon -->
+                <div class="flex items-center space-x-3 p-4 bg-green-50 rounded-lg border border-green-200">
+                  <div class="flex-shrink-0">
+                    <CheckCircleIcon class="h-8 w-8 text-green-600" />
+                  </div>
+                  <div class="flex-1">
+                    <h4 class="text-lg font-medium text-green-800">Application Verified Successfully</h4>
+                    <p class="text-sm text-green-600 mt-1">This application has been verified and approved by authorized personnel.</p>
+                  </div>
+                </div>
+
+                <!-- Verification Details -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <DetailField label="Verifier Name" :value="insuranceData.verification.verifierName || 'Not Available'" />
+                  <DetailField label="Verified At" :value="formatDate(insuranceData.verification.verifiedAt)" />
+                  <div class="md:col-span-2">
+                    <DetailField label="Verification Remarks" :value="insuranceData.verification.remarks || 'No remarks provided'" />
+                  </div>
+                </div>
+
+                <!-- Additional Verification Information -->
+                <div v-if="insuranceData.verification.fieldValues" class="bg-gray-50 p-4 rounded-lg">
+                  <h5 class="text-sm font-medium text-gray-900 mb-2">Verified Field Information</h5>
+                  <p class="text-sm text-gray-600">Field values have been verified and validated as part of this verification process.</p>
+                </div>
               </div>
+
+              <!-- Verification Not Complete -->
               <div v-else class="flex items-center justify-center py-8">
                 <div class="text-center">
                   <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
@@ -259,6 +296,12 @@
                   </div>
                   <h3 class="mt-2 text-sm font-medium text-gray-900">Verification Not Completed</h3>
                   <p class="mt-1 text-sm text-gray-500">This application is awaiting verification from an authorized personnel. The verification process has not been completed yet.</p>
+                  <router-link
+                    :to="{ name: 'agriculturist-application-verification', params: { applicationId: applicationData.id, applicationTypeId: route.params.applicationTypeId } }"
+                    class="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    Start Verification
+                  </router-link>
                 </div>
               </div>
             </div>
@@ -314,10 +357,34 @@
               <h3 class="text-lg font-medium text-gray-700">Policy Information</h3>
             </div>
             <div class="px-6 py-4">
-              <div v-if="insuranceData?.policy && insuranceData.policy.policyNumber" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <DetailField label="Policy Number" :value="insuranceData.policy.policyNumber" />
-                <DetailField label="Effective Date" :value="formatDate(insuranceData.policy.effectiveDate)" />
-                <DetailField label="Expiry Date" :value="formatDate(insuranceData.policy.expiryDate)" />
+              <!-- Policy Complete -->
+              <div v-if="insuranceData?.policy" class="space-y-6">
+                <!-- Success Header with Icon -->
+                <div class="flex items-center space-x-3 p-4 bg-purple-50 rounded-lg border border-purple-200">
+                  <div class="flex-shrink-0">
+                    <CheckCircleIcon class="h-8 w-8 text-purple-600" />
+                  </div>
+                  <div class="flex-1">
+                    <h4 class="text-lg font-medium text-purple-800">Policy Issued Successfully</h4>
+                    <p class="text-sm text-purple-600 mt-1">Insurance policy has been generated and is now active.</p>
+                  </div>
+                </div>
+
+                <!-- Policy Details -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <DetailField label="Policy Number" :value="insuranceData.policy.policyNumber || 'Not Available'" />
+                  <DetailField label="Effective Date" :value="formatDate(insuranceData.policy.effectiveDate)" />
+                  <DetailField label="Expiry Date" :value="formatDate(insuranceData.policy.expiryDate)" />
+                  <div v-if="insuranceData.policy.coverageAmount" class="md:col-span-2 lg:col-span-1">
+                    <DetailField label="Coverage Amount" :value="insuranceData.policy.coverageAmount" />
+                  </div>
+                </div>
+
+                <!-- Additional Policy Information -->
+                <div v-if="insuranceData.policy.terms || insuranceData.policy.conditions" class="bg-gray-50 p-4 rounded-lg">
+                  <h5 class="text-sm font-medium text-gray-900 mb-2">Policy Information</h5>
+                  <p class="text-sm text-gray-600">Policy terms and conditions are active. Please refer to your policy document for complete details.</p>
+                </div>
               </div>
               <div v-else class="flex items-center justify-center py-8">
                 <div class="text-center">
@@ -337,21 +404,37 @@
               <h3 class="text-lg font-medium text-gray-900">Claim Information</h3>
             </div>
             <div class="px-6 py-4">
-              <div v-if="insuranceData?.claim && insuranceData.claim.filedAt">
+              <!-- Claim Complete -->
+              <div v-if="insuranceData?.claim" class="space-y-6">
+                <!-- Success Header with Icon -->
+                <div class="flex items-center space-x-3 p-4 bg-orange-50 rounded-lg border border-orange-200">
+                  <div class="flex-shrink-0">
+                    <CheckCircleIcon class="h-8 w-8 text-orange-600" />
+                  </div>
+                  <div class="flex-1">
+                    <h4 class="text-lg font-medium text-orange-800">Claim Filed Successfully</h4>
+                    <p class="text-sm text-orange-600 mt-1">Insurance claim has been filed and is being processed.</p>
+                  </div>
+                </div>
+
+                <!-- Claim Details -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   <DetailField label="Filed At" :value="formatDate(insuranceData.claim.filedAt)" />
-                  <DetailField label="Damage Assessment" :value="insuranceData.claim.damageAssessment" />
-                  <DetailField label="Claim Amount" :value="formatCurrency(insuranceData.claim.claimAmount)" />
+                  <DetailField label="Damage Assessment" :value="insuranceData.claim.damageAssessment || 'Pending Assessment'" />
+                  <DetailField label="Claim Amount" :value="formatCurrency(insuranceData.claim.claimAmount) || 'To be determined'" />
+                  <div v-if="insuranceData.claim.status" class="md:col-span-2 lg:col-span-1">
+                    <DetailField label="Status" :value="insuranceData.claim.status" />
+                  </div>
                 </div>
 
                 <!-- Supporting Files -->
-                <div v-if="insuranceData.claim.supportingFiles?.length > 0" class="mt-6">
-                  <h4 class="text-sm font-medium text-gray-900 mb-3">Supporting Files</h4>
+                <div v-if="insuranceData.claim.supportingFiles?.length > 0" class="bg-gray-50 p-4 rounded-lg">
+                  <h4 class="text-sm font-medium text-gray-900 mb-3">Supporting Files ({{ insuranceData.claim.supportingFiles.length }})</h4>
                   <div class="space-y-2">
                     <div
                       v-for="(file, index) in insuranceData.claim.supportingFiles"
                       :key="index"
-                      class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                      class="flex items-center justify-between p-3 bg-white rounded border"
                     >
                       <div class="flex items-center space-x-3">
                         <DocumentIcon class="h-5 w-5 text-gray-400" />
@@ -366,6 +449,12 @@
                     </div>
                   </div>
                 </div>
+
+                <!-- Additional Claim Information -->
+                <div v-if="insuranceData.claim.remarks" class="bg-gray-50 p-4 rounded-lg">
+                  <h5 class="text-sm font-medium text-gray-900 mb-2">Claim Remarks</h5>
+                  <p class="text-sm text-gray-600">{{ insuranceData.claim.remarks }}</p>
+                </div>
               </div>
               <div v-else class="flex items-center justify-center py-8">
                 <div class="text-center">
@@ -378,6 +467,8 @@
               </div>
             </div>
           </div>
+
+
 
           <!-- Application Metadata -->
           <div class="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
@@ -453,7 +544,8 @@ import {
   ExclamationTriangleIcon,
   DocumentIcon,
   XMarkIcon,
-  FolderIcon 
+  FolderIcon,
+  CheckCircleIcon
 } from '@heroicons/vue/24/outline'
 
 // Composables
@@ -472,11 +564,11 @@ const insuranceData = ref(null)
 const selectedImage = ref(null)
 
 async function fetchApplicationDetails() {
-  console.log('fetchApplicationDetails called with route.params.id:', route.params.id)
+  console.log('fetchApplicationDetails called with route.params.id:', route.params.id, 'applicationTypeId:', route.params.applicationTypeId)
 
-  if (!route.params.id) {
-    error.value = 'No application ID provided'
-    console.error('No application ID in route params')
+  if (!route.params.id || !route.params.applicationTypeId) {
+    error.value = 'No application ID or application type ID provided'
+    console.error('Missing required route params:', { id: route.params.id, applicationTypeId: route.params.applicationTypeId })
     return
   }
 
@@ -489,44 +581,50 @@ async function fetchApplicationDetails() {
     applicationTypeData.value = null
     insuranceData.value = null
     
-    console.log('ApplicationDetail: Starting fetch for application ID:', route.params.id)
+    console.log('ApplicationDetail: Starting parallel fetch for application ID:', route.params.id, 'and application type ID:', route.params.applicationTypeId)
 
-    // Step 1: Fetch application by ID
-    const applicationResult = await applicationStore.fetchApplicationById(route.params.id)
+    // Fetch all data in parallel for faster loading
+    const [applicationResult, applicationTypeResult, insuranceResult] = await Promise.allSettled([
+      applicationStore.fetchApplicationById(route.params.id),
+      applicationTypeStore.fetchApplicationTypesById(route.params.applicationTypeId, false),
+      insuranceStore.fetchInsuranceByApplicationId(route.params.id)
+    ])
 
-    if (applicationResult.success) {
-      applicationData.value = applicationResult.data
+    // Process application result
+    if (applicationResult.status === 'fulfilled' && applicationResult.value.success) {
+      applicationData.value = applicationResult.value.data
       console.log('Application data fetched:', applicationData.value)
-
-      // Step 2: Fetch application type using applicationTypeId
-      if (applicationData.value.applicationTypeId) {
-        const applicationTypeResult = await applicationTypeStore.fetchApplicationTypesById(
-          applicationData.value.applicationTypeId,
-          false
-        )
-
-        if (applicationTypeResult.success) {
-          applicationTypeData.value = applicationTypeResult.data
-          console.log('Application type data fetched:', applicationTypeData.value)
-        } else {
-          console.error('Failed to fetch application type:', applicationTypeResult.message)
-        }
-      }
-
-      // Step 3: Fetch insurance by application ID
-      const insuranceResult = await insuranceStore.fetchInsuranceByApplicationId(route.params.id)
-
-      if (insuranceResult.success) {
-        insuranceData.value = insuranceResult.data
-        console.log('Insurance data fetched:', insuranceData.value)
-      } else {
-        console.error('Failed to fetch insurance details:', insuranceResult.message)
-        // Don't set error here as insurance might not exist yet
-      }
-
     } else {
-      console.error('Failed to fetch application:', applicationResult.message)
-      error.value = applicationResult.error || 'Failed to load application details'
+      const errorMsg = applicationResult.status === 'rejected'
+        ? applicationResult.reason.message
+        : applicationResult.value.message || applicationResult.value.error
+      console.error('Failed to fetch application:', errorMsg)
+      error.value = errorMsg || 'Failed to load application details'
+      return // Don't continue if application fetch failed
+    }
+
+    // Process application type result
+    if (applicationTypeResult.status === 'fulfilled' && applicationTypeResult.value.success) {
+      applicationTypeData.value = applicationTypeResult.value.data
+      console.log('Application type data fetched:', applicationTypeData.value)
+    } else {
+      const errorMsg = applicationTypeResult.status === 'rejected'
+        ? applicationTypeResult.reason.message
+        : applicationTypeResult.value.message
+      console.error('Failed to fetch application type:', errorMsg)
+      // Don't set as error since we can still display the application
+    }
+
+    // Process insurance result
+    if (insuranceResult.status === 'fulfilled' && insuranceResult.value.success) {
+      insuranceData.value = insuranceResult.value.data
+      console.log('Insurance data fetched:', insuranceData.value)
+    } else {
+      const errorMsg = insuranceResult.status === 'rejected'
+        ? insuranceResult.reason.message
+        : insuranceResult.value.message
+      console.error('Failed to fetch insurance details:', errorMsg)
+      // Don't set error here as insurance might not exist yet
     }
   } catch (err) {
     console.error('Error fetching application details:', err)
@@ -546,14 +644,16 @@ async function fetchApplicationDetails() {
 
 
 const navigateToApplicationList = () => {
-  // If we have the application type ID, navigate to the correct application list
-  if (applicationData.value?.applicationTypeId) {
+  // Use applicationTypeId from route params for consistent navigation
+  const applicationTypeId = route.params.applicationTypeId || applicationData.value?.applicationTypeId
+
+  if (applicationTypeId) {
     router.push({
       name: 'agriculturist-application-type',
-      params: { id: applicationData.value.applicationTypeId }
+      params: { id: applicationTypeId }
     })
   } else {
-    // Fallback to application types if we don't have the type ID yet
+    // Fallback to application types if we don't have the type ID
     router.push({ name: 'agriculturist-submit-crop-data' })
   }
 }
@@ -750,6 +850,11 @@ const shouldShowPolicy = computed(() => {
 // Check if claim should be shown based on workflow
 const shouldShowClaim = computed(() => {
   return applicationTypeData.value?.workflow?.claim_enabled === true
+})
+
+// Check if AI analysis should be shown based on application type
+const shouldShowAIAnalysis = computed(() => {
+  return applicationTypeData.value?.requiresAIAnalysis === true
 })
 
 const openImageModal = (imageUrl) => {

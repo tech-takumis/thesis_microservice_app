@@ -132,7 +132,7 @@
             </div>
 
             <!-- Applications table -->
-            <div v-else class="bg-white shadow-sm rounded-lg overflow-hidden mb-4 print:hidden flex-1 min-h-0" :key="route.params.id">
+                <div v-else :key="route.params.id" class="bg-white shadow-sm rounded-lg overflow-hidden mb-4 print:hidden flex-1 min-h-0">
                 <div class="overflow-x-auto overflow-y-auto max-h-full">
                     <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
@@ -874,7 +874,14 @@ const handleRowClick = (id, event) => {
     // Don't navigate if clicking on checkbox
     if (event.target.type === 'checkbox') return
 
-    router.push({ name: 'agriculturist-submit-crop-data-detail', params: { id } })
+    const applicationTypeId = route.params.id
+    router.push({
+        name: 'agriculturist-submit-crop-data-detail',
+        params: {
+            id: id,
+            applicationTypeId: applicationTypeId
+        }
+    })
 }
 
 

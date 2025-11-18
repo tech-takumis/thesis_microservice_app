@@ -8,6 +8,7 @@ import lombok.*;
 import org.hibernate.annotations.Type;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -28,6 +29,8 @@ public class Verification {
     private String verifierName;
 
     private String remarks;
+
+    private List<UUID> verificationDocuments;
 
     @Type(JsonBinaryType.class)
     @Column(columnDefinition = "jsonb",name = "verified_field_values")

@@ -78,16 +78,12 @@ export const MUNICIPAL_AGRICULTURIST_NAVIGATION = [
                 to: { name: 'agriculturist-voucher-program' }
             },
             {
-                title: 'Coordinate Agencies',
-                to: { name: 'agriculturist-coordinate-agencies' }
+                title: 'Manage transaction',
+                to: { name: 'agriculturist-transaction' }
             },
             {
                 title: 'Monitor Programs',
                 to: { name: 'agriculturist-monitor-programs' }
-            },
-            {
-                title: 'Conduct Surveys',
-                to: { name: 'agriculturist-conduct-surveys' }
             }
         ]
     },
@@ -100,11 +96,6 @@ export const MUNICIPAL_AGRICULTURIST_NAVIGATION = [
                 to: { name: 'agriculturist-process-claims' }
             }
         ]
-    },
-    {
-        title: 'Reports',
-        icon: FileBarChart2,
-        to: { name: 'agriculturist-reports' }
     },
     {
         title: 'Messages',

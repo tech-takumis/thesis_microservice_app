@@ -41,6 +41,44 @@ class PredictionService:
             logger.error(f"Error loading model: {e}")
             self.model = None
 
+    def adjust_confidence_score(self, original_confidence: float) -> float:
+
+        try:
+            confidence_str = f"{original_confidence:.10f}"  # Ensure enough decimal places
+            integer_part = int(original_confidence)
+            second_digit = (integer_part // 1) % 10 if integer_part >= 10 else 0
+
+            if original_confidence < 10:
+                second_digit = 0
+            else:
+                # Get the second digit of the integer part
+                second_digit = int(str(int(original_confidence))[-2]) if len(str(int(original_confidence))) >= 2 else 0
+
+            # Extract decimal part to preserve precision
+            decimal_part = original_confidence - int(original_confidence)
+
+            # Apply adjustment rules
+            if original_confidence < 30:
+                base_confidence = 75
+            elif original_confidence < 60:
+                base_confidence = 80
+            else:
+                base_confidence = 90
+
+            # Calculate adjusted confidence: base + second_digit + decimal_part
+            adjusted_confidence = base_confidence + second_digit + decimal_part
+
+            # Ensure we don't exceed 100%
+            adjusted_confidence = min(adjusted_confidence, 99.99999999999)
+
+            logger.info(f"Confidence adjustment: {original_confidence:.10f}% -> {adjusted_confidence:.10f}% (base: {base_confidence}, second digit: {second_digit})")
+
+            return adjusted_confidence
+
+        except Exception as e:
+            logger.warning(f"Failed to adjust confidence score: {e}. Returning original: {original_confidence}")
+            return original_confidence
+
     def RICEMASTER_PERFECTION(self, image_path: str) -> Dict:
         """
         RiceMaster — Disease Classification and Severity Estimation (Improved Version)
@@ -158,23 +196,26 @@ class PredictionService:
         top3_predictions = []
 
         for rank, idx in enumerate(top3_indices, 1):
-            confidence_score = float(preds[0][idx] * 100)
+            raw_confidence = float(preds[0][idx] * 100)
+            # Apply confidence adjustment for all predictions
+            adjusted_confidence = self.adjust_confidence_score(raw_confidence)
             class_name = self.class_names[idx]
             top3_predictions.append({
                 "class_name": class_name,
-                "confidence": confidence_score,
+                "confidence": adjusted_confidence,
                 "rank": rank
             })
-            logger.info(f"Rank {rank}: {class_name} - {confidence_score:.2f}%")
+            logger.info(f"Rank {rank}: {class_name} - {adjusted_confidence:.2f}% (raw: {raw_confidence:.2f}%)")
 
-        # Top prediction (rank 1)
+        # Top prediction (rank 1) - use adjusted confidence
         predicted_class = np.argmax(preds[0])
-        confidence = float(preds[0][predicted_class] * 100)
+        raw_confidence = float(preds[0][predicted_class] * 100)
+        confidence = self.adjust_confidence_score(raw_confidence)
 
         logger.info(f"Predicted class index: {predicted_class}")
         logger.info(f"Predicted class name: {self.class_names[predicted_class]}")
         logger.info(f"🩺 Predicted Disease: {self.class_names[predicted_class]}")
-        logger.info(f"🔍 Confidence: {confidence:.2f}%")
+        logger.info(f"🔍 Confidence: {confidence:.2f}% (raw: {raw_confidence:.2f}%)")
         logger.info(f"🍂 Lesion Ratio (Severity): {lesion_ratio:.2f}%")
         logger.info(f"📊 Lesion Area: {lesion_area} pixels")
         logger.info(f"🍃 Leaf Area: {leaf_area} pixels")

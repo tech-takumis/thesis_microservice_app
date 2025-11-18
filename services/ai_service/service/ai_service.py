@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session
 from models.ai_result import AIResult, AIResponseDTO, AIRequestDTO
 from service.prediction_service import PredictionService
-from config.minio_config import MinIOConfig
-from typing import Dict, Optional, List
+from config.minio_config import MinIOConfig, DOCUMENT_BUCKET
+from typing import Dict, Optional
 import uuid
 import io
 import logging
@@ -70,17 +70,17 @@ class AIService:
     def get_ai_result_by_id(db: Session, result_id: int) -> Optional[AIResponseDTO]:
         """Get AI result by ID"""
         result = db.query(AIResult).filter(AIResult.id == result_id).first()
-        if result is None:
-            return None
-        return AIResponseDTO.model_validate(result)
+        if result is not None:
+            return AIResponseDTO.model_validate(result)
+        return None
 
     @staticmethod
     def get_ai_result_by_application_id(db: Session, application_id: str) -> Optional[AIResponseDTO]:
         """Get AI result for a specific application ID"""
         result = db.query(AIResult).filter(AIResult.applicationId == application_id).first()
-        if result is None:
-            return None
-        return AIResponseDTO.model_validate(result)
+        if result is not None:
+            return AIResponseDTO.model_validate(result)
+        return None
 
     @staticmethod
     def predict_rice_disease(image_bytes: bytes, application_id: str, user_id: str, db: Session, filename: str = None) -> Dict:
@@ -483,17 +483,36 @@ class AIService:
                 logger.error("MinIO client not available")
                 return None
 
-            response = minio_config.client.get_object(
-                bucket_name="ai-service-bucket",
-                object_name=object_name
-            )
+            # Try multiple bucket names in order of preference
+            bucket_names_to_try = [
+                DOCUMENT_BUCKET,
+                "documents",
+                "document-service-bucket",
+                "uploads",
+                "ai-service-bucket"  # fallback to original
+            ]
 
-            image_bytes = response.read()
-            response.close()
-            response.release_conn()
+            for bucket_name in bucket_names_to_try:
+                try:
+                    logger.info(f"Trying to download from bucket: {bucket_name}")
+                    response = minio_config.client.get_object(
+                        bucket_name=bucket_name,
+                        object_name=object_name
+                    )
 
-            logger.info(f"Successfully downloaded image from MinIO: {object_name}")
-            return image_bytes
+                    image_bytes = response.read()
+                    response.close()
+                    response.release_conn()
+
+                    logger.info(f"Successfully downloaded image from MinIO bucket '{bucket_name}': {object_name}")
+                    return image_bytes
+
+                except Exception as bucket_error:
+                    logger.warning(f"Failed to download from bucket '{bucket_name}': {str(bucket_error)}")
+                    continue
+
+            logger.error(f"Failed to download image '{object_name}' from any bucket")
+            return None
 
         except Exception as e:
             logger.error(f"Failed to download image from MinIO: {str(e)}")

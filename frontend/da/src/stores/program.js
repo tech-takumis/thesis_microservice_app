@@ -64,11 +64,46 @@ export const useProgramStore = defineStore('program', () => {
         error.value = null
 
         try {
-            const response = await axios.get('/api/v1/programs')
+            const response = await axios.get('/api/v1/agriculture/programs')
             programs.value = response.data
         } catch (err) {
             error.value = err.response?.data?.message || err.message || 'Failed to fetch programs'
             console.error('Error fetching programs:', err)
+        } finally {
+            loading.value = false
+        }
+    }
+
+    async function getProgram(id) {
+        loading.value = true
+        error.value = null
+
+        try {
+            const response = await axios.get(`/api/v1/agriculture/programs/${id}`)
+            return {success: true, message: "Program retrieved successfully", data: response.data}
+        } catch (err) {
+            error.value = err.response?.data?.message || err.message || 'Failed to get program'
+            console.error('Error getting program:', err)
+            return {success: false, message: err.response?.data?.message || err.message, data: null}
+        } finally {
+            loading.value = false
+        }
+    }
+
+    async function getAllPrograms(page = 0, size = 10) {
+        loading.value = true
+        error.value = null
+
+        try {
+            const response = await axios.get('/api/v1/agriculture/programs', {
+                params: { page, size }
+            })
+            programs.value = response.data.content || response.data
+            return {success: true, message: "Programs retrieved successfully", data: response.data}
+        } catch (err) {
+            error.value = err.response?.data?.message || err.message || 'Failed to get all programs'
+            console.error('Error getting all programs:', err)
+            return {success: false, message: err.response?.data?.message || err.message, data: null}
         } finally {
             loading.value = false
         }
@@ -79,7 +114,7 @@ export const useProgramStore = defineStore('program', () => {
         error.value = null
 
         try {
-            const response = await axios.post('/api/v1/programs', programData)
+            const response = await axios.post('/api/v1/agriculture/programs', programData)
             programs.value.push(response.data)
             return response.data
         } catch (err) {
@@ -96,7 +131,7 @@ export const useProgramStore = defineStore('program', () => {
         error.value = null
 
         try {
-            const response = await axios.put(`/api/v1/programs/${id}`, programData)
+            const response = await axios.put(`/api/v1/agriculture/programs/${id}`, programData)
             const index = programs.value.findIndex(program => program.id === id)
             if (index !== -1) {
                 programs.value[index] = response.data
@@ -116,13 +151,77 @@ export const useProgramStore = defineStore('program', () => {
         error.value = null
 
         try {
-            await axios.delete(`/api/v1/programs/${id}`)
+            await axios.delete(`/api/v1/agriculture/programs/${id}`)
             programs.value = programs.value.filter(program => program.id !== id)
             return true
         } catch (err) {
             error.value = err.response?.data?.message || err.message || 'Failed to delete program'
             console.error('Error deleting program:', err)
             throw err
+        } finally {
+            loading.value = false
+        }
+    }
+
+    async function addBeneficiaries(programId, beneficiaryIds) {
+        loading.value = true
+        error.value = null
+
+        try {
+            const response = await axios.post(`/api/v1/agriculture/programs/${programId}/beneficiaries`, beneficiaryIds)
+
+            // Update the program in the local array
+            const index = programs.value.findIndex(program => program.id === programId)
+            if (index !== -1) {
+                programs.value[index] = response.data
+            }
+
+            return {success: true, message: "Beneficiaries added successfully", data: response.data}
+        } catch (err) {
+            error.value = err.response?.data?.message || err.message || 'Failed to add beneficiaries'
+            console.error('Error adding beneficiaries:', err)
+            return {success: false, message: err.response?.data?.message || err.message, data: null}
+        } finally {
+            loading.value = false
+        }
+    }
+
+    async function removeBeneficiaries(programId, beneficiaryIds) {
+        loading.value = true
+        error.value = null
+
+        try {
+            const response = await axios.delete(`/api/v1/agriculture/programs/${programId}/beneficiaries`, {
+                data: beneficiaryIds
+            })
+
+            // Update the program in the local array
+            const index = programs.value.findIndex(program => program.id === programId)
+            if (index !== -1) {
+                programs.value[index] = response.data
+            }
+
+            return {success: true, message: "Beneficiaries removed successfully", data: response.data}
+        } catch (err) {
+            error.value = err.response?.data?.message || err.message || 'Failed to remove beneficiaries'
+            console.error('Error removing beneficiaries:', err)
+            return {success: false, message: err.response?.data?.message || err.message, data: null}
+        } finally {
+            loading.value = false
+        }
+    }
+
+    async function getActiveCount() {
+        loading.value = true
+        error.value = null
+
+        try {
+            const response = await axios.get('/api/v1/agriculture/programs/count/active')
+            return {success: true, message: "Active programs count retrieved successfully", data: response.data}
+        } catch (err) {
+            error.value = err.response?.data?.message || err.message || 'Failed to get active programs count'
+            console.error('Error getting active programs count:', err)
+            return {success: false, message: err.response?.data?.message || err.message, data: null}
         } finally {
             loading.value = false
         }
@@ -153,8 +252,13 @@ export const useProgramStore = defineStore('program', () => {
 
         // Actions
         fetchPrograms,
+        getProgram,
+        getAllPrograms,
         createProgram,
         updateProgram,
-        deleteProgram
+        deleteProgram,
+        addBeneficiaries,
+        removeBeneficiaries,
+        getActiveCount
     }
 })

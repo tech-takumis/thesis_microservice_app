@@ -28,6 +28,7 @@ trusted:
     - notification-service
     - realtime-service
     - communication-service
+    - insurance-service
     - farmer-service
     - application-service
     - pcic-service

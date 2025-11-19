@@ -32,6 +32,8 @@ public class Inspection {
 
     private UUID scheduleId;
 
+    private boolean inspected;
+
     private List<UUID> photos;
 
     @Type(JsonBinaryType.class)

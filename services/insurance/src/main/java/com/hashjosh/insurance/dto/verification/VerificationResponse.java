@@ -26,7 +26,7 @@ public class VerificationResponse {
 
     private JsonNode fieldValues;
 
-    private List<UUID> verificationDocuments;
+    private List<String> verificationDocuments;
 
     private LocalDateTime verifiedAt;
 }

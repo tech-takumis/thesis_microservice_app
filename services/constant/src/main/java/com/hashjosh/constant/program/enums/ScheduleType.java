@@ -4,5 +4,6 @@ public enum ScheduleType {
     VISIT,
     TRAINING,
     MEETING,
-    WORKSHOP
+    WORKSHOP,
+    INSPECTION
 }

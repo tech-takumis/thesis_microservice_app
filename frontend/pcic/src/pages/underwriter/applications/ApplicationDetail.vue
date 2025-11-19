@@ -1,541 +1,354 @@
 <template>
-  <AuthenticatedLayout>
-    <div class="h-full flex flex-col min-h-0 overflow-hidden">
-      <!-- Fixed Header Section -->
-      <div class="flex-shrink-0 mb-4">
-        <!-- Header with breadcrumb -->
-        <nav class="flex mb-4" aria-label="Breadcrumb">
-          <ol class="flex items-center space-x-4">
-            <li>
-              <div>
-                <router-link
-                  :to="{ name: 'agriculturist-submit-crop-data' }"
-                  class="text-gray-400 hover:text-gray-500"
-                >
-                  <HomeIcon class="flex-shrink-0 h-5 w-5" />
-                  <span class="sr-only">Application Types</span>
-                </router-link>
-              </div>
-            </li>
-            <li>
-              <div class="flex items-center">
-                <ChevronRightIcon class="flex-shrink-0 h-5 w-5 text-gray-400" />
-                <button
-                  class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700"
-                  @click="navigateToApplicationList"
-                >
-                  Applications
-                </button>
-              </div>
-            </li>
-            <li>
-              <div class="flex items-center">
-                <ChevronRightIcon class="flex-shrink-0 h-5 w-5 text-gray-400" />
-                <span class="ml-4 text-sm font-medium text-gray-900">
-                  Application Details
-                </span>
-              </div>
-            </li>
-          </ol>
-        </nav>
-
-        <div class="flex items-center justify-between">
-          <div>
-            <h1 class="text-3xl font-bold text-gray-700">Application Submission Details</h1>
-            <p class="mt-1 text-sm text-gray-600">
-              {{ getApplicationTitle() }}
-            </p>
-          </div>
-          <div v-if="shouldShowAIAnalysis">
+  <div class="min-h-screen bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <!-- Breadcrumb Navigation -->
+      <nav class="flex mb-6" aria-label="Breadcrumb">
+        <ol class="flex items-center space-x-3">
+          <li>
             <router-link
-              :to="{ name: 'agriculturist-damage-report', params: { applicationId: applicationData.id, applicationTypeId: route.params.applicationTypeId } }"
-              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+              :to="{ name: 'underwriter-dashboard' }"
+              class="text-gray-400 hover:text-gray-600 transition-colors"
             >
-              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-              </svg>
-              View AI Analysis
+              <HomeIcon class="h-5 w-5" />
             </router-link>
-          </div>
-        </div>
-      </div>
+          </li>
+          <li class="flex items-center">
+            <ChevronRightIcon class="h-4 w-4 text-gray-400 mx-2" />
+            <button
+              class="text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors"
+              @click="navigateToApplicationList"
+            >
+              Applications
+            </button>
+          </li>
+          <li class="flex items-center">
+            <ChevronRightIcon class="h-4 w-4 text-gray-400 mx-2" />
+            <span class="text-sm font-medium text-gray-900">Details</span>
+          </li>
+        </ol>
+      </nav>
 
-      <!-- Main Content Area - Scrollable -->
-      <div class="flex-1 min-h-0 overflow-y-auto">
-        <!-- Loading State -->
-        <div v-if="loading" class="flex justify-center items-center flex-1">
-          <LoadingSpinner />
-        </div>
-
-        <!-- Error State -->
-        <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-md p-4 mb-4">
-          <div class="flex">
-            <div class="flex-shrink-0">
-              <ExclamationTriangleIcon class="h-5 w-5 text-red-400" />
-            </div>
-            <div class="ml-3">
-              <h3 class="text-sm font-medium text-red-800">Error Loading Application Details</h3>
-              <div class="mt-2 text-sm text-red-700">{{ error }}</div>
-            </div>
-          </div>
-        </div>
-
-<!-- Application Details -->
-<div v-else-if="applicationData" :key="route.params.id" class="space-y-4">
-
-  <!-- Application Type Information -->
-  <div
-    v-if="applicationTypeData"
-    class="bg-white border border-gray-200 rounded-xl overflow-hidden"
-  >
-
-    <!-- Header -->
-    <div class="px-5 py-4 border-b border-gray-200 flex items-center gap-3 bg-gray-50">
-      <DocumentIcon class="w-5 h-5 text-gray-700" />
-
-      <h3 class="text-lg font-semibold text-gray-700">
-        Application Type
-      </h3>
-    </div>
-
-    <!-- Content -->
-    <div class="px-5 py-4">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-
-        <!-- DetailField Box -->
-        <div class="p-4 border rounded-lg bg-gray-50 shadow-sm">
-          <DetailField label="Name" :value="applicationTypeData.name" />
-        </div>
-
-        <div class="p-4 border rounded-lg bg-gray-50 shadow-sm">
-          <DetailField label="Description" :value="applicationTypeData.description" />
-        </div>
-
-      </div>
-    </div>
-  </div>
-
-<!-- Batch Information -->
-<div
-  v-if="insuranceData?.batch"
-  class="bg-white shadow-md border border-gray-200 rounded-xl overflow-hidden"
->
-  <!-- Header -->
-  <div class="px-5 py-4 border-b border-gray-200 flex items-center gap-3 bg-gray-50">
-    <!-- Choose any icon -->
-    <FolderIcon class="w-5 h-5 text-gray-700" />
-
-    <h3 class="text-lg font-semibold text-gray-700">
-      Batch Information
-    </h3>
-  </div>
-
-  <!-- Content -->
-  <div class="px-5 py-4">
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-
-      <!-- Boxed DetailField items -->
-      <div class="p-4 border rounded-lg bg-gray-50 shadow-sm">
-        <DetailField label="Batch Name" :value="insuranceData.batch.batchName" />
-      </div>
-
-      <div class="p-4 border rounded-lg bg-gray-50 shadow-sm">
-        <DetailField label="Description" :value="insuranceData.batch.description" />
-      </div>
-
-      <div class="p-4 border rounded-lg bg-gray-50 shadow-sm">
-        <DetailField label="Start Date" :value="formatDate(insuranceData.batch.startDate)" />
-      </div>
-
-      <div class="p-4 border rounded-lg bg-gray-50 shadow-sm">
-        <DetailField label="End Date" :value="formatDate(insuranceData.batch.endDate)" />
-      </div>
-
-    </div>
-  </div>
-</div>
-
-<!-- Application Information -->
-<div class="bg-white shadow-md border border-gray-200 rounded-xl overflow-hidden">
-
-  <!-- Header -->
-  <div class="px-5 py-4 border-b border-gray-200 flex items-center gap-3 bg-gray-50">
-    <DocumentIcon class="w-5 h-5 text-gray-700" />
-
-    <h3 class="text-lg font-semibold text-gray-700">
-      Application Information
-    </h3>
-  </div>
-
-  <!-- Content -->
-  <div class="px-5 py-4">
-
-    <!-- Dynamic Fields -->
-    <div v-if="filteredDynamicFields.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-
-      <div
-        v-for="field in filteredDynamicFields"
-        :key="field.key"
-        class="p-4 border rounded-lg bg-gray-50 shadow-sm"
-      >
-        <DetailField :label="field.label" :value="field.value" />
-      </div>
-
-    </div>
-
-    <!-- Empty State -->
-    <div v-else class="flex items-center justify-center py-10">
-      <div class="text-center space-y-2">
-
-        <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-gray-100">
-          <DocumentIcon class="h-6 w-6 text-gray-400" />
-        </div>
-
-        <h3 class="text-sm font-medium text-gray-900">
-          No Information Available
-        </h3>
-
-        <p class="text-sm text-gray-500">
-          No application information has been provided for this submission.
-        </p>
-
-      </div>
-    </div>
-
-  </div>
-</div>
-
-
-<!-- File Uploads -->
-<div
-  v-if="applicationData.fileUploads?.length > 0"
-  class="bg-white shadow-md border border-gray-200 rounded-xl overflow-hidden"
->
-
-  <!-- Header -->
-  <div class="px-5 py-4 border-b border-gray-200 flex items-center gap-3 bg-gray-50">
-    <DocumentIcon class="w-5 h-5 text-gray-700" />
-
-    <h3 class="text-lg font-semibold text-gray-700">
-      Uploaded Files
-    </h3>
-  </div>
-
-  <!-- Content -->
-  <div class="px-5 py-4">
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-
-      <!-- File Item -->
-      <div
-        v-for="(file, index) in applicationData.fileUploads"
-        :key="index"
-        class="border rounded-lg bg-gray-50 shadow-sm p-2 hover:shadow-md transition-all"
-      >
-        <div class="aspect-square rounded-md overflow-hidden bg-gray-100">
-          <img
-            :src="file"
-            :alt="`Uploaded file ${index + 1}`"
-            class="w-full h-full object-cover transition-transform duration-300 hover:scale-105 cursor-pointer"
-            @click="openImageModal(file)"
-            @error="handleImageError"
-          />
-        </div>
-
-        <div class="mt-2 text-sm text-gray-600 truncate text-center">
-          File {{ index + 1 }}
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-</div>
-
-
-          <!-- Verification Information -->
-          <div v-if="shouldShowVerification" class="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200">
-              <h3 class="text-lg font-medium text-gray-700">Verification Information</h3>
-            </div>
-            <div class="px-6 py-4">
-              <!-- Verification Complete -->
-              <div v-if="insuranceData?.verification" class="space-y-6">
-                <!-- Success Header with Icon -->
-                <div class="flex items-center space-x-3 p-4 bg-green-50 rounded-lg border border-green-200">
-                  <div class="flex-shrink-0">
-                    <CheckCircleIcon class="h-8 w-8 text-green-600" />
-                  </div>
-                  <div class="flex-1">
-                    <h4 class="text-lg font-medium text-green-800">Application Verified Successfully</h4>
-                    <p class="text-sm text-green-600 mt-1">This application has been verified and approved by authorized personnel.</p>
-                  </div>
-                </div>
-
-                <!-- Verification Details -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <DetailField label="Verifier Name" :value="insuranceData.verification.verifierName || 'Not Available'" />
-                  <DetailField label="Verified At" :value="formatDate(insuranceData.verification.verifiedAt)" />
-                  <div class="md:col-span-2">
-                    <DetailField label="Verification Remarks" :value="insuranceData.verification.remarks || 'No remarks provided'" />
-                  </div>
-                </div>
-
-                <!-- Additional Verification Information -->
-                <div v-if="insuranceData.verification.fieldValues" class="bg-gray-50 p-4 rounded-lg">
-                  <h5 class="text-sm font-medium text-gray-900 mb-2">Verified Field Information</h5>
-                  <p class="text-sm text-gray-600">Field values have been verified and validated as part of this verification process.</p>
-                </div>
-              </div>
-
-              <!-- Verification Not Complete -->
-              <div v-else class="flex items-center justify-center py-8">
-                <div class="text-center">
-                  <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100">
-                    <ExclamationTriangleIcon class="h-6 w-6 text-blue-600" />
-                  </div>
-                  <h3 class="mt-2 text-sm font-medium text-gray-900">Verification Not Completed</h3>
-                  <p class="mt-1 text-sm text-gray-500">This application is awaiting verification from an authorized personnel. The verification process has not been completed yet.</p>
-                  <router-link
-                    :to="{ name: 'agriculturist-application-verification', params: { applicationId: applicationData.id, applicationTypeId: route.params.applicationTypeId } }"
-                    class="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                  >
-                    Start Verification
-                  </router-link>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Inspection Information -->
-          <div v-if="shouldShowInspection" class="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200">
-              <h3 class="text-lg font-medium text-gray-900">Inspection Information</h3>
-            </div>
-            <div class="px-6 py-4">
-              <div v-if="insuranceData?.inspection && insuranceData.inspection.inspectorName">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <DetailField label="Inspector Name" :value="insuranceData.inspection.inspectorName" />
-                  <DetailField label="Inspected At" :value="formatDate(insuranceData.inspection.inspectedAt)" />
-                </div>
-
-                <!-- Inspection Photos -->
-                <div v-if="insuranceData.inspection.photos?.length > 0" class="mt-6">
-                  <h4 class="text-sm font-medium text-gray-900 mb-3">Inspection Photos</h4>
-                  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div
-                      v-for="(photo, index) in insuranceData.inspection.photos"
-                      :key="index"
-                      class="aspect-square bg-gray-100 rounded-lg overflow-hidden"
-                    >
-                      <img
-                        :src="photo"
-                        :alt="`Inspection photo ${index + 1}`"
-                        class="w-full h-full object-cover hover:scale-105 transition-transform cursor-pointer"
-                        @click="openImageModal(photo)"
-                        @error="handleImageError"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div v-else class="flex items-center justify-center py-8">
-                <div class="text-center">
-                  <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-indigo-100">
-                    <DocumentIcon class="h-6 w-6 text-indigo-600" />
-                  </div>
-                  <h3 class="mt-2 text-sm font-medium text-gray-900">Inspection Not Scheduled</h3>
-                  <p class="mt-1 text-sm text-gray-500">Field inspection has not been scheduled for this application yet. An inspector will be assigned soon.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Policy Information -->
-          <div v-if="shouldShowPolicy" class="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200">
-              <h3 class="text-lg font-medium text-gray-700">Policy Information</h3>
-            </div>
-            <div class="px-6 py-4">
-              <!-- Policy Complete -->
-              <div v-if="insuranceData?.policy" class="space-y-6">
-                <!-- Success Header with Icon -->
-                <div class="flex items-center space-x-3 p-4 bg-purple-50 rounded-lg border border-purple-200">
-                  <div class="flex-shrink-0">
-                    <CheckCircleIcon class="h-8 w-8 text-purple-600" />
-                  </div>
-                  <div class="flex-1">
-                    <h4 class="text-lg font-medium text-purple-800">Policy Issued Successfully</h4>
-                    <p class="text-sm text-purple-600 mt-1">Insurance policy has been generated and is now active.</p>
-                  </div>
-                </div>
-
-                <!-- Policy Details -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <DetailField label="Policy Number" :value="insuranceData.policy.policyNumber || 'Not Available'" />
-                  <DetailField label="Effective Date" :value="formatDate(insuranceData.policy.effectiveDate)" />
-                  <DetailField label="Expiry Date" :value="formatDate(insuranceData.policy.expiryDate)" />
-                  <div v-if="insuranceData.policy.coverageAmount" class="md:col-span-2 lg:col-span-1">
-                    <DetailField label="Coverage Amount" :value="insuranceData.policy.coverageAmount" />
-                  </div>
-                </div>
-
-                <!-- Additional Policy Information -->
-                <div v-if="insuranceData.policy.terms || insuranceData.policy.conditions" class="bg-gray-50 p-4 rounded-lg">
-                  <h5 class="text-sm font-medium text-gray-900 mb-2">Policy Information</h5>
-                  <p class="text-sm text-gray-600">Policy terms and conditions are active. Please refer to your policy document for complete details.</p>
-                </div>
-              </div>
-              <div v-else class="flex items-center justify-center py-8">
-                <div class="text-center">
-                  <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-amber-100">
-                    <DocumentIcon class="h-6 w-6 text-amber-600" />
-                  </div>
-                  <h3 class="mt-2 text-sm font-medium text-gray-900">Policy Not Issued Yet</h3>
-                  <p class="mt-1 text-sm text-gray-500">The insurance policy for this application has not been issued yet. Please wait for policy generation.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Claim Information -->
-          <div v-if="shouldShowClaim" class="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200">
-              <h3 class="text-lg font-medium text-gray-900">Claim Information</h3>
-            </div>
-            <div class="px-6 py-4">
-              <!-- Claim Complete -->
-              <div v-if="insuranceData?.claim" class="space-y-6">
-                <!-- Success Header with Icon -->
-                <div class="flex items-center space-x-3 p-4 bg-orange-50 rounded-lg border border-orange-200">
-                  <div class="flex-shrink-0">
-                    <CheckCircleIcon class="h-8 w-8 text-orange-600" />
-                  </div>
-                  <div class="flex-1">
-                    <h4 class="text-lg font-medium text-orange-800">Claim Filed Successfully</h4>
-                    <p class="text-sm text-orange-600 mt-1">Insurance claim has been filed and is being processed.</p>
-                  </div>
-                </div>
-
-                <!-- Claim Details -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <DetailField label="Filed At" :value="formatDate(insuranceData.claim.filedAt)" />
-                  <DetailField label="Damage Assessment" :value="insuranceData.claim.damageAssessment || 'Pending Assessment'" />
-                  <DetailField label="Claim Amount" :value="formatCurrency(insuranceData.claim.claimAmount) || 'To be determined'" />
-                  <div v-if="insuranceData.claim.status" class="md:col-span-2 lg:col-span-1">
-                    <DetailField label="Status" :value="insuranceData.claim.status" />
-                  </div>
-                </div>
-
-                <!-- Supporting Files -->
-                <div v-if="insuranceData.claim.supportingFiles?.length > 0" class="bg-gray-50 p-4 rounded-lg">
-                  <h4 class="text-sm font-medium text-gray-900 mb-3">Supporting Files ({{ insuranceData.claim.supportingFiles.length }})</h4>
-                  <div class="space-y-2">
-                    <div
-                      v-for="(file, index) in insuranceData.claim.supportingFiles"
-                      :key="index"
-                      class="flex items-center justify-between p-3 bg-white rounded border"
-                    >
-                      <div class="flex items-center space-x-3">
-                        <DocumentIcon class="h-5 w-5 text-gray-400" />
-                        <span class="text-sm font-medium text-gray-900">Supporting File {{ index + 1 }}</span>
-                      </div>
-                      <button
-                        class="text-indigo-600 hover:text-indigo-800 text-sm font-medium"
-                        @click="downloadFile(file)"
-                      >
-                        Download
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Additional Claim Information -->
-                <div v-if="insuranceData.claim.remarks" class="bg-gray-50 p-4 rounded-lg">
-                  <h5 class="text-sm font-medium text-gray-900 mb-2">Claim Remarks</h5>
-                  <p class="text-sm text-gray-600">{{ insuranceData.claim.remarks }}</p>
-                </div>
-              </div>
-              <div v-else class="flex items-center justify-center py-8">
-                <div class="text-center">
-                  <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-gray-100">
-                    <DocumentIcon class="h-6 w-6 text-gray-400" />
-                  </div>
-                  <h3 class="mt-2 text-sm font-medium text-gray-900">No Claim Filed Yet</h3>
-                  <p class="mt-1 text-sm text-gray-500">No insurance claim has been filed for this application yet. Claims can be filed when crop damage occurs.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-
-
-          <!-- Application Metadata -->
-          <div class="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200">
-              <h3 class="text-lg font-medium text-gray-700">Application Metadata</h3>
-            </div>
-            <div class="px-6 py-4">
-              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <DetailField label="Application ID" :value="applicationData.id" />
-                <DetailField label="Submitted At" :value="formatDate(applicationData.submittedAt)" />
-                <DetailField label="Updated At" :value="formatDate(applicationData.updatedAt)" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- No Data State - Fallback when data is not loading, no error, but no applicationData -->
-        <div v-else class="flex justify-center items-center flex-1 min-h-96">
-          <div class="text-center">
-            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-gray-100">
-              <DocumentIcon class="h-6 w-6 text-gray-400" />
-            </div>
-            <h3 class="mt-2 text-sm font-medium text-gray-900">No Application Data</h3>
-            <p class="mt-1 text-sm text-gray-500">The application data could not be loaded. Please try refreshing the page.</p>
-            <div class="mt-6">
-              <button
-                class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                @click="fetchApplicationDetails"
+      <!-- Page Header -->
+      <div class="mb-6">
+        <div class="flex items-start justify-between">
+          <div>
+            <h1 class="text-2xl font-bold text-gray-900">{{ getApplicationTitle() }}</h1>
+            <div v-if="insuranceData" class="mt-2 flex items-center gap-3">
+              <span
+                :class="[
+                  'inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium',
+                  insuranceData.status === 'APPROVED'
+                    ? 'bg-green-100 text-green-800'
+                    : insuranceData.status === 'PENDING'
+                    ? 'bg-yellow-100 text-yellow-800'
+                    : 'bg-red-100 text-red-800',
+                ]"
               >
-                Try Again
-              </button>
+                {{ insuranceData.status }}
+              </span>
+              <span class="text-xs text-gray-500">
+                ID: {{ insuranceData.insuranceId?.substring(0, 13) }}...
+              </span>
+            </div>
+          </div>
+          <button
+            v-if="shouldShowClaim && insuranceData?.inspection && insuranceData.inspection.inspectorName"
+            @click="processClaim"
+            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-orange-600 hover:bg-orange-700 shadow-sm transition-all"
+          >
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+            </svg>
+            File Claim
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div v-if="loading" class="flex justify-center items-center py-12">
+        <LoadingSpinner />
+      </div>
+
+      <!-- Error State -->
+      <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div class="flex">
+          <ExclamationTriangleIcon class="h-5 w-5 text-red-400 mt-0.5" />
+          <div class="ml-3">
+            <h3 class="text-sm font-medium text-red-800">Error Loading Details</h3>
+            <p class="mt-1 text-sm text-red-700">{{ error }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Content Grid -->
+      <div v-else-if="insuranceData" :key="route.params.insuranceId">
+        <!-- Two Column Layout: 7-5 ratio -->
+        <div class="grid grid-cols-12 gap-6">
+
+          <!-- Left Column: Main Content (7 columns) -->
+          <div class="col-span-12 lg:col-span-7 space-y-4">
+
+            <!-- Batch Information -->
+            <div v-if="insuranceData?.batch" class="bg-white rounded-lg shadow-sm border border-gray-200">
+              <div class="px-4 py-3 border-b border-gray-100">
+                <h3 class="text-sm font-semibold text-gray-900">Batch Information</h3>
+              </div>
+              <div class="p-4">
+                <dl class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div>
+                    <DetailField label="Batch Name" :value="insuranceData.batch.batchName" />
+                  </div>
+                  <div>
+                    <DetailField label="Description" :value="insuranceData.batch.description" />
+                  </div>
+                  <div>
+                    <DetailField label="Start Date" :value="formatDate(insuranceData.batch.startDate)" />
+                  </div>
+                  <div>
+                    <DetailField label="End Date" :value="formatDate(insuranceData.batch.endDate)" />
+                  </div>
+                </dl>
+              </div>
+            </div>
+
+            <!-- Application Information -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+              <div class="px-4 py-3 border-b border-gray-100">
+                <h3 class="text-sm font-semibold text-gray-900">Application Information</h3>
+              </div>
+              <div class="p-4">
+                <dl v-if="filteredDynamicFields.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div v-for="field in filteredDynamicFields" :key="field.key">
+                    <DetailField :label="field.label" :value="field.value" />
+                  </div>
+                </dl>
+                <div v-else class="text-center py-8">
+                  <DocumentIcon class="mx-auto h-10 w-10 text-gray-300" />
+                  <p class="mt-2 text-sm text-gray-500">No application information available</p>
+                </div>
+              </div>
+            </div>
+
+
+            <!-- Verification Documents -->
+            <div v-if="insuranceData?.verification?.verificationDocuments?.length > 0" class="bg-white rounded-lg shadow-sm border border-gray-200">
+              <div class="px-4 py-3 border-b border-gray-100">
+                <h3 class="text-sm font-semibold text-gray-900">Verification Documents</h3>
+              </div>
+              <div class="p-4">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div
+                    v-for="(file, index) in insuranceData.verification.verificationDocuments"
+                    :key="index"
+                    class="group relative aspect-square rounded-lg overflow-hidden bg-gray-100 cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all"
+                    @click="openImageModal(file)"
+                  >
+                    <img
+                      :src="file"
+                      :alt="`Document ${index + 1}`"
+                      class="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      @error="handleImageError"
+                    />
+                    <div class="absolute bottom-0 inset-x-0 bg-black bg-opacity-50 text-white text-xs py-1 text-center">
+                      Doc {{ index + 1 }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Workflow Cards (5 columns) -->
+          <div class="col-span-12 lg:col-span-5 space-y-4">
+
+
+            <!-- Verification Card -->
+            <div v-if="shouldShowVerification" class="bg-white rounded-lg shadow-sm border border-gray-200">
+              <div class="p-4">
+                <div v-if="insuranceData?.verification" class="space-y-3">
+                  <div class="flex items-center gap-2">
+                    <CheckCircleIcon class="h-5 w-5 text-green-600 flex-shrink-0" />
+                    <h4 class="text-sm font-semibold text-gray-900">Verified</h4>
+                  </div>
+                  <div class="space-y-2 text-xs">
+                    <p class="text-gray-600">
+                      <span class="font-medium">By:</span> {{ insuranceData.verification.verifierName }}
+                    </p>
+                    <p class="text-gray-600">
+                      <span class="font-medium">Date:</span> {{ formatDate(insuranceData.verification.verifiedAt) }}
+                    </p>
+                    <p v-if="insuranceData.verification.remarks" class="text-gray-600">
+                      <span class="font-medium">Remarks:</span> {{ insuranceData.verification.remarks }}
+                    </p>
+                  </div>
+                </div>
+                <div v-else class="text-center py-4">
+                  <ExclamationTriangleIcon class="mx-auto h-8 w-8 text-yellow-500" />
+                  <p class="mt-2 text-xs font-medium text-gray-700">Pending Verification</p>
+                  <p class="mt-1 text-xs text-gray-500">Awaiting review</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Inspection Card -->
+            <div v-if="shouldShowInspection" class="bg-white rounded-lg shadow-sm border border-gray-200">
+              <div class="p-4">
+                <div v-if="insuranceData?.inspection && insuranceData.inspection.inspectorName" class="space-y-3">
+                  <div class="flex items-center gap-2">
+                    <CheckCircleIcon class="h-5 w-5 text-indigo-600 flex-shrink-0" />
+                    <h4 class="text-sm font-semibold text-gray-900">Inspected</h4>
+                  </div>
+                  <div class="space-y-2 text-xs">
+                    <p class="text-gray-600">
+                      <span class="font-medium">By:</span> {{ insuranceData.inspection.inspectorName }}
+                    </p>
+                    <p class="text-gray-600">
+                      <span class="font-medium">Date:</span> {{ formatDate(insuranceData.inspection.inspectedAt) }}
+                    </p>
+                  </div>
+                </div>
+                <div v-else class="text-center py-4">
+                  <DocumentIcon class="mx-auto h-8 w-8 text-gray-400" />
+                  <p class="mt-2 text-xs font-medium text-gray-700">Pending Inspection</p>
+                  <button
+                    @click="scheduleInspection"
+                    class="mt-3 inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 transition-colors"
+                  >
+                    Schedule
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Policy Card -->
+            <div v-if="shouldShowPolicy" class="bg-white rounded-lg shadow-sm border border-gray-200">
+              <div class="p-4">
+                <div v-if="insuranceData?.policy" class="space-y-3">
+                  <div class="flex items-center gap-2">
+                    <CheckCircleIcon class="h-5 w-5 text-purple-600 flex-shrink-0" />
+                    <h4 class="text-sm font-semibold text-gray-900">Policy Issued</h4>
+                  </div>
+                  <div class="space-y-2 text-xs">
+                    <p class="text-gray-600">
+                      <span class="font-medium">Number:</span> {{ insuranceData.policy.policyNumber }}
+                    </p>
+                    <p class="text-gray-600">
+                      <span class="font-medium">Effective:</span> {{ formatDate(insuranceData.policy.effectiveDate) }}
+                    </p>
+                  </div>
+                </div>
+                <div v-else class="text-center py-4">
+                  <DocumentIcon class="mx-auto h-8 w-8 text-gray-400" />
+                  <p class="mt-2 text-xs font-medium text-gray-700">No Policy</p>
+                  <button
+                    @click="generatePolicy"
+                    class="mt-3 inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 transition-colors"
+                  >
+                    Generate
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Claim Card -->
+            <div v-if="shouldShowClaim" class="bg-white rounded-lg shadow-sm border border-gray-200">
+              <div class="p-4">
+                <div v-if="insuranceData?.claim" class="space-y-3">
+                  <div class="flex items-center gap-2">
+                    <CheckCircleIcon class="h-5 w-5 text-orange-600 flex-shrink-0" />
+                    <h4 class="text-sm font-semibold text-gray-900">Claim Filed</h4>
+                  </div>
+                  <div class="space-y-2 text-xs">
+                    <p class="text-gray-600">
+                      <span class="font-medium">Amount:</span> {{ formatCurrency(insuranceData.claim.claimAmount) }}
+                    </p>
+                    <p class="text-gray-600">
+                      <span class="font-medium">Status:</span> {{ insuranceData.claim.status }}
+                    </p>
+                  </div>
+                </div>
+                <div v-else class="text-center py-4">
+                  <DocumentIcon class="mx-auto h-8 w-8 text-gray-400" />
+                  <p class="mt-2 text-xs font-medium text-gray-700">No Claim</p>
+                  <button
+                    v-if="insuranceData?.inspection && insuranceData.inspection.inspectorName"
+                    @click="processClaim"
+                    class="mt-3 inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 transition-colors"
+                  >
+                    Process
+                  </button>
+                  <p v-else class="mt-3 text-xs text-gray-400">Awaiting inspection</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Full Width: Insurance Metadata (12 columns) -->
+        <div class="col-span-12 mt-4">
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="px-4 py-3 border-b border-gray-100">
+              <h3 class="text-sm font-semibold text-gray-900">Metadata</h3>
+            </div>
+            <div class="p-4">
+              <dl class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <DetailField label="Insurance ID" :value="insuranceData.insuranceId" />
+                </div>
+                <div>
+                  <DetailField label="Submission ID" :value="insuranceData.submissionId" />
+                </div>
+                <div>
+                  <DetailField label="Status" :value="insuranceData.status" />
+                </div>
+              </dl>
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- No Data State -->
+      <div v-else class="text-center py-12">
+        <DocumentIcon class="mx-auto h-12 w-12 text-gray-300" />
+        <h3 class="mt-4 text-sm font-medium text-gray-900">No Data Available</h3>
+        <p class="mt-2 text-sm text-gray-500">Unable to load insurance details.</p>
+        <button
+          @click="fetchApplicationDetails"
+          class="mt-6 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition-all"
+        >
+          Try Again
+        </button>
       </div>
 
       <!-- Image Modal -->
       <div
         v-if="selectedImage"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 backdrop-blur-sm"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
         @click="closeImageModal"
       >
-        <div class="relative max-w-4xl max-h-4xl p-4">
-          <button
-            class="absolute top-2 right-2 z-10 p-2 rounded-full bg-black bg-opacity-50 text-white hover:bg-opacity-75 transition-all"
-            @click="closeImageModal"
-          >
-            <XMarkIcon class="h-6 w-6" />
-          </button>
-          <img
-            :src="selectedImage"
-            alt="Full size image"
-            class="max-w-full max-h-full object-contain rounded-lg"
-            @click.stop
-          />
-        </div>
+        <button
+          class="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+          @click="closeImageModal"
+        >
+          <XMarkIcon class="h-6 w-6" />
+        </button>
+        <img
+          :src="selectedImage"
+          alt="Full size"
+          class="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+          @click.stop
+        />
       </div>
     </div>
-  </AuthenticatedLayout>
+  </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useApplicationStore, useApplicationTypeStore } from '@/stores/applications'
+import { useApplicationStore } from '@/stores/applications'
 import { useInsuranceStore } from '@/stores/insurance'
-import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
 import DetailField from '@/components/tables/DetailField.vue'
 import LoadingSpinner from '@/components/others/LoadingSpinner.vue'
 import {
@@ -544,7 +357,6 @@ import {
   ExclamationTriangleIcon,
   DocumentIcon,
   XMarkIcon,
-  FolderIcon,
   CheckCircleIcon
 } from '@heroicons/vue/24/outline'
 
@@ -552,7 +364,6 @@ import {
 const route = useRoute()
 const router = useRouter()
 const applicationStore = useApplicationStore()
-const applicationTypeStore = useApplicationTypeStore()
 const insuranceStore = useInsuranceStore()
 
 // State
@@ -561,70 +372,79 @@ const error = ref(null)
 const applicationData = ref(null)
 const applicationTypeData = ref(null)
 const insuranceData = ref(null)
+const workflowData = ref(null)
 const selectedImage = ref(null)
 
 async function fetchApplicationDetails() {
-  console.log('fetchApplicationDetails called with route.params.id:', route.params.id, 'applicationTypeId:', route.params.applicationTypeId)
+  console.log('fetchApplicationDetails called with insuranceId:', route.params.insuranceId, 'submissionId:', route.params.submissionId)
 
-  if (!route.params.id || !route.params.applicationTypeId) {
-    error.value = 'No application ID or application type ID provided'
-    console.error('Missing required route params:', { id: route.params.id, applicationTypeId: route.params.applicationTypeId })
+  if (!route.params.insuranceId || !route.params.submissionId) {
+    error.value = 'No insurance ID or submission ID provided'
+    console.error('Missing required route params:', { insuranceId: route.params.insuranceId, submissionId: route.params.submissionId })
     return
   }
 
   try {
     loading.value = true
     error.value = null
-    
+
     // Reset all data before fetching new data
     applicationData.value = null
     applicationTypeData.value = null
     insuranceData.value = null
-    
-    console.log('ApplicationDetail: Starting parallel fetch for application ID:', route.params.id, 'and application type ID:', route.params.applicationTypeId)
+    workflowData.value = null
 
-    // Fetch all data in parallel for faster loading
-    const [applicationResult, applicationTypeResult, insuranceResult] = await Promise.allSettled([
-      applicationStore.fetchApplicationById(route.params.id),
-      applicationTypeStore.fetchApplicationTypesById(route.params.applicationTypeId, false),
-      insuranceStore.fetchInsuranceByApplicationId(route.params.id)
+    console.log('ApplicationDetail: Starting parallel fetch for insuranceId:', route.params.insuranceId, 'and submissionId:', route.params.submissionId)
+
+    // Fetch insurance data and workflow in parallel
+    const [insuranceResult, workflowResult] = await Promise.allSettled([
+      insuranceStore.fetchInsuranceById(route.params.insuranceId),
+      applicationStore.fetchApplicationWorkflow(route.params.submissionId)
     ])
-
-    // Process application result
-    if (applicationResult.status === 'fulfilled' && applicationResult.value.success) {
-      applicationData.value = applicationResult.value.data
-      console.log('Application data fetched:', applicationData.value)
-    } else {
-      const errorMsg = applicationResult.status === 'rejected'
-        ? applicationResult.reason.message
-        : applicationResult.value.message || applicationResult.value.error
-      console.error('Failed to fetch application:', errorMsg)
-      error.value = errorMsg || 'Failed to load application details'
-      return // Don't continue if application fetch failed
-    }
-
-    // Process application type result
-    if (applicationTypeResult.status === 'fulfilled' && applicationTypeResult.value.success) {
-      applicationTypeData.value = applicationTypeResult.value.data
-      console.log('Application type data fetched:', applicationTypeData.value)
-    } else {
-      const errorMsg = applicationTypeResult.status === 'rejected'
-        ? applicationTypeResult.reason.message
-        : applicationTypeResult.value.message
-      console.error('Failed to fetch application type:', errorMsg)
-      // Don't set as error since we can still display the application
-    }
 
     // Process insurance result
     if (insuranceResult.status === 'fulfilled' && insuranceResult.value.success) {
       insuranceData.value = insuranceResult.value.data
       console.log('Insurance data fetched:', insuranceData.value)
+
+      // Extract verification field values as applicationData
+      if (insuranceData.value?.verification?.fieldValues) {
+        applicationData.value = {
+          dynamicFields: insuranceData.value.verification.fieldValues,
+          id: route.params.submissionId,
+          submittedAt: insuranceData.value.verification.verifiedAt,
+          updatedAt: insuranceData.value.verification.verifiedAt
+        }
+      }
     } else {
       const errorMsg = insuranceResult.status === 'rejected'
         ? insuranceResult.reason.message
         : insuranceResult.value.message
-      console.error('Failed to fetch insurance details:', errorMsg)
-      // Don't set error here as insurance might not exist yet
+      console.error('Failed to fetch insurance:', errorMsg)
+      error.value = errorMsg || 'Failed to load insurance details'
+      return // Don't continue if insurance fetch failed
+    }
+
+    // Process workflow result
+    if (workflowResult.status === 'fulfilled' && workflowResult.value.success) {
+      workflowData.value = workflowResult.value.data
+      console.log('Workflow data fetched:', workflowData.value)
+
+      // Set workflow as application type data for compatibility
+      applicationTypeData.value = {
+        workflow: {
+          verification_enabled: workflowData.value.verificationEnabled,
+          inspection_enabled: workflowData.value.inspectionEnabled,
+          policy_enabled: workflowData.value.policyEnabled,
+          claim_enabled: workflowData.value.claimEnabled
+        }
+      }
+    } else {
+      const errorMsg = workflowResult.status === 'rejected'
+        ? workflowResult.reason.message
+        : workflowResult.value.message
+      console.error('Failed to fetch workflow:', errorMsg)
+      // Don't set as error since we can still display the insurance
     }
   } catch (err) {
     console.error('Error fetching application details:', err)
@@ -635,6 +455,7 @@ async function fetchApplicationDetails() {
       hasApplicationData: !!applicationData.value,
       hasApplicationTypeData: !!applicationTypeData.value,
       hasInsuranceData: !!insuranceData.value,
+      hasWorkflowData: !!workflowData.value,
       hasError: !!error.value,
       isLoading: loading.value
     })
@@ -644,22 +465,14 @@ async function fetchApplicationDetails() {
 
 
 const navigateToApplicationList = () => {
-  // Use applicationTypeId from route params for consistent navigation
-  const applicationTypeId = route.params.applicationTypeId || applicationData.value?.applicationTypeId
-
-  if (applicationTypeId) {
-    router.push({
-      name: 'agriculturist-application-type',
-      params: { id: applicationTypeId }
-    })
-  } else {
-    // Fallback to application types if we don't have the type ID
-    router.push({ name: 'agriculturist-submit-crop-data' })
-  }
+  // Navigate back to underwriter applications list
+  router.push({
+    name: 'underwriter-applications-all'
+  })
 }
 
 const getApplicationTitle = () => {
-  if (applicationTypeData.value && applicationData.value?.dynamicFields) {
+  if (applicationData.value?.dynamicFields) {
     const fields = applicationData.value.dynamicFields
 
     // Try to get farmer name from different possible field combinations
@@ -673,20 +486,22 @@ const getApplicationTitle = () => {
     // Try to get identifier (CIC number or other unique identifier)
     const identifier = fields.cic_no || fields.id || fields.application_number
 
-    // Try to get application type name
-    const typeName = applicationTypeData.value.name || 'Application'
+    // Try to get batch name from insurance data
+    const batchName = insuranceData.value?.batch?.batchName
 
-    if (farmerName && identifier) {
+    if (farmerName && batchName) {
+      return `${farmerName} - ${batchName}`
+    } else if (farmerName && identifier) {
       return `${farmerName} - ${identifier}`
     } else if (farmerName) {
-      return `${farmerName} - ${typeName}`
-    } else if (identifier) {
-      return `${identifier} - ${typeName}`
+      return `${farmerName}`
+    } else if (batchName) {
+      return batchName
     } else {
-      return `${typeName} Details`
+      return 'Insurance Application'
     }
   }
-  return 'Application Details'
+  return 'Insurance Application Details'
 }
 
 const formatDate = (dateString) => {
@@ -873,23 +688,57 @@ const downloadFile = (fileUrl) => {
   window.open(fileUrl, '_blank')
 }
 
+// Workflow action handlers
+const scheduleInspection = () => {
+  // TODO: Implement inspection scheduling logic
+  // For now, show an alert
+  alert('Inspection scheduling feature coming soon. This will allow you to assign an inspector and schedule a field visit.')
+}
+
+const generatePolicy = async () => {
+  // TODO: Implement policy generation logic
+  if (!insuranceData.value?.verification) {
+    alert('Cannot generate policy: Application must be verified first.')
+    return
+  }
+
+  if (!confirm('Are you sure you want to generate an insurance policy for this application?')) {
+    return
+  }
+
+  try {
+    // API call to generate policy would go here
+    alert('Policy generation feature coming soon. This will create an insurance policy with coverage details, premium calculation, and policy number.')
+  } catch (error) {
+    console.error('Error generating policy:', error)
+    alert('Failed to generate policy. Please try again.')
+  }
+}
+
+const processClaim = () => {
+  // Navigate to damage claim review page
+  if (insuranceData.value?.insuranceId) {
+    router.push({
+      name: 'damage-claim-review',
+      params: { insuranceId: insuranceData.value.insuranceId }
+    })
+  } else {
+    alert('Cannot process claim: Insurance ID not found.')
+  }
+}
 
 // Watch for route changes to reload data when navigating between applications
-watch(() => route.params.id, (newId, oldId) => {
-  console.log('ApplicationDetail: Route param changed from', oldId, 'to', newId)
-  if (newId && newId !== oldId) {
+watch(() => [route.params.insuranceId, route.params.submissionId], ([newInsuranceId, newSubmissionId], [oldInsuranceId, oldSubmissionId]) => {
+  console.log('ApplicationDetail: Route params changed from', {oldInsuranceId, oldSubmissionId}, 'to', {newInsuranceId, newSubmissionId})
+  if ((newInsuranceId && newInsuranceId !== oldInsuranceId) || (newSubmissionId && newSubmissionId !== oldSubmissionId)) {
     // Reset state immediately
     applicationData.value = null
     applicationTypeData.value = null
     insuranceData.value = null
+    workflowData.value = null
     error.value = null
     fetchApplicationDetails()
   }
-}, { immediate: false })
-
-// Also watch for full route changes to catch breadcrumb navigation
-watch(() => route.fullPath, (newPath, oldPath) => {
-  console.log('ApplicationDetail: Route path changed from', oldPath, 'to', newPath)
 }, { immediate: false })
 
 onMounted(() => {

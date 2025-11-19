@@ -38,7 +38,7 @@ npm run tier:write
 
 Copy `.env.example` to `.env` and configure:
 - `VITE_APP_NAME`: Application name
-- `VITE_PUBLIC_BACKEND_URL`: Backend API URL (default: http://localhost:9001)
+- `VITE_PUBLIC_BACKEND_URL`: Backend API URL (example default: http://localhost:8000, but configured to http://localhost:9001 in axios.js)
 
 The application expects a Laravel backend with Sanctum authentication at the configured backend URL.
 
@@ -60,6 +60,23 @@ The application expects a Laravel backend with Sanctum authentication at the con
 - Contains role hierarchy and permission maps
 - Provides computed properties: `isAuthenticate`, `userRoles`, `userPermissions`, `userPrimaryRole`
 - WebSocket token stored in localStorage for real-time features
+
+**Authentication Flow**:
+1. Login (`src/stores/auth.js:62-98`):
+   - POST to `/api/v1/pcic/auth/login` with credentials
+   - Receives `websocketToken` and `user` object
+   - Stores websocketToken in localStorage
+   - Validates user has at least one role
+   - Redirects to role's `defaultRoute` property
+2. Session Persistence (`src/stores/auth.js:101-113`):
+   - GET `/api/v1/pcic/auth/me` to fetch current user
+   - Called on page refresh if user data not in store
+   - Redirects to login on error
+3. Logout (`src/stores/auth.js:124-135`):
+   - POST to `/api/v1/pcic/auth/logout`
+   - Clears store state via `$reset()`
+   - Removes websocketToken from localStorage
+   - Redirects to login page
 
 ### Routing Architecture
 
@@ -86,14 +103,22 @@ meta: {
 ### State Management (Pinia)
 
 Stores in `src/stores/`:
-- `auth.js`: Authentication, roles, permissions
+- `auth.js`: Authentication, roles, permissions (persisted)
 - `authorization.js`: Authorization helpers
 - `claim.js`: Claims data
 - `inspection.js`: Inspection data
 - `insurance.js`: Insurance application data
+- `application.js`: Application management
+- `applications.js`: Multiple applications handling
 - `user.js`: User management
+- `role.js`: Role management
+- `permission.js`: Permission management
 
-All stores have access to Vue Router via plugin injection (`src/main.js:16-18`).
+**Store Configuration**:
+- All stores use Composition API pattern (`defineStore` with setup function)
+- Auth store is persisted to localStorage via `pinia-plugin-persistedstate` (`src/main.js:13`)
+- All stores have access to Vue Router via plugin injection (`src/main.js:16-18`)
+- HMR (Hot Module Replacement) enabled for stores in development
 
 ### Navigation System
 
@@ -174,7 +199,7 @@ src/pages/
 
 Store pattern with composition API:
 ```javascript
-import { defineStore } from 'pinia'
+import { defineStore, acceptHMRUpdate } from 'pinia'
 import { ref, computed } from 'vue'
 import axios from '@/lib/axios'
 
@@ -193,6 +218,11 @@ export const useMyStore = defineStore('myStore', () => {
 
   return { data, count, fetchData }
 })
+
+// Enable HMR (Hot Module Replacement) in development
+if (import.meta.hot) {
+  import.meta.hot.accept(acceptHMRUpdate(useMyStore, import.meta.hot))
+}
 ```
 
 ### Accessing Current User Role
@@ -209,6 +239,17 @@ const permissions = authStore.userPermissions // Array of permission names
 ### Role-Based Dashboard Redirect
 
 The auth store's `getRedirectPath()` method (used in `src/router/index.js:23,120,130,138`) determines the appropriate dashboard based on user's primary role.
+
+### Application Field Data Types
+
+Available data types for dynamic application forms (`src/lib/navigation.js:99`):
+- `TEXT`: Text input fields
+- `NUMBER`: Numeric input fields
+- `DATE`: Date picker fields
+- `BOOLEAN`: Checkbox/toggle fields
+- `FILE`: File upload fields
+- `ENUM`: Dropdown/select fields
+- `GEOLOCATION`: Geographic location fields
 
 ## Technology Stack
 

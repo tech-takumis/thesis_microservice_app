@@ -71,13 +71,33 @@ export const useInsuranceStore = defineStore("insuranceStore",() => {
             const response = await axios.get(`${basePath.value}/${id}`);
 
             if(response.data && response.data.insuranceId){
-                return {success: "true", message: "Successfully fetch insurance by id", data: response.data}
+                return {success: true, message: "Successfully fetch insurance by id", data: response.data}
             }
-            return {success: "false", message: "Insurance not found", data: null}
+            return {success: false, message: "Insurance not found", data: null}
         }catch (error){
             loading.value = false
-            error.value = error.data.message;
-            return {success: "false", message: error.value, data: null}
+            error.value = error.response?.data?.message || error.message;
+            return {success: false, message: error.value, data: null}
+        }finally {
+            loading.value = false
+        }
+    }
+
+    const fetchInsuranceBySubmissionId = async (submissionId) => {
+        try{
+            loading.value = true
+            error.value = null
+
+            const response = await axios.get(`${basePath.value}/submission/${submissionId}`);
+
+            if(response.data && response.data.insuranceId){
+                return {success: true, message: "Successfully fetch insurance by submission id", data: response.data}
+            }
+            return {success: false, message: "Insurance not found", data: null}
+        }catch (error){
+            loading.value = false
+            error.value = error.response?.data?.message || error.message;
+            return {success: false, message: error.value, data: null}
         }finally {
             loading.value = false
         }
@@ -133,6 +153,7 @@ export const useInsuranceStore = defineStore("insuranceStore",() => {
         fetchAllInsurance,
         fetchVerifiedInsurance,
         fetchInsuranceById,
+        fetchInsuranceBySubmissionId,
         updateInsurance,
         deleteInsurance,
     }

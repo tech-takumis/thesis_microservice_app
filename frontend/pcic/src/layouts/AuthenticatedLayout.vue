@@ -78,8 +78,8 @@
         </header>
 
         <!-- Dashboard Content -->
-        <div class="flex-1 overflow-y-auto bg-gray-100">
-          <div class="px-6 py-6">
+        <div class="flex-1 bg-gray-100 overflow-hidden">
+          <div class="px-6 py-6 h-full overflow-y-auto scrollbar-hide">
             <slot />
           </div>
         </div>

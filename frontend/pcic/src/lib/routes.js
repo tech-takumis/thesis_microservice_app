@@ -82,8 +82,18 @@ export const UNDERWRITER_ROUTES = [
             roles: ['UNDERWRITER'],
         },
     },
+    {
+        path: '/underwriter/application/:insuranceId/inspection',
+        name: 'application-inspection',
+        component: () => import('@/pages/underwriter/applications/ApplicationInspection.vue'),
+        meta: {
+            title: 'Application Inspection',
+            guard: 'auth',
+            roles: ['UNDERWRITER'],
+        },
+    },
      {
-        path: '/underwriter/damage/:insuranceId/claim-review',
+        path: '/underwriter/damage/:insuranceId/:submissionId/claim-review',
         name: 'damage-claim-review',
         component: () => import('@/pages/underwriter/applications/DamageClaimReview.vue'),
         meta: {

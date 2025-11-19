@@ -1,81 +1,91 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+  <div class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100/50">
+    <div class="max-w-7xl mx-auto px-8 py-8 sm:px-12 lg:px-16">
       <!-- Breadcrumb Navigation -->
-      <nav class="flex mb-6" aria-label="Breadcrumb">
-        <ol class="flex items-center space-x-3">
+      <nav class="flex mb-8" aria-label="Breadcrumb">
+        <ol class="flex items-center space-x-1.5">
           <li>
             <router-link
               :to="{ name: 'underwriter-dashboard' }"
-              class="text-gray-400 hover:text-gray-600 transition-colors"
+              class="text-slate-400 hover:text-slate-700 transition-colors duration-200"
             >
-              <HomeIcon class="h-5 w-5" />
+              <HomeIcon class="h-4 w-4" />
             </router-link>
           </li>
           <li class="flex items-center">
-            <ChevronRightIcon class="h-4 w-4 text-gray-400 mx-2" />
+            <ChevronRightIcon class="h-3 w-3 text-slate-300 mx-1" />
             <button
-              class="text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors"
+              class="text-xs font-medium text-slate-500 hover:text-slate-700 transition-colors duration-200"
               @click="navigateToApplicationList"
             >
               Applications
             </button>
           </li>
           <li class="flex items-center">
-            <ChevronRightIcon class="h-4 w-4 text-gray-400 mx-2" />
-            <span class="text-sm font-medium text-gray-900">Details</span>
+            <ChevronRightIcon class="h-3 w-3 text-slate-300 mx-1" />
+            <span class="text-xs font-medium text-slate-900">Details</span>
           </li>
         </ol>
       </nav>
 
       <!-- Page Header -->
-      <div class="mb-6">
+      <div class="mb-8">
         <div class="flex items-start justify-between">
           <div>
-            <h1 class="text-2xl font-bold text-gray-900">{{ getApplicationTitle() }}</h1>
-            <div v-if="insuranceData" class="mt-2 flex items-center gap-3">
+            <h1 class="text-2xl font-light text-slate-900 tracking-tight">{{ getApplicationTitle() }}</h1>
+            <div v-if="insuranceData" class="mt-3 flex items-center gap-3">
               <span
                 :class="[
-                  'inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium',
+                  'inline-flex items-center px-3 py-1 rounded-lg text-xs font-medium',
                   insuranceData.status === 'APPROVED'
-                    ? 'bg-green-100 text-green-800'
+                    ? 'bg-emerald-100 text-emerald-700'
                     : insuranceData.status === 'PENDING'
-                    ? 'bg-yellow-100 text-yellow-800'
-                    : 'bg-red-100 text-red-800',
+                    ? 'bg-amber-100 text-amber-700'
+                    : 'bg-red-100 text-red-700',
                 ]"
               >
                 {{ insuranceData.status }}
               </span>
-              <span class="text-xs text-gray-500">
+              <span class="text-xs text-slate-500 font-medium">
                 ID: {{ insuranceData.insuranceId?.substring(0, 13) }}...
               </span>
             </div>
           </div>
-          <button
-            v-if="shouldShowClaim && insuranceData?.inspection && insuranceData.inspection.inspectorName"
-            @click="processClaim"
-            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-orange-600 hover:bg-orange-700 shadow-sm transition-all"
-          >
-            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-            </svg>
-            File Claim
-          </button>
+          <div class="flex items-center gap-2">
+            <button
+              v-if="insuranceData?.batch"
+              @click="openBatchModal"
+              class="inline-flex items-center p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50/50 rounded-full transition-all duration-200"
+              title="View Batch Information"
+            >
+              <InformationCircleIcon class="h-5 w-5" />
+            </button>
+            <button
+              v-if="shouldShowClaim && insuranceData?.inspection && insuranceData.inspection.inspected === true"
+              @click="processClaim"
+              class="inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-medium rounded-xl text-white bg-orange-500 hover:bg-orange-600 hover:shadow-lg hover:shadow-orange-500/30 transition-all duration-200"
+            >
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+              </svg>
+              File Claim
+            </button>
+          </div>
         </div>
       </div>
 
       <!-- Loading State -->
-      <div v-if="loading" class="flex justify-center items-center py-12">
+      <div v-if="loading" class="flex justify-center items-center py-20">
         <LoadingSpinner />
       </div>
 
       <!-- Error State -->
-      <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-lg p-4">
+      <div v-else-if="error" class="bg-red-50/50 border border-red-200/60 rounded-xl p-5 backdrop-blur-sm">
         <div class="flex">
-          <ExclamationTriangleIcon class="h-5 w-5 text-red-400 mt-0.5" />
+          <ExclamationTriangleIcon class="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
           <div class="ml-3">
-            <h3 class="text-sm font-medium text-red-800">Error Loading Details</h3>
-            <p class="mt-1 text-sm text-red-700">{{ error }}</p>
+            <h3 class="text-sm font-medium text-red-900">Error Loading Details</h3>
+            <p class="mt-1 text-sm text-red-700/80">{{ error }}</p>
           </div>
         </div>
       </div>
@@ -84,73 +94,48 @@
       <div v-else-if="insuranceData" :key="route.params.insuranceId">
         <!-- Two Column Layout: 7-5 ratio -->
         <div class="grid grid-cols-12 gap-6">
-
           <!-- Left Column: Main Content (7 columns) -->
-          <div class="col-span-12 lg:col-span-7 space-y-4">
-
-            <!-- Batch Information -->
-            <div v-if="insuranceData?.batch" class="bg-white rounded-lg shadow-sm border border-gray-200">
-              <div class="px-4 py-3 border-b border-gray-100">
-                <h3 class="text-sm font-semibold text-gray-900">Batch Information</h3>
-              </div>
-              <div class="p-4">
-                <dl class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div>
-                    <DetailField label="Batch Name" :value="insuranceData.batch.batchName" />
-                  </div>
-                  <div>
-                    <DetailField label="Description" :value="insuranceData.batch.description" />
-                  </div>
-                  <div>
-                    <DetailField label="Start Date" :value="formatDate(insuranceData.batch.startDate)" />
-                  </div>
-                  <div>
-                    <DetailField label="End Date" :value="formatDate(insuranceData.batch.endDate)" />
-                  </div>
-                </dl>
-              </div>
-            </div>
-
+          <div class="col-span-12 lg:col-span-7 space-y-6">
             <!-- Application Information -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-              <div class="px-4 py-3 border-b border-gray-100">
-                <h3 class="text-sm font-semibold text-gray-900">Application Information</h3>
+            <div class="bg-white/70 backdrop-blur-sm rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
+              <div class="px-6 py-4 border-b border-slate-100/80">
+                <h3 class="text-sm font-medium text-slate-700">Application Information</h3>
               </div>
-              <div class="p-4">
-                <dl v-if="filteredDynamicFields.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div class="p-6">
+                <dl v-if="filteredDynamicFields.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                   <div v-for="field in filteredDynamicFields" :key="field.key">
                     <DetailField :label="field.label" :value="field.value" />
                   </div>
                 </dl>
-                <div v-else class="text-center py-8">
-                  <DocumentIcon class="mx-auto h-10 w-10 text-gray-300" />
-                  <p class="mt-2 text-sm text-gray-500">No application information available</p>
+                <div v-else class="text-center py-12">
+                  <DocumentIcon class="mx-auto h-12 w-12 text-slate-300" />
+                  <p class="mt-3 text-sm text-slate-500">No application information available</p>
                 </div>
               </div>
             </div>
 
 
             <!-- Verification Documents -->
-            <div v-if="insuranceData?.verification?.verificationDocuments?.length > 0" class="bg-white rounded-lg shadow-sm border border-gray-200">
-              <div class="px-4 py-3 border-b border-gray-100">
-                <h3 class="text-sm font-semibold text-gray-900">Verification Documents</h3>
+            <div v-if="insuranceData?.verification?.verificationDocuments?.length > 0" class="bg-white/70 backdrop-blur-sm rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
+              <div class="px-6 py-4 border-b border-slate-100/80">
+                <h3 class="text-sm font-medium text-slate-700">Documents</h3>
               </div>
-              <div class="p-4">
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div class="p-6">
+                <div class="grid grid-cols-3 md:grid-cols-5 gap-3">
                   <div
                     v-for="(file, index) in insuranceData.verification.verificationDocuments"
                     :key="index"
-                    class="group relative aspect-square rounded-lg overflow-hidden bg-gray-100 cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all"
+                    class="group relative aspect-square rounded-xl overflow-hidden bg-slate-100 cursor-pointer border border-slate-200 hover:border-blue-400 hover:shadow-md transition-all duration-200"
                     @click="openImageModal(file)"
                   >
                     <img
                       :src="file"
-                      :alt="`Document ${index + 1}`"
-                      class="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      :alt="`Doc ${index + 1}`"
+                      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                       @error="handleImageError"
                     />
-                    <div class="absolute bottom-0 inset-x-0 bg-black bg-opacity-50 text-white text-xs py-1 text-center">
-                      Doc {{ index + 1 }}
+                    <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent text-white text-xs py-1.5 text-center font-medium">
+                      {{ index + 1 }}
                     </div>
                   </div>
                 </div>
@@ -160,59 +145,78 @@
 
           <!-- Right Column: Workflow Cards (5 columns) -->
           <div class="col-span-12 lg:col-span-5 space-y-4">
-
-
             <!-- Verification Card -->
-            <div v-if="shouldShowVerification" class="bg-white rounded-lg shadow-sm border border-gray-200">
-              <div class="p-4">
+            <div v-if="shouldShowVerification" class="bg-white/70 backdrop-blur-sm rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
+              <div class="p-5">
                 <div v-if="insuranceData?.verification" class="space-y-3">
                   <div class="flex items-center gap-2">
-                    <CheckCircleIcon class="h-5 w-5 text-green-600 flex-shrink-0" />
-                    <h4 class="text-sm font-semibold text-gray-900">Verified</h4>
+                    <CheckCircleIcon class="h-5 w-5 text-emerald-500 flex-shrink-0" />
+                    <h4 class="text-sm font-semibold text-slate-900">Verified</h4>
                   </div>
-                  <div class="space-y-2 text-xs">
-                    <p class="text-gray-600">
-                      <span class="font-medium">By:</span> {{ insuranceData.verification.verifierName }}
+                  <div class="space-y-2 text-xs ml-7">
+                    <p class="text-slate-600">
+                      <span class="font-semibold">By:</span> {{ insuranceData.verification.verifierName }}
                     </p>
-                    <p class="text-gray-600">
-                      <span class="font-medium">Date:</span> {{ formatDate(insuranceData.verification.verifiedAt) }}
+                    <p class="text-slate-600">
+                      <span class="font-semibold">Date:</span> {{ formatDate(insuranceData.verification.verifiedAt) }}
                     </p>
-                    <p v-if="insuranceData.verification.remarks" class="text-gray-600">
-                      <span class="font-medium">Remarks:</span> {{ insuranceData.verification.remarks }}
+                    <p v-if="insuranceData.verification.remarks" class="text-slate-600">
+                      <span class="font-semibold">Remarks:</span> {{ insuranceData.verification.remarks }}
                     </p>
                   </div>
                 </div>
-                <div v-else class="text-center py-4">
-                  <ExclamationTriangleIcon class="mx-auto h-8 w-8 text-yellow-500" />
-                  <p class="mt-2 text-xs font-medium text-gray-700">Pending Verification</p>
-                  <p class="mt-1 text-xs text-gray-500">Awaiting review</p>
+                <div v-else class="text-center py-6">
+                  <ExclamationTriangleIcon class="mx-auto h-8 w-8 text-amber-400" />
+                  <p class="mt-2 text-xs font-medium text-slate-700">Pending Verification</p>
                 </div>
               </div>
             </div>
 
             <!-- Inspection Card -->
-            <div v-if="shouldShowInspection" class="bg-white rounded-lg shadow-sm border border-gray-200">
-              <div class="p-4">
-                <div v-if="insuranceData?.inspection && insuranceData.inspection.inspectorName" class="space-y-3">
+            <div v-if="shouldShowInspection" class="bg-white/70 backdrop-blur-sm rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
+              <div class="p-5">
+                <!-- Completed Inspection (inspected = true) -->
+                <div v-if="insuranceData?.inspection && insuranceData.inspection.inspected === true" class="space-y-3">
                   <div class="flex items-center gap-2">
-                    <CheckCircleIcon class="h-5 w-5 text-indigo-600 flex-shrink-0" />
-                    <h4 class="text-sm font-semibold text-gray-900">Inspected</h4>
+                    <CheckCircleIcon class="h-5 w-5 text-emerald-500 flex-shrink-0" />
+                    <h4 class="text-sm font-semibold text-slate-900">Inspection Completed</h4>
                   </div>
-                  <div class="space-y-2 text-xs">
-                    <p class="text-gray-600">
-                      <span class="font-medium">By:</span> {{ insuranceData.inspection.inspectorName }}
+                  <div class="space-y-2 text-xs ml-7">
+                    <p class="text-slate-600">
+                      <span class="font-semibold">Inspector:</span> {{ insuranceData.inspection.inspectorName }}
                     </p>
-                    <p class="text-gray-600">
-                      <span class="font-medium">Date:</span> {{ formatDate(insuranceData.inspection.inspectedAt) }}
+                    <p class="text-slate-600">
+                      <span class="font-semibold">Date:</span> {{ formatDate(insuranceData.inspection.inspectedAt) }}
                     </p>
                   </div>
                 </div>
-                <div v-else class="text-center py-4">
-                  <DocumentIcon class="mx-auto h-8 w-8 text-gray-400" />
-                  <p class="mt-2 text-xs font-medium text-gray-700">Pending Inspection</p>
+                <!-- Scheduled but Not Inspected (has schedule, inspected = false) -->
+                <div v-else-if="insuranceData?.inspection && insuranceData.inspection.schedule && insuranceData.inspection.inspected === false" class="space-y-3">
+                  <div class="flex items-center gap-2">
+                    <svg class="h-5 w-5 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    <h4 class="text-sm font-semibold text-slate-900">Scheduled</h4>
+                  </div>
+                  <div class="space-y-2 text-xs ml-7">
+                    <p class="text-slate-600">
+                      <span class="font-semibold">Date:</span> {{ formatDate(insuranceData.inspection.schedule.scheduleDate) }}
+                    </p>
+                  </div>
+                  <button
+                    @click="proceedInspection"
+                    class="w-full mt-2 inline-flex justify-center items-center px-4 py-2.5 text-sm font-medium rounded-xl text-white bg-blue-500 hover:bg-blue-600 hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-200"
+                  >
+                    Proceed
+                  </button>
+                </div>
+                <!-- Not Scheduled -->
+                <div v-else class="text-center py-6">
+                  <DocumentIcon class="mx-auto h-8 w-8 text-slate-300" />
+                  <p class="mt-2 text-xs font-medium text-slate-700">No Schedule</p>
                   <button
                     @click="scheduleInspection"
-                    class="mt-3 inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 transition-colors"
+                    class="mt-3 inline-flex items-center px-4 py-2 text-xs font-medium rounded-xl text-white bg-indigo-500 hover:bg-indigo-600 hover:shadow-lg hover:shadow-indigo-500/30 transition-all duration-200"
                   >
                     Schedule
                   </button>
@@ -221,28 +225,28 @@
             </div>
 
             <!-- Policy Card -->
-            <div v-if="shouldShowPolicy" class="bg-white rounded-lg shadow-sm border border-gray-200">
-              <div class="p-4">
+            <div v-if="shouldShowPolicy" class="bg-white/70 backdrop-blur-sm rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
+              <div class="p-5">
                 <div v-if="insuranceData?.policy" class="space-y-3">
                   <div class="flex items-center gap-2">
-                    <CheckCircleIcon class="h-5 w-5 text-purple-600 flex-shrink-0" />
-                    <h4 class="text-sm font-semibold text-gray-900">Policy Issued</h4>
+                    <CheckCircleIcon class="h-5 w-5 text-purple-500 flex-shrink-0" />
+                    <h4 class="text-sm font-semibold text-slate-900">Policy Issued</h4>
                   </div>
-                  <div class="space-y-2 text-xs">
-                    <p class="text-gray-600">
-                      <span class="font-medium">Number:</span> {{ insuranceData.policy.policyNumber }}
+                  <div class="space-y-2 text-xs ml-7">
+                    <p class="text-slate-600">
+                      <span class="font-semibold">Number:</span> {{ insuranceData.policy.policyNumber }}
                     </p>
-                    <p class="text-gray-600">
-                      <span class="font-medium">Effective:</span> {{ formatDate(insuranceData.policy.effectiveDate) }}
+                    <p class="text-slate-600">
+                      <span class="font-semibold">Effective:</span> {{ formatDate(insuranceData.policy.effectiveDate) }}
                     </p>
                   </div>
                 </div>
-                <div v-else class="text-center py-4">
-                  <DocumentIcon class="mx-auto h-8 w-8 text-gray-400" />
-                  <p class="mt-2 text-xs font-medium text-gray-700">No Policy</p>
+                <div v-else class="text-center py-6">
+                  <DocumentIcon class="mx-auto h-8 w-8 text-slate-300" />
+                  <p class="mt-2 text-xs font-medium text-slate-700">No Policy</p>
                   <button
                     @click="generatePolicy"
-                    class="mt-3 inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 transition-colors"
+                    class="mt-3 inline-flex items-center px-4 py-2 text-xs font-medium rounded-xl text-white bg-purple-500 hover:bg-purple-600 hover:shadow-lg hover:shadow-purple-500/30 transition-all duration-200"
                   >
                     Generate
                   </button>
@@ -251,71 +255,51 @@
             </div>
 
             <!-- Claim Card -->
-            <div v-if="shouldShowClaim" class="bg-white rounded-lg shadow-sm border border-gray-200">
-              <div class="p-4">
+            <div v-if="shouldShowClaim" class="bg-white/70 backdrop-blur-sm rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
+              <div class="p-5">
                 <div v-if="insuranceData?.claim" class="space-y-3">
                   <div class="flex items-center gap-2">
-                    <CheckCircleIcon class="h-5 w-5 text-orange-600 flex-shrink-0" />
-                    <h4 class="text-sm font-semibold text-gray-900">Claim Filed</h4>
+                    <CheckCircleIcon class="h-5 w-5 text-orange-500 flex-shrink-0" />
+                    <h4 class="text-sm font-semibold text-slate-900">Claim Filed</h4>
                   </div>
-                  <div class="space-y-2 text-xs">
-                    <p class="text-gray-600">
-                      <span class="font-medium">Amount:</span> {{ formatCurrency(insuranceData.claim.claimAmount) }}
+                  <div class="space-y-2 text-xs ml-7">
+                    <p class="text-slate-600">
+                      <span class="font-semibold">Amount:</span> {{ formatCurrency(insuranceData.claim.claimAmount) }}
                     </p>
-                    <p class="text-gray-600">
-                      <span class="font-medium">Status:</span> {{ insuranceData.claim.status }}
+                    <p class="text-slate-600">
+                      <span class="font-semibold">Status:</span> {{ insuranceData.claim.status }}
                     </p>
                   </div>
                 </div>
-                <div v-else class="text-center py-4">
-                  <DocumentIcon class="mx-auto h-8 w-8 text-gray-400" />
-                  <p class="mt-2 text-xs font-medium text-gray-700">No Claim</p>
+                <div v-else class="text-center py-6">
+                  <DocumentIcon class="mx-auto h-8 w-8 text-slate-300" />
+                  <p class="mt-2 text-xs font-medium text-slate-700">No Claim</p>
                   <button
-                    v-if="insuranceData?.inspection && insuranceData.inspection.inspectorName"
+                    v-if="insuranceData?.inspection && insuranceData.inspection.inspected === true"
                     @click="processClaim"
-                    class="mt-3 inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 transition-colors"
+                    class="mt-3 inline-flex items-center px-4 py-2 text-xs font-medium rounded-xl text-white bg-orange-500 hover:bg-orange-600 hover:shadow-lg hover:shadow-orange-500/30 transition-all duration-200"
                   >
-                    Process
+                    File Claim
                   </button>
-                  <p v-else class="mt-3 text-xs text-gray-400">Awaiting inspection</p>
+                  <p v-else class="mt-3 text-xs text-slate-400">
+                    {{ insuranceData?.inspection && insuranceData.inspection.schedule ? 'Awaiting completion' : 'Awaiting inspection' }}
+                  </p>
                 </div>
               </div>
             </div>
           </div>
 
         </div>
-
-        <!-- Full Width: Insurance Metadata (12 columns) -->
-        <div class="col-span-12 mt-4">
-          <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-            <div class="px-4 py-3 border-b border-gray-100">
-              <h3 class="text-sm font-semibold text-gray-900">Metadata</h3>
-            </div>
-            <div class="p-4">
-              <dl class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <DetailField label="Insurance ID" :value="insuranceData.insuranceId" />
-                </div>
-                <div>
-                  <DetailField label="Submission ID" :value="insuranceData.submissionId" />
-                </div>
-                <div>
-                  <DetailField label="Status" :value="insuranceData.status" />
-                </div>
-              </dl>
-            </div>
-          </div>
-        </div>
       </div>
 
       <!-- No Data State -->
-      <div v-else class="text-center py-12">
-        <DocumentIcon class="mx-auto h-12 w-12 text-gray-300" />
-        <h3 class="mt-4 text-sm font-medium text-gray-900">No Data Available</h3>
-        <p class="mt-2 text-sm text-gray-500">Unable to load insurance details.</p>
+      <div v-else class="text-center py-20">
+        <DocumentIcon class="mx-auto h-16 w-16 text-slate-300" />
+        <h3 class="mt-4 text-sm font-medium text-slate-900">No Data Available</h3>
+        <p class="mt-1 text-sm text-slate-500">Unable to load insurance details.</p>
         <button
           @click="fetchApplicationDetails"
-          class="mt-6 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition-all"
+          class="mt-6 inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-medium rounded-xl text-white bg-blue-500 hover:bg-blue-600 hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-200"
         >
           Try Again
         </button>
@@ -324,11 +308,11 @@
       <!-- Image Modal -->
       <div
         v-if="selectedImage"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4"
         @click="closeImageModal"
       >
         <button
-          class="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+          class="absolute top-6 right-6 p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all duration-200"
           @click="closeImageModal"
         >
           <XMarkIcon class="h-6 w-6" />
@@ -336,10 +320,86 @@
         <img
           :src="selectedImage"
           alt="Full size"
-          class="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+          class="max-w-full max-h-full object-contain rounded-2xl shadow-2xl"
           @click.stop
         />
       </div>
+
+      <!-- Batch Information Modal -->
+      <Transition name="fade">
+        <div
+          v-if="isBatchModalOpen"
+          @click="closeBatchModal"
+          class="fixed inset-0 bg-black/30 backdrop-blur-sm z-40"
+        ></div>
+      </Transition>
+
+      <Transition name="slide-right">
+        <div
+          v-if="isBatchModalOpen && insuranceData?.batch"
+          class="fixed inset-y-0 right-0 z-50 w-96 bg-white shadow-2xl overflow-y-auto"
+        >
+          <!-- Modal Header -->
+          <div class="sticky top-0 bg-white border-b border-slate-200 px-6 py-5">
+            <div class="flex items-center justify-between">
+              <h3 class="text-lg font-medium text-slate-900">Batch Information</h3>
+              <button
+                @click="closeBatchModal"
+                class="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-1.5 rounded-lg transition-all duration-200"
+              >
+                <XMarkIcon class="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+
+          <!-- Modal Body -->
+          <div class="p-6 space-y-5">
+            <div>
+              <dt class="text-xs font-medium text-slate-500 uppercase tracking-wide">Batch ID</dt>
+              <dd class="mt-1.5 text-sm text-slate-900 break-all">{{ insuranceData.batch.id }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs font-medium text-slate-500 uppercase tracking-wide">Batch Name</dt>
+              <dd class="mt-1.5 text-sm text-slate-900">{{ insuranceData.batch.batchName }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs font-medium text-slate-500 uppercase tracking-wide">Description</dt>
+              <dd class="mt-1.5 text-sm text-slate-900">{{ insuranceData.batch.description }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs font-medium text-slate-500 uppercase tracking-wide">Total Applications</dt>
+              <dd class="mt-1.5 text-sm text-slate-900">{{ insuranceData.batch.totalApplications }} / {{ insuranceData.batch.maxApplications }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs font-medium text-slate-500 uppercase tracking-wide">Start Date</dt>
+              <dd class="mt-1.5 text-sm text-slate-900">{{ formatDate(insuranceData.batch.startDate) }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs font-medium text-slate-500 uppercase tracking-wide">End Date</dt>
+              <dd class="mt-1.5 text-sm text-slate-900">{{ formatDate(insuranceData.batch.endDate) }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs font-medium text-slate-500 uppercase tracking-wide">Status</dt>
+              <dd class="mt-1.5 text-sm">
+                <span :class="[
+                  'inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium',
+                  insuranceData.batch.available ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
+                ]">
+                  {{ insuranceData.batch.available ? 'Available' : 'Closed' }}
+                </span>
+              </dd>
+            </div>
+          </div>
+        </div>
+      </Transition>
+
+      <!-- Schedule Inspection Modal -->
+      <ScheduleInspectionModal
+        :is-open="isScheduleModalOpen"
+        :insurance-id="route.params.insuranceId"
+        @close="closeScheduleModal"
+        @success="handleScheduleSuccess"
+      />
     </div>
   </div>
 </template>
@@ -349,15 +409,18 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useApplicationStore } from '@/stores/applications'
 import { useInsuranceStore } from '@/stores/insurance'
+import { useToastStore } from '@/stores/toast'
 import DetailField from '@/components/tables/DetailField.vue'
 import LoadingSpinner from '@/components/others/LoadingSpinner.vue'
+import ScheduleInspectionModal from '@/components/modals/ScheduleInspectionModal.vue'
 import {
   HomeIcon,
   ChevronRightIcon,
   ExclamationTriangleIcon,
   DocumentIcon,
   XMarkIcon,
-  CheckCircleIcon
+  CheckCircleIcon,
+  InformationCircleIcon
 } from '@heroicons/vue/24/outline'
 
 // Composables
@@ -365,6 +428,7 @@ const route = useRoute()
 const router = useRouter()
 const applicationStore = useApplicationStore()
 const insuranceStore = useInsuranceStore()
+const toastStore = useToastStore()
 
 // State
 const loading = ref(false)
@@ -374,6 +438,8 @@ const applicationTypeData = ref(null)
 const insuranceData = ref(null)
 const workflowData = ref(null)
 const selectedImage = ref(null)
+const isScheduleModalOpen = ref(false)
+const isBatchModalOpen = ref(false)
 
 async function fetchApplicationDetails() {
   console.log('fetchApplicationDetails called with insuranceId:', route.params.insuranceId, 'submissionId:', route.params.submissionId)
@@ -690,9 +756,39 @@ const downloadFile = (fileUrl) => {
 
 // Workflow action handlers
 const scheduleInspection = () => {
-  // TODO: Implement inspection scheduling logic
-  // For now, show an alert
-  alert('Inspection scheduling feature coming soon. This will allow you to assign an inspector and schedule a field visit.')
+  isScheduleModalOpen.value = true
+}
+
+const closeScheduleModal = () => {
+  isScheduleModalOpen.value = false
+}
+
+const handleScheduleSuccess = async (scheduleData) => {
+  console.log('Inspection scheduled successfully:', scheduleData)
+
+  // Show success toast
+  toastStore.success('Inspection scheduled successfully!')
+
+  // Refetch the insurance data to get updated inspection info
+  await fetchApplicationDetails()
+}
+
+const openBatchModal = () => {
+  isBatchModalOpen.value = true
+}
+
+const closeBatchModal = () => {
+  isBatchModalOpen.value = false
+}
+
+const proceedInspection = () => {
+  if (insuranceData.value?.insuranceId) {
+    router.push({
+      path: `/underwriter/application/${insuranceData.value.insuranceId}/inspection`
+    })
+  } else {
+    alert('Cannot proceed to inspection: Insurance ID not found.')
+  }
 }
 
 const generatePolicy = async () => {
@@ -749,6 +845,31 @@ onMounted(() => {
 <style scoped>
 .aspect-square {
   aspect-ratio: 1 / 1;
+}
+
+/* Slide from right animation */
+.slide-right-enter-active,
+.slide-right-leave-active {
+  transition: transform 0.3s ease-out;
+}
+
+.slide-right-enter-from {
+  transform: translateX(100%);
+}
+
+.slide-right-leave-to {
+  transform: translateX(100%);
+}
+
+/* Fade animation for backdrop */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 
 /* Compact card styling */

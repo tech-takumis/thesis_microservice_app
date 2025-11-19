@@ -225,6 +225,10 @@ if (import.meta.hot) {
 }
 ```
 
+**Important Notes**:
+- All stores have access to Vue Router via `this.router` (injected in `src/main.js:16-18`)
+- Auth store is the only persisted store (configured in auth store definition)
+
 ### Accessing Current User Role
 
 ```javascript

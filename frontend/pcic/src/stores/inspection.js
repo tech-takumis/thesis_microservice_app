@@ -8,13 +8,75 @@ export const useInspectionStore = defineStore('inspection', () => {
     const loading = ref(false)
     const schedule = ref(null)
     const error = ref(null)
-    const baseUrl = ref("/api/inspections")
+    const baseUrl = ref("/api/v1/inspection")
 
     const isLoading = computed(() => loading.value)
     const errorMessage = computed(() => error.value)
     const getInspectionSchedule = computed(() => schedule.value)
     const allInspections = computed(() => inspections.value)
 
+    const createInspection = async (insuranceId, fieldValues, photos = []) => {
+        try{
+            loading.value = true
+            error.value = false
+
+            // Create FormData for multipart request
+            const formData = new FormData()
+            
+            // Add inspection request as JSON part
+            const inspectionRequest = {
+                fieldValues: fieldValues
+            }
+            formData.append('request', new Blob([JSON.stringify(inspectionRequest)], {
+                type: 'application/json'
+            }))
+            
+            // Add photos if provided
+            if (photos && photos.length > 0) {
+                photos.forEach((photo) => {
+                    formData.append('photos', photo)
+                })
+            }
+
+            const response = await axios.post(`${baseUrl.value}/insurance/${insuranceId}`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            })
+
+            if(response.status === 201){
+                return { success: true, data: response.data, message: "Inspection created successfully" }
+            }
+            return { success: false, error: response.data.message, message: "Failed to create the inspection" }
+        }catch (error) {
+            console.error("Error creating inspection:", error.response?.data || error.message)
+            error.value = error.response?.data?.message || error.message
+            return { success: false, error: error.value, message: "Failed to create the inspection, error occurred" }
+        }finally {
+            loading.value = false
+            error.value = null
+        }
+    }
+
+    const scheduleInspection = async (id,data) => {
+        try{
+            loading.value = true
+            error.value = false
+
+            const response = await axios.post(`${baseUrl.value}/${id}/schedule`, data)
+
+            if(response.status > 200 && response.status < 300){
+                schedule.value = response.data
+                return { success: true, data: response.data, message: "Inspection scheduled successfully" }
+            }
+            return { success: false, error: response.data.message, message: "Failed to schedule the inspection" }
+        }catch (error) {
+            error.value = error.response?.message
+            return { success: false, error: error.value, message: "Failed to schedule the inspection, error occurred" }
+        }finally {
+            loading.value = false
+        }
+    }
 
     const fetchInspections = async () => {
         try{
@@ -35,43 +97,44 @@ export const useInspectionStore = defineStore('inspection', () => {
         }
     }
 
-    const createInspection = async (data) => {
+    const completeInspection = async (id, fieldValues, photos = []) => {
         try{
             loading.value = true
             error.value = false
 
-            const response = await axios.post(baseUrl.value, data)
-
-            if(response.status === 201){
-                schedule.value = response.data
-                return { success: true, data: response.data, message: "Inspection created successfully" }
+            // Create FormData for multipart request
+            const formData = new FormData()
+            
+            // Add inspection request as JSON part
+            const inspectionRequest = {
+                fieldValues: fieldValues
             }
-            return { success: false, error: response.data.message, message: "Failed to create the inspection" }
-        }catch (error) {
-            console.error("Error fetching inspections:", error.response?.data || error.message)
-            error.value = error.response?.message
-            return { success: false, error: error.value, message: "Failed to create the inspection, error occurred" }
-        }finally {
-            loading.value = false
-            error.value = null
-        }
-    }
+            formData.append('request', new Blob([JSON.stringify(inspectionRequest)], {
+                type: 'application/json'
+            }))
+            
+            // Add photos if provided
+            if (photos && photos.length > 0) {
+                photos.forEach((photo) => {
+                    formData.append('photos', photo)
+                })
+            }
 
-    const updateInspection = async (id, data) => {
-        try{
-            loading.value = true
-            error.value = false
-
-            const response = await axios.put(`${baseUrl.value}/${id}`, data)
+            const response = await axios.put(`${baseUrl.value}/${id}`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            })
+            
             if(response.status === 200){
-                return { success: true, message: "Inspection updated successfully" , data: response.data }
+                return { success: true, message: "Inspection completed successfully" , data: response.data }
             }
 
-            return { success: false, error: response.data.message, message: "Failed to update the inspection" }
+            return { success: false, error: response.data.message, message: "Failed to complete the inspection" }
         }catch (error) {
-            console.error("Error fetching inspections:", error.response?.data || error.message)
-            error.value = error.response?.message
-            return { success: false, error: error.value , message: "Failed to update the inspection, error occurred" }
+            console.error("Error completing inspection:", error.response?.data || error.message)
+            error.value = error.response?.data?.message || error.message
+            return { success: false, error: error.value , message: "Failed to complete the inspection, error occurred" }
         }finally {
             loading.value = false
             error.value = null
@@ -105,8 +168,9 @@ export const useInspectionStore = defineStore('inspection', () => {
         allInspections,
         getInspectionSchedule,
         fetchInspections,
+        scheduleInspection,
         createInspection,
-        updateInspection,
+        completeInspection,
         deleteInspection,
     }
 })

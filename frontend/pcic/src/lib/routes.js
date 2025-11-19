@@ -80,6 +80,7 @@ export const UNDERWRITER_ROUTES = [
             title: 'Application Detail',
             guard: 'auth',
             roles: ['UNDERWRITER'],
+            // Expected query parameters: action (view|edit)
         },
     },
     {
@@ -90,6 +91,7 @@ export const UNDERWRITER_ROUTES = [
             title: 'Application Inspection',
             guard: 'auth',
             roles: ['UNDERWRITER'],
+            // Expected query parameters: action (view|edit)
         },
     },
      {
@@ -97,7 +99,18 @@ export const UNDERWRITER_ROUTES = [
         name: 'damage-claim-review',
         component: () => import('@/pages/underwriter/applications/DamageClaimReview.vue'),
         meta: {
-            title: 'All Applications',
+            title: 'Damage Claim Review',
+            guard: 'auth',
+            roles: ['UNDERWRITER'],
+            // Expected query parameters: action (view|edit)
+        },
+    },
+    {
+        path: '/underwriter/applications/insurance/:insuranceId/:submissionId/claim',
+        name: 'underwriter-applications-claim',
+        component: () => import('@/pages/underwriter/applications/ApplicationClaim.vue'),
+        meta: {
+            title: 'Application Detail',
             guard: 'auth',
             roles: ['UNDERWRITER'],
         },

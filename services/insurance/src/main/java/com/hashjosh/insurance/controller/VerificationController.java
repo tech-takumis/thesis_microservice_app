@@ -16,10 +16,7 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Spliterators;
 import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 @RestController
 @RequestMapping("/api/v1/verifications")
@@ -28,16 +25,6 @@ import java.util.stream.StreamSupport;
 public class VerificationController {
 
     private final VerificationService verificationService;
-
-
-    @PostMapping("/submission/{submissionId}")
-    public ResponseEntity<VerificationResponse> createVerification(
-            @PathVariable UUID submissionId,
-            @Valid @RequestBody VerificationRequest request) {
-
-        VerificationResponse response = verificationService.createVerificationBySubmissionId(submissionId, request);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
-    }
 
     @PostMapping(value = "/submission/{submissionId}/with-files", consumes = {"multipart/form-data"})
     public ResponseEntity<VerificationResponse> createVerificationWithFiles(
@@ -93,16 +80,6 @@ public class VerificationController {
     @GetMapping
     public ResponseEntity<Page<VerificationResponse>> getAllVerifications(Pageable pageable) {
         Page<VerificationResponse> response = verificationService.getAllVerifications(pageable);
-        return ResponseEntity.ok(response);
-    }
-
-
-    @PutMapping("/{verificationId}")
-    public ResponseEntity<VerificationResponse> updateVerification(
-            @PathVariable UUID verificationId,
-            @Valid @RequestBody VerificationRequest request) {
-
-        VerificationResponse response = verificationService.updateVerification(verificationId, request);
         return ResponseEntity.ok(response);
     }
 

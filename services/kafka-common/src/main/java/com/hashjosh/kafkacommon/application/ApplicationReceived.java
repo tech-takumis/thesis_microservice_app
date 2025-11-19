@@ -13,7 +13,7 @@ import java.util.UUID;
 public class ApplicationReceived {
     private UUID submissionId;
     private UUID userId;
-    private String provider; // e.g., "PCIC", "AGRICULTURE"
-    private String status; // COMPLETED, REJECTED
+    private String provider;
+    private String status;
     private LocalDateTime receivedAt;
 }

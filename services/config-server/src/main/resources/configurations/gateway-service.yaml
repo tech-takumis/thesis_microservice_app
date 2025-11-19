@@ -52,7 +52,7 @@ spring:
             - id: insurance-service
               uri: lb://insurance-service
               predicates:
-                - Path=/api/v1/insurance/**,/api/v1/verifications/**,/api/v1/batch/**,/api/v1/claim/**,,/api/v1/inspection/**,/api/v1/pcic/policy/**
+                - Path=/api/v1/insurance/**,/api/v1/verifications/**,/api/v1/batch/**,/api/v1/claim/**,,/api/v1/inspection/**,/api/v1/policies/**
 
             - id: verification-service
               uri: lb://verification-service

@@ -28,7 +28,6 @@ spring:
       properties:
         spring.json.add.type.headers: true
         spring.json.type.mapping: >
-          applicationReceived:com.hashjosh.kafkacommon.application.ApplicationReceived,
           inspectionCompletedEvent:com.hashjosh.kafkacommon.application.InspectionCompletedEvent,
           policyIssuedEvent:com.hashjosh.kafkacommon.application.PolicyIssuedEvent,
           claimProcessedEvent:com.hashjosh.kafkacommon.application.ClaimProcessedEvent,
@@ -43,7 +42,6 @@ spring:
         spring.json.trusted.packages: '*'
         spring.json.type.mapping: >
           applicationSubmittedEvent:com.hashjosh.kafkacommon.application.ApplicationSubmittedEvent,
-          applicationReceived:com.hashjosh.kafkacommon.application.ApplicationReceived,
           inspectionCompletedEvent:com.hashjosh.kafkacommon.application.InspectionCompletedEvent,
           policyIssuedEvent:com.hashjosh.kafkacommon.application.PolicyIssuedEvent,
           claimProcessedEvent:com.hashjosh.kafkacommon.application.ClaimProcessedEvent,

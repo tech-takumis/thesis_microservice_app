@@ -32,9 +32,11 @@
       <div class="mb-8">
         <div class="flex items-start justify-between">
           <div>
-            <h1 class="text-2xl font-light text-slate-900 tracking-tight">Field Inspection</h1>
+            <h1 class="text-2xl font-light text-slate-900 tracking-tight">
+              {{ isViewMode ? 'Inspection Details' : 'Field Inspection' }}
+            </h1>
             <p class="mt-1 text-sm text-slate-500">
-              Record inspection findings and upload photos
+              {{ isViewMode ? 'View inspection findings and photos' : 'Record inspection findings and upload photos' }}
             </p>
           </div>
           <button
@@ -95,8 +97,14 @@
                     :id="field.key"
                     :type="field.type"
                     v-model="inspectionFields[field.key]"
-                    class="w-full px-4 py-3 mr-4 rounded-xl border-2 border-slate-200 bg-white text-slate-900 text-sm font-medium placeholder:text-slate-400 focus:border-blue-400 focus:bg-blue-50/30 focus:outline-none focus:ring-4 focus:ring-blue-400/10 hover:border-slate-300 transition-all duration-200"
-                    @input="markAsChanged"
+                    :readonly="isViewMode"
+                    :class="[
+                      'w-full px-4 py-3 mr-4 rounded-xl border-2 text-slate-900 text-sm font-medium transition-all duration-200',
+                      isViewMode
+                        ? 'border-slate-200 bg-slate-50 cursor-not-allowed'
+                        : 'border-slate-200 bg-white placeholder:text-slate-400 focus:border-blue-400 focus:bg-blue-50/30 focus:outline-none focus:ring-4 focus:ring-blue-400/10 hover:border-slate-300'
+                    ]"
+                    @input="!isViewMode && markAsChanged()"
                   />
                   <!-- Date Input -->
                   <input
@@ -104,8 +112,14 @@
                     :id="field.key"
                     type="date"
                     v-model="inspectionFields[field.key]"
-                    class="w-full px-4 py-3 rounded-xl mr-4 border-2 border-slate-200 bg-white text-slate-900 text-sm font-medium focus:border-blue-400 focus:bg-blue-50/30 focus:outline-none focus:ring-4 focus:ring-blue-400/10 hover:border-slate-300 transition-all duration-200"
-                    @input="markAsChanged"
+                    :readonly="isViewMode"
+                    :class="[
+                      'w-full px-4 py-3 rounded-xl mr-4 border-2 text-slate-900 text-sm font-medium transition-all duration-200',
+                      isViewMode
+                        ? 'border-slate-200 bg-slate-50 cursor-not-allowed'
+                        : 'border-slate-200 bg-white focus:border-blue-400 focus:bg-blue-50/30 focus:outline-none focus:ring-4 focus:ring-blue-400/10 hover:border-slate-300'
+                    ]"
+                    @input="!isViewMode && markAsChanged()"
                   />
                   <!-- Textarea -->
                   <textarea
@@ -113,8 +127,14 @@
                     :id="field.key"
                     v-model="inspectionFields[field.key]"
                     rows="4"
-                    class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 bg-white text-slate-900 text-sm font-medium placeholder:text-slate-400 focus:border-blue-400 focus:bg-blue-50/30 focus:outline-none focus:ring-4 focus:ring-blue-400/10 hover:border-slate-300 transition-all duration-200 resize-none"
-                    @input="markAsChanged"
+                    :readonly="isViewMode"
+                    :class="[
+                      'w-full px-4 py-3 rounded-xl border-2 text-slate-900 text-sm font-medium resize-none transition-all duration-200',
+                      isViewMode
+                        ? 'border-slate-200 bg-slate-50 cursor-not-allowed'
+                        : 'border-slate-200 bg-white placeholder:text-slate-400 focus:border-blue-400 focus:bg-blue-50/30 focus:outline-none focus:ring-4 focus:ring-blue-400/10 hover:border-slate-300'
+                    ]"
+                    @input="!isViewMode && markAsChanged()"
                   ></textarea>
                   <!-- Boolean/Checkbox -->
                   <div v-else-if="field.type === 'boolean'" class="flex items-center pt-2">
@@ -123,10 +143,24 @@
                         :id="field.key"
                         type="checkbox"
                         v-model="inspectionFields[field.key]"
-                        class="w-5 h-5 rounded-md border-2 border-slate-300 text-blue-500 focus:ring-4 focus:ring-blue-400/20 focus:border-blue-400 transition-all duration-200 cursor-pointer"
-                        @change="markAsChanged"
+                        :disabled="isViewMode"
+                        :class="[
+                          'w-5 h-5 rounded-md border-2 text-blue-500 transition-all duration-200',
+                          isViewMode
+                            ? 'border-slate-300 cursor-not-allowed opacity-60'
+                            : 'border-slate-300 focus:ring-4 focus:ring-blue-400/20 focus:border-blue-400 cursor-pointer'
+                        ]"
+                        @change="!isViewMode && markAsChanged()"
                       />
-                      <label :for="field.key" class="ml-3 text-sm font-medium text-slate-700 cursor-pointer select-none">Yes</label>
+                      <label 
+                        :for="field.key" 
+                        :class="[
+                          'ml-3 text-sm font-medium select-none',
+                          isViewMode ? 'text-slate-500 cursor-not-allowed' : 'text-slate-700 cursor-pointer'
+                        ]"
+                      >
+                        Yes
+                      </label>
                     </div>
                   </div>
                   <!-- Default Text for Unknown Types -->
@@ -135,8 +169,14 @@
                     :id="field.key"
                     type="text"
                     v-model="inspectionFields[field.key]"
-                    class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 bg-white text-slate-900 text-sm font-medium placeholder:text-slate-400 focus:border-blue-400 focus:bg-blue-50/30 focus:outline-none focus:ring-4 focus:ring-blue-400/10 hover:border-slate-300 transition-all duration-200"
-                    @input="markAsChanged"
+                    :readonly="isViewMode"
+                    :class="[
+                      'w-full px-4 py-3 rounded-xl border-2 text-slate-900 text-sm font-medium transition-all duration-200',
+                      isViewMode
+                        ? 'border-slate-200 bg-slate-50 cursor-not-allowed'
+                        : 'border-slate-200 bg-white placeholder:text-slate-400 focus:border-blue-400 focus:bg-blue-50/30 focus:outline-none focus:ring-4 focus:ring-blue-400/10 hover:border-slate-300'
+                    ]"
+                    @input="!isViewMode && markAsChanged()"
                   />
                 </div>
               </div>
@@ -153,8 +193,14 @@
                       :id="`${boundary.lotKey}_north`"
                       type="text"
                       v-model="inspectionFields[boundary.lotKey].north"
-                      class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 bg-white text-slate-900 text-sm font-medium placeholder:text-slate-400 focus:border-blue-400 focus:bg-blue-50/30 focus:outline-none focus:ring-4 focus:ring-blue-400/10 hover:border-slate-300 transition-all duration-200"
-                      @input="markAsChanged"
+                      :readonly="isViewMode"
+                      :class="[
+                        'w-full px-4 py-3 rounded-xl border-2 text-slate-900 text-sm font-medium transition-all duration-200',
+                        isViewMode
+                          ? 'border-slate-200 bg-slate-50 cursor-not-allowed'
+                          : 'border-slate-200 bg-white placeholder:text-slate-400 focus:border-blue-400 focus:bg-blue-50/30 focus:outline-none focus:ring-4 focus:ring-blue-400/10 hover:border-slate-300'
+                      ]"
+                      @input="!isViewMode && markAsChanged()"
                     />
                   </div>
                   <div>
@@ -165,8 +211,14 @@
                       :id="`${boundary.lotKey}_south`"
                       type="text"
                       v-model="inspectionFields[boundary.lotKey].south"
-                      class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 bg-white text-slate-900 text-sm font-medium placeholder:text-slate-400 focus:border-blue-400 focus:bg-blue-50/30 focus:outline-none focus:ring-4 focus:ring-blue-400/10 hover:border-slate-300 transition-all duration-200"
-                      @input="markAsChanged"
+                      :readonly="isViewMode"
+                      :class="[
+                        'w-full px-4 py-3 rounded-xl border-2 text-slate-900 text-sm font-medium transition-all duration-200',
+                        isViewMode
+                          ? 'border-slate-200 bg-slate-50 cursor-not-allowed'
+                          : 'border-slate-200 bg-white placeholder:text-slate-400 focus:border-blue-400 focus:bg-blue-50/30 focus:outline-none focus:ring-4 focus:ring-blue-400/10 hover:border-slate-300'
+                      ]"
+                      @input="!isViewMode && markAsChanged()"
                     />
                   </div>
                   <div>
@@ -177,8 +229,14 @@
                       :id="`${boundary.lotKey}_east`"
                       type="text"
                       v-model="inspectionFields[boundary.lotKey].east"
-                      class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 bg-white text-slate-900 text-sm font-medium placeholder:text-slate-400 focus:border-blue-400 focus:bg-blue-50/30 focus:outline-none focus:ring-4 focus:ring-blue-400/10 hover:border-slate-300 transition-all duration-200"
-                      @input="markAsChanged"
+                      :readonly="isViewMode"
+                      :class="[
+                        'w-full px-4 py-3 rounded-xl border-2 text-slate-900 text-sm font-medium transition-all duration-200',
+                        isViewMode
+                          ? 'border-slate-200 bg-slate-50 cursor-not-allowed'
+                          : 'border-slate-200 bg-white placeholder:text-slate-400 focus:border-blue-400 focus:bg-blue-50/30 focus:outline-none focus:ring-4 focus:ring-blue-400/10 hover:border-slate-300'
+                      ]"
+                      @input="!isViewMode && markAsChanged()"
                     />
                   </div>
                   <div>
@@ -189,8 +247,14 @@
                       :id="`${boundary.lotKey}_west`"
                       type="text"
                       v-model="inspectionFields[boundary.lotKey].west"
-                      class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 bg-white text-slate-900 text-sm font-medium placeholder:text-slate-400 focus:border-blue-400 focus:bg-blue-50/30 focus:outline-none focus:ring-4 focus:ring-blue-400/10 hover:border-slate-300 transition-all duration-200"
-                      @input="markAsChanged"
+                      :readonly="isViewMode"
+                      :class="[
+                        'w-full px-4 py-3 rounded-xl border-2 text-slate-900 text-sm font-medium transition-all duration-200',
+                        isViewMode
+                          ? 'border-slate-200 bg-slate-50 cursor-not-allowed'
+                          : 'border-slate-200 bg-white placeholder:text-slate-400 focus:border-blue-400 focus:bg-blue-50/30 focus:outline-none focus:ring-4 focus:ring-blue-400/10 hover:border-slate-300'
+                      ]"
+                      @input="!isViewMode && markAsChanged()"
                     />
                   </div>
                 </div>
@@ -207,11 +271,13 @@
         <div class="bg-white/70 backdrop-blur-sm rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
           <div class="px-6 py-4 border-b border-slate-100/80">
             <h3 class="text-sm font-medium text-slate-700">Inspection Photos</h3>
-            <p class="mt-0.5 text-xs text-slate-500">Upload photos of the crops and field conditions</p>
+            <p class="mt-0.5 text-xs text-slate-500">
+              {{ isViewMode ? 'View photos of the crops and field conditions' : 'Upload photos of the crops and field conditions' }}
+            </p>
           </div>
           <div class="p-6">
-            <!-- File Upload Area -->
-            <div class="mb-6">
+            <!-- File Upload Area - Hide in view mode -->
+            <div v-if="isEditMode" class="mb-6">
               <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-slate-200 border-dashed rounded-xl cursor-pointer bg-slate-50/50 hover:bg-slate-100/50 hover:border-slate-300 transition-all duration-200">
                 <div class="flex flex-col items-center justify-center py-4">
                   <PhotoIcon class="w-10 h-10 mb-2 text-slate-400" />
@@ -243,6 +309,7 @@
                   class="w-full h-full object-cover"
                 />
                 <button
+                  v-if="isEditMode"
                   @click="removePhoto(index)"
                   class="absolute top-2 right-2 p-1.5 bg-red-500 hover:bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-lg"
                 >
@@ -275,8 +342,8 @@
           </div>
         </div>
 
-        <!-- Action Buttons -->
-        <div class="flex justify-end items-center pt-2">
+        <!-- Action Buttons - Hide in view mode -->
+        <div v-if="isEditMode" class="flex justify-end items-center pt-2">
           <button
             @click="submitInspection"
             :disabled="isSubmitting || !hasChanges"
@@ -432,6 +499,11 @@ const selectedImage = ref(null)
 const isSubmitting = ref(false)
 const hasChanges = ref(false)
 const isScheduleModalOpen = ref(false)
+
+// View mode handling
+const currentAction = computed(() => route.query.action || 'edit')
+const isViewMode = computed(() => currentAction.value === 'view')
+const isEditMode = computed(() => currentAction.value === 'edit')
 
 // Fetch insurance data
 async function fetchInsuranceData() {

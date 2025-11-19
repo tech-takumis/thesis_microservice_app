@@ -27,6 +27,9 @@ public class ClaimMapper {
     }
 
     private List<String> getPresignedUrl(Claim claim) {
+        if (claim.getSupportingFiles() == null || claim.getSupportingFiles().isEmpty()) {
+            return List.of();
+        }
 
         return claim.getSupportingFiles().stream()
                 .map(documentId -> documentServiceClient.generatePresignedUrl(claim.getInsurance().getFarmerId(), documentId, 60))

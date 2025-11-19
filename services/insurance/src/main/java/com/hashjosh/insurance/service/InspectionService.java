@@ -1,5 +1,6 @@
 package com.hashjosh.insurance.service;
 
+import com.hashjosh.constant.pcic.enums.InsuranceStatus;
 import com.hashjosh.constant.program.dto.ScheduleRequestDto;
 import com.hashjosh.constant.program.dto.ScheduleResponseDto;
 import com.hashjosh.insurance.clients.ScheduleClient;
@@ -9,9 +10,12 @@ import com.hashjosh.insurance.dto.inspection.InspectionResponse;
 import com.hashjosh.insurance.entity.Inspection;
 import com.hashjosh.insurance.entity.Insurance;
 import com.hashjosh.insurance.exception.ApiException;
+import com.hashjosh.insurance.kafka.KafkaProducer;
 import com.hashjosh.insurance.mapper.InspectionMapper;
 import com.hashjosh.insurance.repository.InspectionRepository;
 import com.hashjosh.insurance.repository.InsuranceRepository;
+import com.hashjosh.kafkacommon.application.InspectionCompletedEvent;
+import com.hashjosh.kafkacommon.application.InspectionScheduledEvent;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +37,7 @@ public class InspectionService {
     private final InspectionMapper inspectionMapper;
     private final InsuranceRepository insuranceRepository;
     private final ScheduleClient scheduleClient;
+    private final KafkaProducer kafkaProducer;
 
     @Transactional
     public InspectionResponse createInspection(UUID insuranceId, InspectionRequest request, List<org.springframework.web.multipart.MultipartFile> photos) {
@@ -56,6 +61,18 @@ public class InspectionService {
 
         // Save inspection
         Inspection savedInspection = inspectionRepository.save(inspection);
+        insurance.setCurrentStatus(InsuranceStatus.INSPECTION_COMPLETED);
+        insuranceRepository.save(insurance);
+
+        InspectionCompletedEvent event = InspectionCompletedEvent.builder()
+                .submissionId(insurance.getSubmissionId())
+                .userId(insurance.getFarmerId())
+                .inspectorName(getInspectorName(userDetails))
+                .status(insurance.getCurrentStatus().name())
+                .inspectedAt(savedInspection.getInspectedAt())
+                .build();
+
+        kafkaProducer.publishEvent("application-inspection-completed",event);
 
         log.info("Inspection created successfully with ID: {}", savedInspection.getId());
         return inspectionMapper.toResponse(savedInspection);
@@ -76,6 +93,21 @@ public class InspectionService {
         Inspection inspection = inspectionMapper.toEntity(response,insurance,userDetails.getUserId(), getInspectorName(userDetails));
 
         inspectionRepository.save(inspection);
+
+        insurance.setCurrentStatus(InsuranceStatus.SCHEDULE_ASSIGNED_FOR_INSPECTION);
+        insuranceRepository.save(insurance);
+
+        InspectionScheduledEvent event = InspectionScheduledEvent.builder()
+                .submissionId(insurance.getSubmissionId())
+                .insuranceId(insuranceId)
+                .farmerId(insurance.getFarmerId())
+                .farmernName(insurance.getFarmerName())
+                .status(insurance.getCurrentStatus().name())
+                .scheduleId(response.getId())
+                .scheduledAt(response.getScheduleDate())
+                .build();
+
+        kafkaProducer.publishEvent("application-inspection-schedule", event);
 
         log.info("Inspection schedule created successfully with ID: {}", response.getId());
         return response;

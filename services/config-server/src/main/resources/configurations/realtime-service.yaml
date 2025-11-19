@@ -28,8 +28,6 @@ spring:
           pcicRegistrationContract:com.hashjosh.kafkacommon.pcic.PcicRegistrationContract,
           applicationSubmittedEvent:com.hashjosh.kafkacommon.application.ApplicationSubmittedEvent,
           verificationEvent:com.hashjosh.kafkacommon.application.VerificationEvent,
-          applicationForwarded:com.hashjosh.kafkacommon.application.ApplicationForwarded,
-          applicationReceived:com.hashjosh.kafkacommon.application.ApplicationReceived,
           inspectionScheduledEvent:com.hashjosh.kafkacommon.application.InspectionScheduledEvent,
           inspectionCompletedEvent:com.hashjosh.kafkacommon.application.InspectionCompletedEvent,
           policyIssuedEvent:com.hashjosh.kafkacommon.application.PolicyIssuedEvent,

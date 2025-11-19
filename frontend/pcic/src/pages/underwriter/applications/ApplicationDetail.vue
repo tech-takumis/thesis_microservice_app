@@ -58,17 +58,7 @@
               class="inline-flex items-center p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50/50 rounded-full transition-all duration-200"
               title="View Batch Information"
             >
-              <InformationCircleIcon class="h-5 w-5" />
-            </button>
-            <button
-              v-if="shouldShowClaim && insuranceData?.inspection && insuranceData.inspection.inspected === true"
-              @click="processClaim"
-              class="inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-medium rounded-xl text-white bg-orange-500 hover:bg-orange-600 hover:shadow-lg hover:shadow-orange-500/30 transition-all duration-200"
-            >
-              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-              </svg>
-              File Claim
+              <InformationCircleIcon class="size-6" />
             </button>
           </div>
         </div>
@@ -98,8 +88,18 @@
           <div class="col-span-12 lg:col-span-7 space-y-6">
             <!-- Application Information -->
             <div class="bg-white/70 backdrop-blur-sm rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
-              <div class="px-6 py-4 border-b border-slate-100/80">
+              <div class="px-6 py-4 border-b border-slate-100/80 flex items-center justify-between">
                 <h3 class="text-sm font-medium text-slate-700">Application Information</h3>
+                <button
+                  v-if="shouldShowAIAnalysis"
+                  @click="viewAIAnalysis"
+                  class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-lg text-purple-600 bg-purple-50 border border-purple-200 hover:bg-purple-100 hover:border-purple-300 transition-all duration-200"
+                >
+                  <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  AI Analysis
+                </button>
               </div>
               <div class="p-6">
                 <dl v-if="filteredDynamicFields.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -143,15 +143,16 @@
             </div>
           </div>
 
-          <!-- Right Column: Workflow Cards (5 columns) -->
           <div class="col-span-12 lg:col-span-5 space-y-4">
             <!-- Verification Card -->
             <div v-if="shouldShowVerification" class="bg-white/70 backdrop-blur-sm rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
               <div class="p-5">
                 <div v-if="insuranceData?.verification" class="space-y-3">
-                  <div class="flex items-center gap-2">
-                    <CheckCircleIcon class="h-5 w-5 text-emerald-500 flex-shrink-0" />
-                    <h4 class="text-sm font-semibold text-slate-900">Verified</h4>
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                      <CheckCircleIcon class="h-5 w-5 text-emerald-500 flex-shrink-0" />
+                      <h4 class="text-sm font-semibold text-slate-900">Verified</h4>
+                    </div>
                   </div>
                   <div class="space-y-2 text-xs ml-7">
                     <p class="text-slate-600">
@@ -177,9 +178,21 @@
               <div class="p-5">
                 <!-- Completed Inspection (inspected = true) -->
                 <div v-if="insuranceData?.inspection && insuranceData.inspection.inspected === true" class="space-y-3">
-                  <div class="flex items-center gap-2">
-                    <CheckCircleIcon class="h-5 w-5 text-emerald-500 flex-shrink-0" />
-                    <h4 class="text-sm font-semibold text-slate-900">Inspection Completed</h4>
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                      <CheckCircleIcon class="h-5 w-5 text-emerald-500 flex-shrink-0" />
+                      <h4 class="text-sm font-semibold text-slate-900">Inspection Completed</h4>
+                    </div>
+                    <router-link
+                      :to="{
+                        name: 'application-inspection',
+                        params: { insuranceId: route.params.insuranceId },
+                        query: { action: 'view' }
+                      }"
+                      class="text-xs text-blue-600 hover:text-blue-800 font-medium transition-colors duration-200"
+                    >
+                      View
+                    </router-link>
                   </div>
                   <div class="space-y-2 text-xs ml-7">
                     <p class="text-slate-600">
@@ -190,7 +203,7 @@
                     </p>
                   </div>
                 </div>
-                <!-- Scheduled but Not Inspected (has schedule, inspected = false) -->
+                
                 <div v-else-if="insuranceData?.inspection && insuranceData.inspection.schedule && insuranceData.inspection.inspected === false" class="space-y-3">
                   <div class="flex items-center gap-2">
                     <svg class="h-5 w-5 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -228,9 +241,11 @@
             <div v-if="shouldShowPolicy" class="bg-white/70 backdrop-blur-sm rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
               <div class="p-5">
                 <div v-if="insuranceData?.policy" class="space-y-3">
-                  <div class="flex items-center gap-2">
-                    <CheckCircleIcon class="h-5 w-5 text-purple-500 flex-shrink-0" />
-                    <h4 class="text-sm font-semibold text-slate-900">Policy Issued</h4>
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                      <CheckCircleIcon class="h-5 w-5 text-purple-500 flex-shrink-0" />
+                      <h4 class="text-sm font-semibold text-slate-900">Policy Issued</h4>
+                    </div>
                   </div>
                   <div class="space-y-2 text-xs ml-7">
                     <p class="text-slate-600">
@@ -239,16 +254,27 @@
                     <p class="text-slate-600">
                       <span class="font-semibold">Effective:</span> {{ formatDate(insuranceData.policy.effectiveDate) }}
                     </p>
+                    <p class="text-slate-600">
+                      <span class="font-semibold">Expiry:</span> {{ formatDate(insuranceData.policy.expiryDate) }}
+                    </p>
                   </div>
                 </div>
                 <div v-else class="text-center py-6">
                   <DocumentIcon class="mx-auto h-8 w-8 text-slate-300" />
                   <p class="mt-2 text-xs font-medium text-slate-700">No Policy</p>
                   <button
-                    @click="generatePolicy"
-                    class="mt-3 inline-flex items-center px-4 py-2 text-xs font-medium rounded-xl text-white bg-purple-500 hover:bg-purple-600 hover:shadow-lg hover:shadow-purple-500/30 transition-all duration-200"
+                    @click="openPolicyModal"
+                    :disabled="isGeneratingPolicy"
+                    class="mt-3 inline-flex items-center px-4 py-2 text-xs font-medium rounded-xl text-white bg-purple-500 hover:bg-purple-600 hover:shadow-lg hover:shadow-purple-500/30 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Generate
+                    <span v-if="!isGeneratingPolicy">Generate</span>
+                    <span v-else class="flex items-center">
+                      <svg class="animate-spin h-3 w-3 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Generating...
+                    </span>
                   </button>
                 </div>
               </div>
@@ -258,9 +284,21 @@
             <div v-if="shouldShowClaim" class="bg-white/70 backdrop-blur-sm rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
               <div class="p-5">
                 <div v-if="insuranceData?.claim" class="space-y-3">
-                  <div class="flex items-center gap-2">
-                    <CheckCircleIcon class="h-5 w-5 text-orange-500 flex-shrink-0" />
-                    <h4 class="text-sm font-semibold text-slate-900">Claim Filed</h4>
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                      <CheckCircleIcon class="h-5 w-5 text-orange-500 flex-shrink-0" />
+                      <h4 class="text-sm font-semibold text-slate-900">Claim Filed</h4>
+                    </div>
+                    <router-link
+                      :to="{
+                        name: 'damage-claim-review',
+                        params: { insuranceId: route.params.insuranceId, submissionId: route.params.submissionId },
+                        query: { action: 'view' }
+                      }"
+                      class="text-xs text-blue-600 hover:text-blue-800 font-medium transition-colors duration-200"
+                    >
+                      View
+                    </router-link>
                   </div>
                   <div class="space-y-2 text-xs ml-7">
                     <p class="text-slate-600">
@@ -270,18 +308,41 @@
                       <span class="font-semibold">Status:</span> {{ insuranceData.claim.status }}
                     </p>
                   </div>
+                  <div class="mt-3 ml-7">
+                    <button
+                      @click="viewAIAnalysis"
+                      class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-lg text-purple-700 bg-purple-100 hover:bg-purple-200 hover:text-purple-800 transition-all duration-200"
+                    >
+                      <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      </svg>
+                      AI Analysis
+                    </button>
+                  </div>
                 </div>
                 <div v-else class="text-center py-6">
                   <DocumentIcon class="mx-auto h-8 w-8 text-slate-300" />
                   <p class="mt-2 text-xs font-medium text-slate-700">No Claim</p>
-                  <button
-                    v-if="insuranceData?.inspection && insuranceData.inspection.inspected === true"
-                    @click="processClaim"
-                    class="mt-3 inline-flex items-center px-4 py-2 text-xs font-medium rounded-xl text-white bg-orange-500 hover:bg-orange-600 hover:shadow-lg hover:shadow-orange-500/30 transition-all duration-200"
-                  >
-                    File Claim
-                  </button>
-                  <p v-else class="mt-3 text-xs text-slate-400">
+                  <div class="mt-3 space-y-2">
+                    <button
+                      v-if="insuranceData?.inspection && insuranceData.inspection.inspected === true"
+                      @click="processClaim"
+                      class="inline-flex items-center px-4 py-2 text-xs font-medium rounded-xl text-white bg-orange-500 hover:bg-orange-600 hover:shadow-lg hover:shadow-orange-500/30 transition-all duration-200"
+                    >
+                      File Claim
+                    </button>
+                    <button
+                      v-if="shouldShowAIAnalysis"
+                      @click="viewAIAnalysis"
+                      class="inline-flex items-center px-4 py-2 text-xs font-medium rounded-xl text-purple-600 bg-purple-50 border border-purple-200 hover:bg-purple-100 hover:border-purple-300 transition-all duration-200"
+                    >
+                      <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      </svg>
+                      AI Analysis
+                    </button>
+                  </div>
+                  <p v-if="!insuranceData?.inspection || !insuranceData.inspection.inspected" class="mt-3 text-xs text-slate-400">
                     {{ insuranceData?.inspection && insuranceData.inspection.schedule ? 'Awaiting completion' : 'Awaiting inspection' }}
                   </p>
                 </div>
@@ -393,6 +454,99 @@
         </div>
       </Transition>
 
+      <!-- Policy Generation Modal -->
+      <Transition name="fade">
+        <div
+          v-if="isPolicyModalOpen"
+          @click="closePolicyModal"
+          class="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+        ></div>
+      </Transition>
+
+      <Transition name="modal">
+        <div
+          v-if="isPolicyModalOpen"
+          class="fixed inset-0 z-50 flex items-center justify-center p-4"
+          @click="closePolicyModal"
+        >
+          <div
+            class="bg-white rounded-2xl shadow-2xl w-full max-w-md"
+            @click.stop
+          >
+            <!-- Modal Header -->
+            <div class="px-6 py-5 border-b border-slate-200">
+              <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-slate-900">Generate Policy</h3>
+                <button
+                  @click="closePolicyModal"
+                  class="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-1.5 rounded-lg transition-all duration-200"
+                >
+                  <XMarkIcon class="h-5 w-5" />
+                </button>
+              </div>
+              <p class="mt-1 text-sm text-slate-500">
+                Set the effective and expiry dates for the insurance policy
+              </p>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="p-6 space-y-5">
+              <div>
+                <label for="effectiveDate" class="block text-sm font-medium text-slate-700 mb-2">
+                  Effective Date <span class="text-red-500">*</span>
+                </label>
+                <input
+                  id="effectiveDate"
+                  type="date"
+                  v-model="policyForm.effectiveDate"
+                  class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 bg-white text-slate-900 text-sm font-medium focus:border-purple-400 focus:bg-purple-50/30 focus:outline-none focus:ring-4 focus:ring-purple-400/10 hover:border-slate-300 transition-all duration-200"
+                  required
+                />
+              </div>
+
+              <div>
+                <label for="expiryDate" class="block text-sm font-medium text-slate-700 mb-2">
+                  Expiry Date <span class="text-red-500">*</span>
+                </label>
+                <input
+                  id="expiryDate"
+                  type="date"
+                  v-model="policyForm.expiryDate"
+                  class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 bg-white text-slate-900 text-sm font-medium focus:border-purple-400 focus:bg-purple-50/30 focus:outline-none focus:ring-4 focus:ring-purple-400/10 hover:border-slate-300 transition-all duration-200"
+                  required
+                />
+              </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="px-6 py-4 border-t border-slate-200 bg-slate-50/50 rounded-b-2xl">
+              <div class="flex items-center justify-end gap-3">
+                <button
+                  @click="closePolicyModal"
+                  class="px-4 py-2.5 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 hover:border-slate-400 transition-all duration-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  @click="generatePolicy"
+                  :disabled="isGeneratingPolicy || !policyForm.effectiveDate || !policyForm.expiryDate"
+                  class="px-6 py-2.5 text-sm font-medium text-white bg-purple-500 border border-purple-500 rounded-xl hover:bg-purple-600 hover:shadow-lg hover:shadow-purple-500/30 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none"
+                >
+                  <span v-if="!isGeneratingPolicy">Generate Policy</span>
+                  <span v-else class="flex items-center">
+                    <svg class="animate-spin h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Generating...
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+
       <!-- Schedule Inspection Modal -->
       <ScheduleInspectionModal
         :is-open="isScheduleModalOpen"
@@ -409,6 +563,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useApplicationStore } from '@/stores/applications'
 import { useInsuranceStore } from '@/stores/insurance'
+import { usePolicyStore } from '@/stores/policy'
 import { useToastStore } from '@/stores/toast'
 import DetailField from '@/components/tables/DetailField.vue'
 import LoadingSpinner from '@/components/others/LoadingSpinner.vue'
@@ -428,6 +583,7 @@ const route = useRoute()
 const router = useRouter()
 const applicationStore = useApplicationStore()
 const insuranceStore = useInsuranceStore()
+const policyStore = usePolicyStore()
 const toastStore = useToastStore()
 
 // State
@@ -440,6 +596,12 @@ const workflowData = ref(null)
 const selectedImage = ref(null)
 const isScheduleModalOpen = ref(false)
 const isBatchModalOpen = ref(false)
+const isPolicyModalOpen = ref(false)
+const policyForm = ref({
+  effectiveDate: '',
+  expiryDate: ''
+})
+const isGeneratingPolicy = ref(false)
 
 async function fetchApplicationDetails() {
   console.log('fetchApplicationDetails called with insuranceId:', route.params.insuranceId, 'submissionId:', route.params.submissionId)
@@ -733,9 +895,10 @@ const shouldShowClaim = computed(() => {
   return applicationTypeData.value?.workflow?.claim_enabled === true
 })
 
-// Check if AI analysis should be shown based on application type
+// Check if AI analysis should be shown - show if we have application data and it's an agricultural/crop application
 const shouldShowAIAnalysis = computed(() => {
-  return applicationTypeData.value?.requiresAIAnalysis === true
+  // Always show AI Analysis for applications (since most agricultural applications can have AI analysis)
+  return applicationData.value !== null
 })
 
 const openImageModal = (imageUrl) => {
@@ -791,23 +954,66 @@ const proceedInspection = () => {
   }
 }
 
-const generatePolicy = async () => {
-  // TODO: Implement policy generation logic
+// Policy modal functions
+const openPolicyModal = () => {
   if (!insuranceData.value?.verification) {
-    alert('Cannot generate policy: Application must be verified first.')
+    toastStore.error('Cannot generate policy: Application must be verified first.')
     return
   }
+  
+  // Set default dates
+  const today = new Date()
+  const nextYear = new Date(today)
+  nextYear.setFullYear(today.getFullYear() + 1)
+  
+  policyForm.value.effectiveDate = today.toISOString().split('T')[0]
+  policyForm.value.expiryDate = nextYear.toISOString().split('T')[0]
+  
+  isPolicyModalOpen.value = true
+}
 
-  if (!confirm('Are you sure you want to generate an insurance policy for this application?')) {
+const closePolicyModal = () => {
+  isPolicyModalOpen.value = false
+  policyForm.value.effectiveDate = ''
+  policyForm.value.expiryDate = ''
+}
+
+const generatePolicy = async () => {
+  if (!policyForm.value.effectiveDate || !policyForm.value.expiryDate) {
+    toastStore.error('Please select both effective date and expiry date')
     return
   }
-
+  
+  if (new Date(policyForm.value.effectiveDate) >= new Date(policyForm.value.expiryDate)) {
+    toastStore.error('Expiry date must be after effective date')
+    return
+  }
+  
   try {
-    // API call to generate policy would go here
-    alert('Policy generation feature coming soon. This will create an insurance policy with coverage details, premium calculation, and policy number.')
+    isGeneratingPolicy.value = true
+    
+    const policyRequest = {
+      insuranceId: insuranceData.value.insuranceId,
+      effectiveDate: new Date(policyForm.value.effectiveDate).toISOString(),
+      expiryDate: new Date(policyForm.value.expiryDate).toISOString()
+    }
+    
+    const result = await policyStore.createPolicy(policyRequest)
+    
+    if (result.success) {
+      // Update the insurance data with the new policy
+      insuranceData.value.policy = result.data
+      
+      toastStore.success(`Policy generated successfully! Policy Number: ${result.data.policyNumber}`)
+      closePolicyModal()
+    } else {
+      toastStore.error(result.message || 'Failed to generate policy')
+    }
   } catch (error) {
     console.error('Error generating policy:', error)
-    alert('Failed to generate policy. Please try again.')
+    toastStore.error('An error occurred while generating the policy')
+  } finally {
+    isGeneratingPolicy.value = false
   }
 }
 
@@ -815,11 +1021,32 @@ const processClaim = () => {
   // Navigate to damage claim review page
   if (insuranceData.value?.insuranceId) {
     router.push({
-      name: 'damage-claim-review',
-      params: { insuranceId: insuranceData.value.insuranceId }
+      name: 'underwriter-applications-claim',
+      params: { 
+        insuranceId: insuranceData.value.insuranceId,
+        submissionId: insuranceData.value.submissionId
+      }
     })
   } else {
-    alert('Cannot process claim: Insurance ID not found.')
+    toastStore.error('Cannot process claim: Insurance ID not found.')
+  }
+}
+
+const viewAIAnalysis = () => {
+  // Navigate to AI analysis page (DamageClaimReview)
+  if (insuranceData.value?.insuranceId && route.params.submissionId) {
+    router.push({
+      name: 'damage-claim-review',
+      params: {
+        insuranceId: insuranceData.value.insuranceId,
+        submissionId: route.params.submissionId
+      },
+      query: {
+        tab: 'ai-analysis'
+      }
+    })
+  } else {
+    toastStore.error('Required information not found')
   }
 }
 
@@ -870,6 +1097,22 @@ onMounted(() => {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+/* Modal animation */
+.modal-enter-active,
+.modal-leave-active {
+  transition: all 0.3s ease;
+}
+
+.modal-enter-from {
+  opacity: 0;
+  transform: scale(0.9) translateY(-20px);
+}
+
+.modal-leave-to {
+  opacity: 0;
+  transform: scale(0.9) translateY(-20px);
 }
 
 /* Compact card styling */

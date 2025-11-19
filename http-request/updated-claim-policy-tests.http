@@ -1,0 +1,147 @@
+### Insurance Microservice - Claim Management API Test
+### Authentication is handled via JWT tokens in Authorization header or cookies
+
+# Test Claim Creation (Manual) - User authentication required
+POST http://localhost:8080/api/v1/claims
+Content-Type: multipart/form-data; boundary=boundary123
+Authorization: Bearer {{jwt_token}}
+
+--boundary123
+Content-Disposition: form-data; name="claim"
+Content-Type: application/json
+
+{
+    "insuranceId": "550e8400-e29b-41d4-a716-446655440000",
+    "damageAssessment": "Severe crop damage due to pest infestation",
+    "fieldValues": {
+        "damage_percentage": 75.5,
+        "affected_area": 2.5,
+        "damage_type": "pest_damage",
+        "assessment_date": "2024-11-19"
+    }
+}
+
+--boundary123
+Content-Disposition: form-data; name="supportingFiles"; filename="damage_photo1.jpg"
+Content-Type: image/jpeg
+
+[Binary file content]
+--boundary123--
+
+### Test Claim Creation (AI Result) - User authentication required
+POST http://localhost:8080/api/v1/claims/ai
+Content-Type: multipart/form-data; boundary=boundary456
+Authorization: Bearer {{jwt_token}}
+
+--boundary456
+Content-Disposition: form-data; name="claim"
+Content-Type: application/json
+
+{
+    "insuranceId": "550e8400-e29b-41d4-a716-446655440000",
+    "applicationId": "b2e2cecb-401d-46ce-9a7c-0ef2ee8213dc"
+}
+
+--boundary456
+Content-Disposition: form-data; name="supportingFiles"; filename="ai_analysis.pdf"
+Content-Type: application/pdf
+
+[Binary file content]
+--boundary456--
+
+### Get All Claims - Authentication required
+GET http://localhost:8080/api/v1/claims?page=0&size=10
+Authorization: Bearer {{jwt_token}}
+
+### Get Claim by ID - Authentication required
+GET http://localhost:8080/api/v1/claims/123e4567-e89b-12d3-a456-426614174001
+Authorization: Bearer {{jwt_token}}
+
+### Get Claims by Insurance ID - Authentication required
+GET http://localhost:8080/api/v1/claims/insurance/550e8400-e29b-41d4-a716-446655440000?page=0&size=10
+Authorization: Bearer {{jwt_token}}
+
+### Update Claim - User authentication required
+PUT http://localhost:8080/api/v1/claims/123e4567-e89b-12d3-a456-426614174001
+Content-Type: multipart/form-data; boundary=boundary789
+Authorization: Bearer {{jwt_token}}
+
+--boundary789
+Content-Disposition: form-data; name="claim"
+Content-Type: application/json
+
+{
+    "damageAssessment": "Updated assessment after field inspection",
+    "fieldValues": {
+        "damage_percentage": 80.0,
+        "updated_assessment_date": "2024-11-20"
+    }
+}
+--boundary789--
+
+### Delete Claim - Authentication required
+DELETE http://localhost:8080/api/v1/claims/123e4567-e89b-12d3-a456-426614174001
+Authorization: Bearer {{jwt_token}}
+
+# Policy Management Tests - Authentication required for all endpoints
+
+### Create Policy
+POST http://localhost:8080/api/v1/policies
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+    "insuranceId": "550e8400-e29b-41d4-a716-446655440000",
+    "effectiveDate": "2024-11-19T00:00:00",
+    "expiryDate": "2025-11-19T23:59:59"
+}
+
+### Get Policy by ID
+GET http://localhost:8080/api/v1/policies/123e4567-e89b-12d3-a456-426614174002
+Authorization: Bearer {{jwt_token}}
+
+### Get Policy by Insurance ID
+GET http://localhost:8080/api/v1/policies/insurance/550e8400-e29b-41d4-a716-446655440000
+Authorization: Bearer {{jwt_token}}
+
+### Get All Policies
+GET http://localhost:8080/api/v1/policies
+Authorization: Bearer {{jwt_token}}
+
+### Get Active Policies
+GET http://localhost:8080/api/v1/policies/active
+Authorization: Bearer {{jwt_token}}
+
+### Update Policy
+PUT http://localhost:8080/api/v1/policies/123e4567-e89b-12d3-a456-426614174002
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+    "effectiveDate": "2024-12-01T00:00:00",
+    "expiryDate": "2025-12-01T23:59:59"
+}
+
+### Delete Policy
+DELETE http://localhost:8080/api/v1/policies/123e4567-e89b-12d3-a456-426614174002
+Authorization: Bearer {{jwt_token}}
+
+### Internal Service Example (using X-Internal-Service header)
+POST http://localhost:8080/api/v1/claims
+Content-Type: multipart/form-data; boundary=internal123
+X-Internal-Service: document-service
+X-User-Id: 123e4567-e89b-12d3-a456-426614174000
+
+--internal123
+Content-Disposition: form-data; name="claim"
+Content-Type: application/json
+
+{
+    "insuranceId": "550e8400-e29b-41d4-a716-446655440000",
+    "damageAssessment": "Internal service created claim",
+    "fieldValues": {
+        "damage_percentage": 50.0,
+        "internal_service": true
+    }
+}
+--internal123--

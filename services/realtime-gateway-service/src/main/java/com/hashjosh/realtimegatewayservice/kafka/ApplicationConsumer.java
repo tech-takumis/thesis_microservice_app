@@ -33,7 +33,7 @@ public class ApplicationConsumer {
     }
 
     @KafkaListener(topics = "application-verified", groupId = "realtime-group-verification-completed")
-    public void listenVerificationEvenet(@Payload VerificationEvent event) {
+    public void listenVerificationEvenet(@Payload VerificationCompletedEvent event) {
         handleVerificationEvent(event);
     }
 
@@ -73,13 +73,13 @@ public class ApplicationConsumer {
     }
 
 
-    private void handleVerificationEvent(VerificationEvent e) {
+    private void handleVerificationEvent(VerificationCompletedEvent e) {
         handleNotification(
                 e.getUserId(),
                 NotificationResponseDTO.builder()
                         .id(e.getSubmissionId())
                         .title("Verification Completed")
-                        .message("Verification completed: " + e.getStatus())
+                        .message("Verification completed")
                         .time(e.getVerifiedAt() != null ? e.getVerifiedAt() : LocalDateTime.now())
                         .read(false)
                         .build(),
@@ -90,7 +90,7 @@ public class ApplicationConsumer {
 
     private void handleInspectionScheduled(InspectionScheduledEvent e) {
         handleNotification(
-            e.getUserId(),
+            e.getFarmerId(),
             NotificationResponseDTO.builder()
                 .id(e.getSubmissionId())
                 .title("Inspection Scheduled")

@@ -1,6 +1,5 @@
 package com.hashjosh.constant.program.dto;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.hashjosh.constant.program.enums.SchedulePriority;
 import com.hashjosh.constant.program.enums.ScheduleType;
 import lombok.*;

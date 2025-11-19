@@ -200,11 +200,14 @@ public class ApplicationTypeInitializer implements CommandLineRunner {
         claimBasicInfoFields.add(createField("address", "Address", FieldType.TEXT, true, false,null, claimBasicInfoSection));
         claimBasicInfoFields.add(createField("cell_phone_number", "Cell Phone Number", FieldType.TEXT, false, false,null, claimBasicInfoSection));
         claimBasicInfoFields.add(createField("farm_location", "Location of Farm", FieldType.TEXT, true, false,null, claimBasicInfoSection));
-        claimBasicInfoFields.add(createField("insured_crops", "Insured Crops", FieldType.TEXT, true, false,null, claimBasicInfoSection));
+        claimBasicInfoFields.add(createField("insured_crops", "Insured Crops", FieldType.SELECT, true, false,createChoices(new String[]{"Rice", "Corn", "High Value Crops"}), claimBasicInfoSection));
         claimBasicInfoFields.add(createField("area_insured", "Area Insured (in hectares)", FieldType.NUMBER, true, false,null, claimBasicInfoSection));
-        claimBasicInfoFields.add(createField("variety_planted", "Variety Planted", FieldType.TEXT, true, false,null, claimBasicInfoSection));
+        claimBasicInfoFields.add(createField("variety_planted", "Variety Planted", FieldType.SELECT, true, false,createChoices(new String[]{"Inbred", "Inbred (Seed Production)", "Hybrid", "Hybrid (Seed Production)"}), claimBasicInfoSection));
         claimBasicInfoFields.add(createField("date_planting", "Actual Date of Planting", FieldType.DATE, true, false,null, claimBasicInfoSection));
         claimBasicInfoFields.add(createField("cic_no", "CIC Number", FieldType.TEXT, true, false,null, claimBasicInfoSection));
+        // Additional fields for PCIC claim computation
+        claimBasicInfoFields.add(createField("planting_method", "Planting Method", FieldType.SELECT, false, false,createChoices(new String[]{"Direct Seeding", "Transplanting"}), claimBasicInfoSection));
+        claimBasicInfoFields.add(createField("tenurial_status", "Tenurial Status", FieldType.SELECT, false, false,createChoices(new String[]{"Owner", "Lessee", "Tenant"}), claimBasicInfoSection));
         claimBasicInfoSection.setFields(claimBasicInfoFields);
 
         // Section II: Damage Indicators
@@ -223,9 +226,13 @@ public class ApplicationTypeInitializer implements CommandLineRunner {
         damageIndicatorsFields.add(createField("cause_of_loss_overall", "Take a picture to whole damage", FieldType.FILE, true, false,null, damageIndicatorsSection));
         damageIndicatorsFields.add(createField("cause_of_loss_with_self", "Take a picture with the damage including yourself", FieldType.FILE, true, false,null, damageIndicatorsSection));
         damageIndicatorsFields.add(createField("date_of_loss", "Date of Loss Occurrence", FieldType.DATE, true, false,null, damageIndicatorsSection));
-        damageIndicatorsFields.add(createField("cultivation_stage", "Age/Stage of Cultivation at Time of Loss", FieldType.TEXT, true, false,null, damageIndicatorsSection));
-        damageIndicatorsFields.add(createField("area_damaged", "Area Damaged", FieldType.NUMBER, true, false,null, damageIndicatorsSection));
+        damageIndicatorsFields.add(createField("cultivation_stage", "Age/Stage of Cultivation at Time of Loss", FieldType.SELECT, true, false,createChoices(new String[]{"1 month", "2 months", "3 months", "4 months", "5 months", "Seedling", "Vegetative", "Reproductive", "Maturity", "Near Harvest"}), damageIndicatorsSection));
+        damageIndicatorsFields.add(createField("area_damaged", "Area Damaged (in hectares)", FieldType.NUMBER, true, false,null, damageIndicatorsSection));
         damageIndicatorsFields.add(createField("expected_harvest_date", "Expected Date of Harvest", FieldType.DATE, true, false,null, damageIndicatorsSection));
+        // Additional fields for better claim assessment
+        damageIndicatorsFields.add(createField("cause_of_damage", "Primary Cause of Damage", FieldType.SELECT, true, false,createChoices(new String[]{"Drought", "Flood", "Typhoon", "Pest Infestation", "Disease", "Hail", "Fire", "Other Natural Calamity"}), damageIndicatorsSection));
+        damageIndicatorsFields.add(createField("damage_description", "Description of Damage", FieldType.TEXT, false, false,null, damageIndicatorsSection));
+        damageIndicatorsFields.add(createField("percentage_damage", "Estimated Percentage of Damage (%)", FieldType.NUMBER, false, false,null, damageIndicatorsSection));
         damageIndicatorsSection.setFields(damageIndicatorsFields);
 
         // Section III: Location Sketch Plan

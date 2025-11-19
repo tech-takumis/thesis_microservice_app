@@ -5,10 +5,7 @@ import com.example.agriculture.dto.program.ProgramResponse;
 import com.example.agriculture.service.ProgramService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,11 +29,8 @@ public class ProgramController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<ProgramResponse>> getAllPrograms(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("startDate").descending());
-        return ResponseEntity.ok(programService.getAllPrograms(pageable));
+    public ResponseEntity<List<ProgramResponse>> getAllPrograms() {
+        return ResponseEntity.ok(programService.getAllPrograms());
     }
 
     @PutMapping("/{id}")
@@ -70,4 +64,5 @@ public class ProgramController {
     public ResponseEntity<Integer> getActiveCount() {
         return ResponseEntity.ok(programService.countActivePrograms());
     }
+
 }

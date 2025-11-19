@@ -371,7 +371,7 @@ onMounted(async () => {
               <div>
                 <router-link
                   :to="{ name: 'agriculturist-submit-crop-data' }"
-                  class="text-gray-400 hover:text-gray-500"
+                  class="text-green-600 hover:text-gray-500"
                 >
                   <HomeIcon class="flex-shrink-0 h-5 w-5" />
                   <span class="sr-only">Application Types</span>
@@ -402,7 +402,7 @@ onMounted(async () => {
             <li>
               <div class="flex items-center">
                 <ChevronRightIcon class="flex-shrink-0 h-5 w-5 text-gray-400" />
-                <span class="ml-4 text-sm font-medium text-gray-900">
+                <span class="ml-4 text-sm font-medium text-green-600">
                   Verification
                 </span>
               </div>
@@ -439,267 +439,304 @@ onMounted(async () => {
         </button>
       </div>
 
-      <!-- Content -->
-      <div v-else-if="applicationData" class="flex-1 overflow-hidden">
-        <div class="h-full overflow-y-auto">
-          <BaseCard title="Dynamic Fields" class="mb-6">
-            <div class="space-y-4">
-              <div
-                v-for="(value, key) in getFilteredDynamicFields()"
-                :key="key"
-                class="border-b border-gray-200 pb-4 last:border-b-0 last:pb-0"
-              >
-                <div class="flex items-start justify-between">
-                  <div class="flex-1 min-w-0">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">
-                      {{ formatFieldKey(key) }}
-                    </label>
+     <!-- CONTENT -->
+<div v-else-if="applicationData" class="flex-1 overflow-hidden">
+  <div class="h-full overflow-y-auto space-y-5 px-1 py-1">
 
-                    <!-- Edit Mode -->
-                    <div v-if="editingField === key" class="space-y-2">
-                      <textarea
-                        v-if="typeof value === 'object'"
-                        v-model="editValue"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        rows="4"
-                      ></textarea>
-                      <input
-                        v-else
-                        v-model="editValue"
-                        type="text"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      />
-                      <div class="flex space-x-2">
-                        <button
-                          class="px-3 py-1 bg-green-600 text-white text-sm rounded-md hover:bg-green-700"
-                          @click="saveEdit"
-                        >
-                          Save
-                        </button>
-                        <button
-                          class="px-3 py-1 bg-gray-600 text-white text-sm rounded-md hover:bg-gray-700"
-                          @click="cancelEdit"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
+    <!-- Dynamic Fields -->
+    <BaseCard class="shadow-sm rounded-xl border border-gray-200">
+      <template #header>
+        <div class="flex items-center gap-2">
+          <DocumentIcon class="h-5 w-5 text-green-600" />
+          <h3 class="text-lg font-semibold text-gray-800">
+            Dynamic Fields
+          </h3>
+        </div>
+      </template>
 
-                    <!-- Display Mode -->
-                    <div v-else>
-                      <pre
-                        v-if="typeof value === 'object'"
-                        class="text-sm text-gray-900 whitespace-pre-wrap bg-gray-50 p-2 rounded border font-mono"
-                      >{{ formatFieldValue(value) }}</pre>
-                      <p v-else class="text-sm text-gray-900">
-                        {{ formatFieldValue(value) }}
-                      </p>
-                    </div>
-                  </div>
+      <div class="space-y-5">
+        <div
+          v-for="(value, key) in getFilteredDynamicFields()"
+          :key="key"
+          class="pb-4 border-b last:border-none last:pb-0"
+        >
+          <div class="flex items-start justify-between">
+            <!-- Field label & value -->
+            <div class="flex-1 min-w-0">
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                {{ formatFieldKey(key) }}
+              </label>
 
-                  <!-- Edit Button -->
+              <!-- Edit Mode -->
+              <div v-if="editingField === key" class="space-y-3">
+                <!-- JSON/Object -->
+                <textarea
+                  v-if="typeof value === 'object'"
+                  v-model="editValue"
+                  class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-green-500 focus:border-green-500"
+                  rows="4"
+                ></textarea>
+
+                <!-- Normal text -->
+                <input
+                  v-else
+                  v-model="editValue"
+                  class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-green-500 focus:border-green-500"
+                />
+
+                <!-- Action Buttons -->
+                <div class="flex gap-2">
                   <button
-                    v-if="editingField !== key"
-                    class="ml-3 p-1 text-gray-400 hover:text-gray-600"
-                    title="Edit field"
-                    @click="startEdit(key, value)"
-                  >
-                    <PencilIcon class="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </BaseCard>
-
-          <!-- File Uploads Section -->
-          <BaseCard
-            v-if="canEditFileUploads()"
-            title="File Uploads"
-            class="mb-6"
-          >
-            <div class="space-y-4">
-              <!-- File Uploads Header -->
-              <div class="flex items-center justify-between">
-                <span class="text-sm font-medium text-gray-700">
-                  Uploaded Documents ({{ applicationData.fileUploads?.length || 0 }})
-                </span>
-                <button
-                  v-if="canEditFileUploads() && !editingFileUploads"
-                  class="text-sm text-blue-600 hover:text-blue-800 flex items-center"
-                  title="Edit file uploads"
-                  @click="startEditFileUploads"
-                >
-                  <PencilIcon class="h-4 w-4 mr-1" />
-                  Edit Files
-                </button>
-                <div v-if="editingFileUploads" class="flex space-x-2">
-                  <button
-                    class="px-3 py-1 bg-green-600 text-white text-sm rounded-md hover:bg-green-700"
-                    @click="saveFileUploads"
+                    class="px-3 py-1.5 bg-green-600 text-white rounded-md hover:bg-green-700"
+                    @click="saveEdit"
                   >
                     Save
                   </button>
                   <button
-                    class="px-3 py-1 bg-gray-600 text-white text-sm rounded-md hover:bg-gray-700"
-                    @click="cancelEditFileUploads"
+                    class="px-3 py-1.5 bg-red-600 text-white rounded-md hover:bg-red-700"
+                    @click="cancelEdit"
                   >
                     Cancel
                   </button>
                 </div>
               </div>
 
-              <!-- File List -->
-              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <!-- No files message -->
-                <div
-                  v-if="!applicationData.fileUploads || applicationData.fileUploads.length === 0"
-                  class="col-span-full text-center py-8 text-gray-500"
-                >
-                  <DocumentIcon class="h-12 w-12 mx-auto text-gray-300 mb-2" />
-                  <p class="text-sm">No documents uploaded yet</p>
-                  <p v-if="canEditFileUploads()" class="text-xs mt-1">
-                    Click "Edit Files" to add documents
-                  </p>
-                </div>
+              <!-- Display Mode -->
+              <div v-else>
+                <pre
+                  v-if="typeof value === 'object'"
+                  class="text-sm text-gray-800 bg-gray-50 p-3 border rounded-lg whitespace-pre-wrap font-mono"
+                >{{ formatFieldValue(value) }}</pre>
 
-                <!-- Existing Files -->
-                <div
-                  v-for="(fileUrl, index) in applicationData.fileUploads"
-                  :key="index"
-                  class="relative border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors"
-                >
-                  <!-- File Icon and Info -->
-                  <div class="flex items-start space-x-3">
-                    <DocumentIcon class="h-8 w-8 text-blue-500 flex-shrink-0 mt-1" />
-                    <div class="flex-1 min-w-0">
-                      <p class="text-sm font-medium text-gray-900 truncate">
-                        {{ getFileName(fileUrl) }}
-                      </p>
-                      <p class="text-xs text-gray-500 mt-1">
-                        Document {{ index + 1 }}
-                      </p>
-                    </div>
-
-                    <!-- Remove button (only in edit mode) -->
-                    <button
-                      v-if="editingFileUploads"
-                      class="text-red-500 hover:text-red-700 p-1"
-                      title="Remove file"
-                      @click="removeFileUpload(index)"
-                    >
-                      <TrashIcon class="h-4 w-4" />
-                    </button>
-                  </div>
-
-                  <!-- File Preview/Link -->
-                  <div class="mt-3">
-                    <a
-                      :href="fileUrl"
-                      target="_blank"
-                      class="text-blue-600 hover:text-blue-800 text-sm"
-                    >
-                      View Document
-                    </a>
-                  </div>
-                </div>
-
-                <!-- Add New File Button (only in edit mode) -->
-                <div
-                  v-if="editingFileUploads"
-                  class="border-2 border-dashed border-gray-300 rounded-lg p-4 flex flex-col items-center justify-center hover:border-gray-400 transition-colors cursor-pointer"
-                  @click="addFileUpload"
-                >
-                  <PlusIcon class="h-8 w-8 text-gray-400 mb-2" />
-                  <span class="text-sm text-gray-500">Add New File</span>
-                </div>
-              </div>
-            </div>
-          </BaseCard>
-
-          <!-- Verification Submission Section -->
-          <BaseCard title="Submit Verification" class="mb-6">
-            <div v-if="!showVerificationForm" class="text-center py-6">
-              <div class="max-w-md mx-auto">
-                <p class="text-sm text-gray-600 mb-4">
-                  Review all the information above and submit your verification for this application.
+                <p v-else class="text-sm text-gray-900">
+                  {{ formatFieldValue(value) }}
                 </p>
-                <button
-                  class="w-full px-6 py-3 bg-green-600 text-white font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                  :disabled="submittingVerification"
-                  @click="showVerificationSubmissionForm"
-                >
-                  Submit Verification
-                </button>
               </div>
             </div>
 
-            <!-- Verification Form -->
-            <div v-else class="space-y-4">
-              <div>
-                <label for="verificationRemarks" class="block text-sm font-medium text-gray-700 mb-2">
-                  Verification Remarks *
-                </label>
-                <textarea
-                  id="verificationRemarks"
-                  v-model="verificationRemarks"
-                  rows="4"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  placeholder="Enter your verification remarks, observations, and any recommendations..."
-                  :disabled="submittingVerification"
-                ></textarea>
-              </div>
-
-              <!-- File Information -->
-              <div v-if="canEditFileUploads() && applicationData.fileUploads?.length > 0" class="bg-blue-50 p-4 rounded-md">
-                <h4 class="text-sm font-medium text-blue-900 mb-2">Files to be submitted:</h4>
-                <ul class="text-sm text-blue-700 space-y-1">
-                  <li v-for="(fileUrl, index) in applicationData.fileUploads" :key="index" class="flex items-center">
-                    <DocumentIcon class="h-4 w-4 mr-2 flex-shrink-0" />
-                    {{ getFileName(fileUrl) }}
-                  </li>
-                </ul>
-              </div>
-
-              <!-- Field Values Summary -->
-              <div class="bg-gray-50 p-4 rounded-md">
-                <h4 class="text-sm font-medium text-gray-900 mb-2">Verified Field Values:</h4>
-                <div class="text-sm text-gray-600">
-                  {{ Object.keys(getFilteredDynamicFields()).length }} field(s) will be submitted
-                </div>
-              </div>
-
-              <!-- Action Buttons -->
-              <div class="flex justify-end space-x-3 pt-4">
-                <button
-                  class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-                  :disabled="submittingVerification"
-                  @click="cancelVerificationSubmission"
-                >
-                  Cancel
-                </button>
-                <button
-                  class="px-6 py-2 bg-green-600 text-white font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-                  :disabled="submittingVerification || !verificationRemarks.trim()"
-                  @click="submitVerification"
-                >
-                  <LoadingSpinner v-if="submittingVerification" class="h-4 w-4 mr-2" />
-                  {{ submittingVerification ? 'Submitting...' : 'Submit Verification' }}
-                </button>
-              </div>
-            </div>
-          </BaseCard>
-
-          <!-- Hidden File Input -->
-          <input
-            ref="fileUploadInput"
-            type="file"
-            multiple
-            accept="image/*,.pdf,.doc,.docx"
-            class="hidden"
-            @change="handleFileUpload"
-          />
+            <!-- Edit Button -->
+            <button
+              v-if="editingField !== key"
+              class="ml-3 p-2 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-700"
+              @click="startEdit(key, value)"
+            >
+              <PencilIcon class="h-4 w-4" />
+            </button>
+          </div>
         </div>
       </div>
+    </BaseCard>
+
+
+    <!-- File Uploads -->
+    <BaseCard v-if="canEditFileUploads()" class="shadow-sm rounded-xl border border-gray-200">
+      <template #header>
+        <div class="flex items-center gap-2">
+          <FolderIcon class="h-5 w-5 text-green-600" />
+          <h3 class="text-lg font-semibold text-gray-800">File Uploads</h3>
+        </div>
+      </template>
+
+      <div class="space-y-4">
+        <!-- Header Actions -->
+        <div class="flex items-center justify-between">
+          <span class="text-sm font-medium text-gray-700">
+            Uploaded Documents ({{ applicationData.fileUploads?.length || 0 }})
+          </span>
+
+          <template v-if="!editingFileUploads">
+            <button
+              class="flex items-center text-sm text-green-600 hover:text-green-700"
+              @click="startEditFileUploads"
+            >
+              <PencilIcon class="h-4 w-4 mr-1" /> Edit Files
+            </button>
+          </template>
+
+          <template v-else>
+            <div class="flex gap-2">
+              <button
+                class="px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700"
+                @click="saveFileUploads"
+              >
+                Save
+              </button>
+              <button
+                class="px-3 py-1 bg-gray-600 text-white rounded-md hover:bg-gray-700"
+                @click="cancelEditFileUploads"
+              >
+                Cancel
+              </button>
+            </div>
+          </template>
+        </div>
+
+        <!-- File Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
+          <!-- Empty -->
+          <div
+            v-if="!applicationData.fileUploads?.length"
+            class="col-span-full text-center py-10 text-gray-500"
+          >
+            <DocumentIcon class="h-12 w-12 mx-auto text-gray-300 mb-2" />
+            <p>No documents uploaded yet</p>
+          </div>
+
+          <!-- Files -->
+          <div
+            v-for="(fileUrl, index) in applicationData.fileUploads"
+            :key="index"
+            class="border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition"
+          >
+            <div class="flex items-start gap-3">
+              <DocumentIcon class="h-8 w-8 text-green-500" />
+
+              <div class="flex-1">
+                <p class="text-sm font-medium text-gray-900 truncate">
+                  {{ getFileName(fileUrl) }}
+                </p>
+                <p class="text-xs text-gray-500">Document {{ index + 1 }}</p>
+              </div>
+
+              <!-- Remove (Edit mode) -->
+              <button
+                v-if="editingFileUploads"
+                class="p-1 text-red-500 hover:text-red-700"
+                @click="removeFileUpload(index)"
+              >
+                <TrashIcon class="h-4 w-4" />
+              </button>
+            </div>
+
+            <!-- Link -->
+            <a
+              :href="fileUrl"
+              target="_blank"
+              class="text-sm mt-3 inline-block text-green-600 hover:text-green-700"
+            >
+              View Document
+            </a>
+          </div>
+
+          <!-- Add new -->
+          <div
+            v-if="editingFileUploads"
+            class="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer hover:border-gray-400"
+            @click="addFileUpload"
+          >
+            <PlusIcon class="h-8 w-8 text-gray-400 mb-2" />
+            <span class="text-sm text-gray-500">Add New File</span>
+          </div>
+        </div>
+      </div>
+    </BaseCard>
+
+
+    <!-- Submit Verification -->
+    <BaseCard class="shadow-sm rounded-xl border border-gray-200 mb-10">
+      <template #header>
+        <div class="flex items-center gap-2">
+          <ShieldCheckIcon class="h-5 w-5 text-green-600" />
+          <h3 class="text-lg font-semibold text-gray-800">
+            Submit Verification
+          </h3>
+        </div>
+      </template>
+
+      <!-- Start -->
+      <div v-if="!showVerificationForm" class="py-8 text-center">
+        <p class="text-sm text-gray-600 mb-5">
+          Review all information before submitting verification.
+        </p>
+
+        <button
+          class="w-full md:w-auto px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700"
+          @click="showVerificationSubmissionForm"
+        >
+          Submit Verification
+        </button>
+      </div>
+
+      <!-- Form -->
+      <div v-else class="space-y-5">
+
+        <!-- Remarks -->
+        <div>
+          <label class="text-sm font-medium text-gray-700 mb-1 block">
+            Verification Remarks *
+          </label>
+          <textarea
+            v-model="verificationRemarks"
+            rows="4"
+            class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-green-500 focus:border-green-500"
+            placeholder="Enter your remarks here..."
+          ></textarea>
+        </div>
+
+        <!-- Files Summary -->
+        <div
+          v-if="applicationData.fileUploads?.length > 0"
+          class="bg-blue-50 p-4 rounded-lg"
+        >
+          <h4 class="text-sm font-medium text-blue-900 mb-2">
+            Files to be submitted:
+          </h4>
+          <ul class="text-sm text-blue-700 space-y-1">
+            <li
+              v-for="(fileUrl, index) in applicationData.fileUploads"
+              :key="index"
+              class="flex items-center"
+            >
+              <DocumentIcon class="h-4 w-4 mr-2" />
+              {{ getFileName(fileUrl) }}
+            </li>
+          </ul>
+        </div>
+
+        <!-- Fields Summary -->
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <h4 class="text-sm font-medium text-gray-900 mb-1">
+            Verified Field Values:
+          </h4>
+          <p class="text-sm text-gray-600">
+            {{ Object.keys(getFilteredDynamicFields()).length }} field(s) will be submitted
+          </p>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex justify-end gap-3 pt-4">
+          <button
+            class="px-5 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+            @click="cancelVerificationSubmission"
+          >
+            Cancel
+          </button>
+
+          <button
+            class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center"
+            :disabled="!verificationRemarks.trim()"
+            @click="submitVerification"
+          >
+            <LoadingSpinner v-if="submittingVerification" class="h-4 w-4 mr-2" />
+            {{ submittingVerification ? 'Submitting...' : 'Submit Verification' }}
+          </button>
+        </div>
+      </div>
+    </BaseCard>
+
+    <!-- Hidden Input -->
+    <input
+      ref="fileUploadInput"
+      type="file"
+      multiple
+      accept="image/*,.pdf,.doc,.docx"
+      class="hidden"
+      @change="handleFileUpload"
+    />
+  </div>
+</div>
+
     </div>
   </AuthenticatedLayout>
 </template>

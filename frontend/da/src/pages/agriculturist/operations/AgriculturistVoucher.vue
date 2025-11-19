@@ -310,7 +310,7 @@ onMounted(async () => {
           :aria-expanded="isVoucherDropdownOpen"
           aria-haspopup="listbox"
           class="w-full flex items-center justify-between px-3 py-2.5 border border-gray-300 rounded-xl bg-white
-                 shadow-sm hover:shadow-md transition-shadow duration-200 focus:outline-none focus:ring-2 focus:ring-green-300
+                 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-300
                  focus:border-green-400"
         >
           <span class="text-gray-900">{{ voucherInfo.voucherType }}</span>

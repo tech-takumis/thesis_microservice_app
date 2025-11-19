@@ -1,7 +1,10 @@
 <template>
     <div :class="className">
-        <dt class="text-sm font-medium text-green-600">{{ label }}</dt>
-        <dd class="mt-1 text-sm text-gray-900">{{ displayValue }}</dd>
+        <label class="block text-sm font-medium text-green-600 mb-2">{{ label }}</label>
+
+        <div class="w-full bg-green-100 p-3">
+            <p class="text-sm text-gray-900">{{ displayValue }}</p>
+        </div>
     </div>
 </template>
 
@@ -31,6 +34,7 @@ const displayValue = computed(() => {
 })
 
 const className = computed(() => {
-    return props.class || ''
+    const base = 'flex flex-col'
+    return [base, props.class].filter(Boolean).join(' ')
 })
 </script>

@@ -31,7 +31,7 @@ spring:
           inspectionCompletedEvent:com.hashjosh.kafkacommon.application.InspectionCompletedEvent,
           policyIssuedEvent:com.hashjosh.kafkacommon.application.PolicyIssuedEvent,
           claimProcessedEvent:com.hashjosh.kafkacommon.application.ClaimProcessedEvent,
-          verificationEvent:com.hashjosh.kafkacommon.application.VerificationEvent,
+          verificationCompletedEvent:com.hashjosh.kafkacommon.application.VerificationCompletedEvent,
           inspectionScheduledEvent:com.hashjosh.kafkacommon.application.InspectionScheduledEvent
 
     consumer:
@@ -45,7 +45,7 @@ spring:
           inspectionCompletedEvent:com.hashjosh.kafkacommon.application.InspectionCompletedEvent,
           policyIssuedEvent:com.hashjosh.kafkacommon.application.PolicyIssuedEvent,
           claimProcessedEvent:com.hashjosh.kafkacommon.application.ClaimProcessedEvent,
-          verificationEvent:com.hashjosh.kafkacommon.application.VerificationEvent,
+          verificationCompletedEvent:com.hashjosh.kafkacommon.application.VerificationCompletedEvent,
           inspectionScheduledEvent:com.hashjosh.kafkacommon.application.InspectionScheduledEvent
 
 token:

@@ -27,7 +27,7 @@ spring:
           farmerRegistrationContract:com.hashjosh.kafkacommon.farmer.FarmerRegistrationContract,
           pcicRegistrationContract:com.hashjosh.kafkacommon.pcic.PcicRegistrationContract,
           applicationSubmittedEvent:com.hashjosh.kafkacommon.application.ApplicationSubmittedEvent,
-          verificationEvent:com.hashjosh.kafkacommon.application.VerificationEvent,
+          verificationCompletedEvent:com.hashjosh.kafkacommon.application.VerificationCompletedEvent,
           inspectionScheduledEvent:com.hashjosh.kafkacommon.application.InspectionScheduledEvent,
           inspectionCompletedEvent:com.hashjosh.kafkacommon.application.InspectionCompletedEvent,
           policyIssuedEvent:com.hashjosh.kafkacommon.application.PolicyIssuedEvent,

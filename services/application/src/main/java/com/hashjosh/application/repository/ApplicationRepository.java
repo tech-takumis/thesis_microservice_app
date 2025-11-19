@@ -1,6 +1,7 @@
 package com.hashjosh.application.repository;
 
 import com.hashjosh.application.model.Application;
+import com.hashjosh.application.model.ApplicationType;
 import com.hashjosh.application.model.ApplicationWorkflow;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -27,4 +28,10 @@ public interface ApplicationRepository extends JpaRepository<Application, UUID> 
     ApplicationWorkflow findAllWorkflowsByApplicationId(@Param("applicationId") UUID applicationId);
 
 
+    @Query("""
+        SELECT at FROM Application a
+        JOIN a.type at
+        WHERE a.id = :applicationId
+ """)
+    ApplicationType findApplicationTypeByApplicationId(@Param("applicationId") UUID applicationId);
 }

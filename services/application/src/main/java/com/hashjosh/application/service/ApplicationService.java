@@ -448,4 +448,8 @@ public class ApplicationService {
         }
     }
 
+    public boolean isAiAnalysisRequired(UUID applicationId) {
+        ApplicationType applicationType = applicationRepository.findApplicationTypeByApplicationId(applicationId);
+        return applicationType.getRequiredAIAnalysis();
+    }
 }

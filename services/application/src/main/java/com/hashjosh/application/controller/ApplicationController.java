@@ -69,6 +69,14 @@ public class ApplicationController {
         }
     }
 
+    @GetMapping("/{applicationId}/required-ai-analysis")
+    public ResponseEntity<Boolean> isAiAnalysisRequired(
+            @PathVariable("applicationId") UUID applicationId
+    ){
+        boolean isRequired = applicationService.isAiAnalysisRequired(applicationId);
+        return ResponseEntity.ok(isRequired);
+    }
+
     @GetMapping("/{application-id}/workflow")
     public ResponseEntity<ApplicationWorkflowResponse> getApplicationWorkflow(
             @PathVariable("application-id") UUID applicationId

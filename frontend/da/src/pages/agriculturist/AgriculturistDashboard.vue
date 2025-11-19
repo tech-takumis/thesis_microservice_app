@@ -218,147 +218,11 @@
                 <div
                     class="w-full space-y-6 pb-6 overflow-hidden flex flex-col">
                     <!-- Stats Grid (fixed, no scroll) -->
-                    <div
-                        class="flex-shrink-0 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <!-- Local Farmers -->
-                        <div
-                            class="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200">
-                            <div class="p-5">
-                                <div class="flex items-center justify-between">
-                                    <p
-                                        class="text-2xs font-medium text-green-700">
-                                        Local Farmers
-                                    </p>
-                                    <div
-                                        :class="[
-                                            farmersChange > 0
-                                                ? 'text-green-700 bg-green-50'
-                                                : farmersChange < 0
-                                                ? 'text-red-700 bg-red-50'
-                                                : 'text-gray-700 bg-gray-50',
-                                            'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
-                                        ]">
-                                        <ArrowUpRight
-                                            v-if="farmersChange > 0"
-                                            class="h-3.5 w-3.5 mr-1" />
-                                        <ArrowDownRight
-                                            v-else-if="farmersChange < 0"
-                                            class="h-3.5 w-3.5 mr-1" />
-                                        {{
-                                            Math.abs(farmersChange).toFixed(1)
-                                        }}%
-                                    </div>
-                                </div>
-                                <div
-                                    class="mt-2 flex items-center justify-between">
-                                    <div class="p-2 rounded-lg bg-green-50">
-                                        <Sprout
-                                            class="h-6 w-6 text-green-600" />
-                                    </div>
-                                    <p
-                                        class="text-3xl font-semibold text-gray-900">
-                                        {{
-                                            stats.localFarmers.toLocaleString()
-                                        }}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Disbursements -->
-                        <div
-                            class="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200">
-                            <div class="p-5">
-                                <div class="flex items-center justify-between">
-                                    <p
-                                        class="text-2xs font-medium text-yellow-500">
-                                        Disbursements
-                                    </p>
-                                    <div
-                                        :class="[
-                                            disbursementsChange > 0
-                                                ? 'text-yellow-600 bg-yellow-50'
-                                                : disbursementsChange < 0
-                                                ? 'text-red-700 bg-red-50'
-                                                : 'text-gray-700 bg-gray-50',
-                                            'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
-                                        ]">
-                                        <ArrowUpRight
-                                            v-if="disbursementsChange > 0"
-                                            class="h-3.5 w-3.5 mr-1" />
-                                        <ArrowDownRight
-                                            v-else-if="disbursementsChange < 0"
-                                            class="h-3.5 w-3.5 mr-1" />
-                                        {{
-                                            Math.abs(
-                                                disbursementsChange,
-                                            ).toFixed(1)
-                                        }}%
-                                    </div>
-                                </div>
-                                <div
-                                    class="mt-2 flex items-center justify-between">
-                                    <div class="p-2 rounded-lg bg-yellow-50">
-                                        <TrendingUp
-                                            class="h-6 w-6 text-yellow-500" />
-                                    </div>
-                                    <p
-                                        class="text-3xl font-semibold text-gray-900">
-                                        ₱{{
-                                            stats.disbursements.toLocaleString()
-                                        }}K
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Active Programs -->
-                        <div
-                            class="bg-green-600 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200">
-                            <div class="p-5">
-                                <div class="flex items-center justify-between">
-                                    <p class="text-2xs font-medium text-white">
-                                        Active Programs
-                                    </p>
-                                    <div
-                                        :class="[
-                                            programsChange > 0
-                                                ? 'text-green-700 bg-green-50'
-                                                : programsChange < 0
-                                                ? 'text-red-700 bg-red-50'
-                                                : 'text-gray-800 bg-gray-50',
-                                            'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-600',
-                                        ]">
-                                        <ArrowUpRight
-                                            v-if="programsChange > 0"
-                                            class="h-3.5 w-3.5 mr-1" />
-                                        <ArrowDownRight
-                                            v-else-if="programsChange < 0"
-                                            class="h-3.5 w-3.5 mr-1" />
-                                        {{
-                                            Math.abs(programsChange).toFixed(1)
-                                        }}%
-                                    </div>
-                                </div>
-                                <div
-                                    class="mt-2 flex items-center justify-between">
-                                    <div class="p-2 rounded-lg bg-green-600">
-                                        <Users
-                                            class="h-7 w-7 text-green-800 bg-green-600" />
-                                    </div>
-                                    <p
-                                        class="text-3xl font-semibold text-white">
-                                        {{ stats.activePrograms }}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
 
                     <!-- New 12-column grid layout with Posts (col-8) and Financial/Program (col-4) -->
                     <!-- Posts has independent scroll, Financial/Program share unified scroll -->
                     <div
-                        class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-0">
+                        class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-2 min-h-0">
                         <!-- Posts Card - 8 columns with independent scroll -->
                         <div class="lg:col-span-8 flex flex-col min-h-0">
                             <div
@@ -371,7 +235,7 @@
                         <div class="lg:col-span-4 flex flex-col min-h-0">
                             <div
                                 class="h-full overflow-y-auto overflow-x-hidden pr-2 custom-scrollbar">
-                                <div class="space-y-6">
+                                <div class="space-y-4">
                                     <!-- Latest Transactions -->
                                     <FinancialCard />
 

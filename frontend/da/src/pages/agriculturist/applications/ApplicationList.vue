@@ -107,7 +107,7 @@
         </div>
 
         <!-- Main Content Area - Flex and Scrollable -->
-        <div class="flex-1 min-h-0 overflow-y-auto">
+        <div class="flex-1 min-h-0 overflow-y-auto border bg-gray-100 rounded-lg">
             <!-- Loading state -->
             <div
               v-if="loading"
@@ -132,7 +132,7 @@
             </div>
 
             <!-- Applications table -->
-                <div v-else :key="route.params.id" class="bg-white shadow-sm rounded-lg overflow-hidden mb-4 print:hidden flex-1 min-h-0">
+                <div v-else :key="route.params.id" class="bg-gray-100 shadow-sm rounded-lg overflow-hidden mb-4 print:hidden flex-1 min-h-0">
                 <div class="overflow-x-auto overflow-y-auto max-h-full">
                     <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">

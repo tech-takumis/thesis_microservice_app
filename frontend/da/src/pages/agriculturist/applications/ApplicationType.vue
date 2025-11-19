@@ -55,7 +55,7 @@
                 <div
                     v-for="applicationType in applicationTypes"
                     :key="applicationType.id"
-                    class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md hover:border-green-300 transition-all duration-200 cursor-pointer group"
+                    class="bg-gray-100 rounded-lg shadow-sm border border-gray-300 p-6 hover:shadow-md hover:border-green-300 transition-all duration-200 cursor-pointer group"
                     @click="navigateToApplicationType(applicationType.id)">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center min-w-0">

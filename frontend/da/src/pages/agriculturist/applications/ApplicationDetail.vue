@@ -85,7 +85,7 @@
 <div v-else-if="applicationData" :key="route.params.id" class="space-y-4">
 
   <!-- USER PROFILE STYLE APPLICATION INFO -->
-  <div class="bg-gray-100 rounded-xl overflow-hidden">
+  <div class="bg-white rounded-lg overflow-hidden">
     <div class="px-4 py-3">
       <!-- Profile Fields -->
       <div
@@ -128,7 +128,7 @@
   <!-- Application Type Information -->
   <div
     v-if="applicationTypeData"
-    class="bg-gray-100 rounded-xl overflow-hidden"
+    class="bg-white rounded-xl overflow-hidden"
   >
     <!-- Header -->
     <div class="px-4 py-2 border-b border-gray-100 flex items-center gap-2">
@@ -153,7 +153,7 @@
 <!-- Batch Information -->
 <div
   v-if="insuranceData?.batch"
-  class="bg-gray-100 rounded-xl overflow-hidden"
+  class="bg-white rounded-xl overflow-hidden"
 >
   <!-- Header -->
   <div class="px-4 py-2 border-b border-gray-100 flex items-center gap-2">
@@ -184,7 +184,7 @@
 </div>
 
 <!-- Uploaded Files (carded) --> 
-<div v-if="applicationData.fileUploads?.length > 0" class="bg-gray-100 overflow-hidden">
+<div v-if="applicationData.fileUploads?.length > 0" class="bg-white overflow-hidden">
   <div class="px-6 py-3 border-b border-gray-100 flex items-center gap-2">
     <ImageIcon class="w-4 h-4 text-green-700" />
     <h3 class="text-xs font-bold text-gray-700 uppercase tracking-wide">Uploaded Files</h3>
@@ -230,11 +230,11 @@
       <!-- Simple Verification Completed (small green vibe) -->
       <div class="flex items-center gap-3 p-2 rounded-md">
         <div class="flex-shrink-0 bg-green-600 rounded-full p-1.5">
-          <CheckCircleIcon class="h-5 w-5 text-white" />
+          <CheckCircleIcon class="h-6 w-6 text-white" />
         </div>
 
         <div>
-          <p class="text-sm font-semibold text-green-600">Verified</p>
+          <p class="text-lg font-semibold text-green-600">Verified</p>
           <p class="text-xs text-gray-600">Reviewed and approved</p>
         </div>
       </div>
@@ -313,7 +313,7 @@
 <!-- Inspection Information -->
 <div
   v-if="shouldShowInspection"
-  class="bg-white shadow-sm border border-gray-300 rounded-lg overflow-hidden"
+  class="bg-gray-100 shadow-sm border border-gray-300 rounded-lg overflow-hidden"
 >
 
             <div class="px-6 py-4">
@@ -356,8 +356,8 @@
           </div>
 
           <!-- Policy Information -->
-          <div v-if="shouldShowPolicy" class="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200">
+          <div v-if="shouldShowPolicy" class="bg-gray-100 shadow-sm border border-gray-300 rounded-lg overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-300">
               <h3 class="text-lg font-medium text-gray-700">Policy Information</h3>
             </div>
             <div class="px-6 py-4">
@@ -403,7 +403,7 @@
           </div>
 
           <!-- Claim Information -->
-          <div v-if="shouldShowClaim" class="bg-white shadow-sm border border-gray-300 rounded-lg overflow-hidden">
+          <div v-if="shouldShowClaim" class="bg-gray-100 shadow-sm border border-gray-300 rounded-lg overflow-hidden">
                       <div class="px-6 py-4">
               <!-- Claim Complete -->
               <div v-if="insuranceData?.claim" class="space-y-6">
@@ -459,8 +459,8 @@
               </div>
               <div v-else class="flex items-center justify-center py-8">
                 <div class="text-center">
-                  <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-gray-100">
-                    <DocumentIcon class="h-6 w-6 text-gray-400" />
+                  <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-gray-300">
+                    <DocumentIcon class="h-6 w-6 text-gray-500" />
                   </div>
                   <h3 class="mt-2 text-sm font-medium text-gray-900">No Claim Filed Yet</h3>
                   <p class="mt-1 text-sm text-gray-500">No insurance claim has been filed for this application yet. Claims can be filed when crop damage occurs.</p>
@@ -861,7 +861,7 @@ const verificationCardClasses = computed(() => {
   const verified = !!insuranceData.value?.verification
   return [
     'rounded-xl overflow-hidden',
-    verified ? 'border border-green-500 bg-green-100 text-white' : 'border border-gray-300 bg-white text-green-600'
+    verified ? 'border border-green-500 bg-green-100 text-white' : 'border border-gray-300 bg-gray-100 text-green-600'
   ].join(' ')
 })
 

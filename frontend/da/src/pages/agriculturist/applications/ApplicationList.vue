@@ -14,7 +14,7 @@
                   <div>
                     <router-link
                       :to="{ name: 'agriculturist-dashboard' }"
-                      class="text-gray-400 hover:text-gray-500"
+                      class="text-green-600 hover:text-green-700"
                     >
                       <HomeIcon class="flex-shrink-0 h-5 w-5" />
                       <span class="sr-only">Dashboard</span>
@@ -163,7 +163,7 @@
                     <tr
                         v-for="application in filteredApplications"
                         :key="application.id"
-                        class="hover:bg-gray-50 cursor-pointer transition-colors"
+                        class="hover:bg-green-50 cursor-pointer transition-colors"
                         @click="handleRowClick(application.insuranceId || application.id, $event)"
                     >
                         <td class="px-6 py-4 whitespace-nowrap" @click.stop>

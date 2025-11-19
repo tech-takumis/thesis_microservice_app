@@ -44,11 +44,11 @@ const props = defineProps({
 
 const iconBgColor = computed(() => {
   const variants = {
-    primary: 'bg-indigo-100',
+    primary: 'bg-red-100',
     success: 'bg-green-100',
     warning: 'bg-yellow-100',
     danger: 'bg-red-100',
-    info: 'bg-blue-100',
+    info: 'bg-green-100',
     default: 'bg-gray-100'
   }
   return variants[props.variant] || variants.default
@@ -56,11 +56,11 @@ const iconBgColor = computed(() => {
 
 const iconColor = computed(() => {
   const variants = {
-    primary: 'text-indigo-600',
+    primary: 'text-red-600',
     success: 'text-green-600',
     warning: 'text-yellow-600',
     danger: 'text-red-600',
-    info: 'text-blue-600',
+    info: 'text-green-600',
     default: 'text-gray-600'
   }
   return variants[props.variant] || variants.default

@@ -22,7 +22,7 @@
             </h3>
             <button
               @click="closeModal"
-              class="p-2 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+              class="p-2 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-100"
             >
               <X class="h-5 w-5" />
             </button>
@@ -42,7 +42,7 @@
                 type="text"
                 id="sectionTitle"
                 required
-                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-green-400 focus:ring-2 focus:ring-green-400/40 transition duration-200 disabled:opacity-50"
                 placeholder="e.g., Farmer Information"
               />
             </div>
@@ -69,7 +69,7 @@
             </button>
             <button
               @click="saveSection"
-              class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+              class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-indigo-700"
             >
               {{ isEditing ? 'Update' : 'Add' }} Section
             </button>

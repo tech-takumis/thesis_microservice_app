@@ -25,7 +25,7 @@
         </div>
         <div class="p-6">
           <div class="text-center py-12">
-            <BarChart3 class="mx-auto h-12 w-12 text-gray-400" />
+            <BarChart3 class="mx-auto h-12 w-12 text-green-600" />
             <h3 class="mt-2 text-sm font-medium text-gray-900">Analytics Dashboard</h3>
             <p class="mt-1 text-sm text-gray-500">
               This page will display system analytics and performance metrics.

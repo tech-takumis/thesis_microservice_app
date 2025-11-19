@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
 import { MUNICIPAL_AGRICULTURIST_NAVIGATION } from '@/lib/navigation'
 import { useRouter } from 'vue-router'
@@ -48,6 +48,64 @@ const voucherTypes = [
   'Fertilizer',
   'Equipment'
 ]
+
+// Custom dropdown state for voucher type
+const isVoucherDropdownOpen = ref(false)
+const highlightedIndex = ref(-1)
+
+const toggleVoucherDropdown = () => {
+  isVoucherDropdownOpen.value = !isVoucherDropdownOpen.value
+  if (isVoucherDropdownOpen.value) highlightedIndex.value = voucherTypes.indexOf(voucherInfo.value.voucherType)
+}
+
+const closeVoucherDropdown = () => {
+  isVoucherDropdownOpen.value = false
+  highlightedIndex.value = -1
+}
+
+const selectVoucherType = (type) => {
+  voucherInfo.value.voucherType = type
+  closeVoucherDropdown()
+}
+
+const onVoucherKeyDown = (e) => {
+  if (!isVoucherDropdownOpen.value && (e.key === 'Enter' || e.key === ' ')) {
+    e.preventDefault()
+    toggleVoucherDropdown()
+    return
+  }
+
+  if (isVoucherDropdownOpen.value) {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      highlightedIndex.value = Math.min(highlightedIndex.value + 1, voucherTypes.length - 1)
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      highlightedIndex.value = Math.max(highlightedIndex.value - 1, 0)
+    } else if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      if (highlightedIndex.value >= 0) selectVoucherType(voucherTypes[highlightedIndex.value])
+    } else if (e.key === 'Escape') {
+      e.preventDefault()
+      closeVoucherDropdown()
+    }
+  }
+}
+
+// Close on outside click
+const onClickOutside = (e) => {
+  const el = document.querySelector('#voucher-type-dropdown')
+  if (!el) return
+  if (!el.contains(e.target)) closeVoucherDropdown()
+}
+
+onMounted(() => {
+  document.addEventListener('click', onClickOutside)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', onClickOutside)
+})
 
 // Methods
 const toggleFarmerSelection = (farmer) => {
@@ -238,22 +296,62 @@ onMounted(async () => {
       />
     </div>
 
-    <!-- Voucher Type -->
+    <!-- Voucher Type (Custom Styled Dropdown) -->
     <div>
       <label class="block text-sm font-medium text-gray-700 mb-1">
         Voucher Type <span class="text-red-500">*</span>
       </label>
-      <select
-        v-model="voucherInfo.voucherType"
-        class="w-full px-3 py-2.5 border border-gray-300 rounded-xl 
-               focus:outline-none focus:border-green-400 
-               focus:ring-2 focus:ring-green-300 
-               transition duration-200 bg-white"
-      >
-        <option v-for="type in voucherTypes" :key="type" :value="type">
-          {{ type }}
-        </option>
-      </select>
+
+      <div id="voucher-type-dropdown" class="relative">
+        <button
+          type="button"
+          @click="toggleVoucherDropdown"
+          @keydown.stop.prevent="onVoucherKeyDown"
+          :aria-expanded="isVoucherDropdownOpen"
+          aria-haspopup="listbox"
+          class="w-full flex items-center justify-between px-3 py-2.5 border border-gray-300 rounded-xl bg-white
+                 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-300
+                 focus:border-green-400"
+        >
+          <span class="text-gray-900">{{ voucherInfo.voucherType }}</span>
+          <svg
+            class="w-4 h-4 text-green-600 transform transition-transform duration-200"
+            :class="isVoucherDropdownOpen ? 'rotate-180' : ''"
+            viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+
+        <ul
+          v-show="isVoucherDropdownOpen"
+          role="listbox"
+          tabindex="-1"
+          class="origin-top-right absolute right-0 left-0 mt-2 bg-white rounded-xl shadow-lg ring-1 ring-black ring-opacity-5 overflow-auto max-h-56 py-1 focus:outline-none z-50
+                 transition-transform duration-150"
+        >
+          <li
+            v-for="(type, idx) in voucherTypes"
+            :key="type"
+            role="option"
+            :aria-selected="type === voucherInfo.voucherType"
+            @mouseenter="highlightedIndex = idx"
+            @mouseleave="highlightedIndex = -1"
+            @click="selectVoucherType(type)"
+            :class="[
+              'px-3 py-2 cursor-pointer flex items-center justify-between',
+              highlightedIndex === idx ? 'bg-green-50' : 'hover:bg-green-50',
+              type === voucherInfo.voucherType ? 'font-semibold text-green-700' : 'text-gray-700'
+            ]"
+          >
+            <span>{{ type }}</span>
+            <svg v-if="type === voucherInfo.voucherType" class="w-4 h-4 text-green-600" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </li>
+        </ul>
+      </div>
     </div>
 
     <!-- Total Bags -->
@@ -407,5 +505,26 @@ onMounted(async () => {
   .break-inside-avoid {
     break-inside: avoid;
   }
+}
+
+/* Custom dropdown & UI polish */
+::selection {
+  background-color: rgba(16, 185, 129, 0.12); /* soft green selection */
+}
+
+#voucher-type-dropdown button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+#voucher-type-dropdown ul {
+  -webkit-overflow-scrolling: touch;
+}
+
+#voucher-type-dropdown li {
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+#voucher-type-dropdown svg {
+  transition: transform 200ms ease;
 }
 </style>

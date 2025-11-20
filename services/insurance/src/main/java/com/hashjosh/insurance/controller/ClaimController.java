@@ -5,7 +5,10 @@ import com.hashjosh.insurance.config.CustomUserDetails;
 import com.hashjosh.insurance.dto.claim.ClaimAIRequest;
 import com.hashjosh.insurance.dto.claim.ClaimRequest;
 import com.hashjosh.insurance.dto.claim.ClaimResponse;
+import com.hashjosh.insurance.dto.claim.ClaimUpdateRequest;
+import com.hashjosh.insurance.exception.ApiException;
 import com.hashjosh.insurance.service.ClaimService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -51,6 +54,9 @@ public class ClaimController {
             ClaimResponse response = claimService.createClaimManually(request, supportingFiles, userId);
             return new ResponseEntity<>(response, HttpStatus.CREATED);
 
+        } catch (ApiException e) {
+            log.error("API error creating manual claim", e);
+            throw e; // Re-throw ApiException to be handled by global exception handler
         } catch (Exception e) {
             log.error("Error creating manual claim", e);
             throw new RuntimeException("Failed to parse claim request: " + e.getMessage());
@@ -71,6 +77,9 @@ public class ClaimController {
             ClaimResponse response = claimService.createClaimFromAI(request, supportingFiles, userId);
             return new ResponseEntity<>(response, HttpStatus.CREATED);
 
+        } catch (com.hashjosh.insurance.exception.ApiException e) {
+            log.error("API error creating AI claim", e);
+            throw e; // Re-throw ApiException to be handled by global exception handler
         } catch (Exception e) {
             log.error("Error creating AI claim", e);
             throw new RuntimeException("Failed to parse AI claim request: " + e.getMessage());
@@ -92,30 +101,57 @@ public class ClaimController {
     }
 
     @GetMapping("/insurance/{insuranceId}")
-    public ResponseEntity<List<ClaimResponse>> getClaimsByInsuranceId(
+    public ResponseEntity<ClaimResponse> getClaimsByInsuranceId(
             @PathVariable UUID insuranceId) {
         log.info("Getting claims by insurance ID: {}", insuranceId);
-        List<ClaimResponse> response = claimService.getClaimsByInsuranceId(insuranceId);
+        ClaimResponse response = claimService.getClaimsByInsuranceId(insuranceId);
         return ResponseEntity.ok(response);
     }
 
     @PutMapping(value = "/{claimId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ClaimResponse> updateClaim(
             @PathVariable UUID claimId,
-            @RequestPart("claim") String claimJson,
+            @RequestPart("claim") @Valid ClaimUpdateRequest request,
             @RequestPart(value = "supportingFiles", required = false) List<MultipartFile> supportingFiles) {
 
         try {
             String userId = getAuthenticatedUserId();
-            ClaimRequest request = objectMapper.readValue(claimJson, ClaimRequest.class);
-            log.info("Updating claim ID: {} by user: {}", claimId, userId);
+            log.info("Updating claim ID: {} by user: {} - claimAmount: {}, damageAssessment: {}, supportingFiles: {}",
+                    claimId, userId, request.getClaimAmount(),
+                    request.getDamageAssessment() != null ? "provided" : "not provided",
+                    supportingFiles != null ? supportingFiles.size() : 0);
 
             ClaimResponse response = claimService.updateClaim(claimId, request, supportingFiles, userId);
             return ResponseEntity.ok(response);
 
+        } catch (ApiException e) {
+            log.error("API error updating claim", e);
+            throw e; // Re-throw ApiException to be handled by global exception handler
         } catch (Exception e) {
             log.error("Error updating claim", e);
-            throw new RuntimeException("Failed to parse claim update request: " + e.getMessage());
+            throw new RuntimeException("Failed to update claim: " + e.getMessage());
+        }
+    }
+
+    @PatchMapping("/{claimId}/amount")
+    public ResponseEntity<ClaimResponse> updateClaimAmount(
+            @PathVariable UUID claimId,
+            @RequestBody @Valid ClaimUpdateRequest request) {
+
+        try {
+            String userId = getAuthenticatedUserId();
+            log.info("Updating claim amount for claim ID: {} by user: {} - new amount: {}",
+                    claimId, userId, request.getClaimAmount());
+
+            ClaimResponse response = claimService.updateClaim(claimId, request, null, userId);
+            return ResponseEntity.ok(response);
+
+        } catch (ApiException e) {
+            log.error("API error updating claim amount", e);
+            throw e; // Re-throw ApiException to be handled by global exception handler
+        } catch (Exception e) {
+            log.error("Error updating claim amount", e);
+            throw new RuntimeException("Failed to update claim amount: " + e.getMessage());
         }
     }
 

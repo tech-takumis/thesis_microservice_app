@@ -289,58 +289,56 @@
                       <CheckCircleIcon class="h-5 w-5 text-orange-500 flex-shrink-0" />
                       <h4 class="text-sm font-semibold text-slate-900">Claim Filed</h4>
                     </div>
-                    <router-link
-                      :to="{
-                        name: 'damage-claim-review',
-                        params: { insuranceId: route.params.insuranceId, submissionId: route.params.submissionId },
-                        query: { action: 'view' }
-                      }"
-                      class="text-xs text-blue-600 hover:text-blue-800 font-medium transition-colors duration-200"
-                    >
-                      View
-                    </router-link>
+                    <div class="flex items-center gap-1">
+                      <router-link
+                        :to="{
+                          name: 'underwriter-applications-claim',
+                          params: { insuranceId: route.params.insuranceId, submissionId: route.params.submissionId },
+                          query: { action: 'view' }
+                        }"
+                        class="text-xs text-blue-600 hover:text-blue-800 font-medium transition-colors duration-200 px-2 py-1 rounded hover:bg-blue-50"
+                      >
+                        View
+                      </router-link>
+                      <router-link
+                        :to="{
+                          name: 'underwriter-applications-claim',
+                          params: { insuranceId: route.params.insuranceId, submissionId: route.params.submissionId },
+                          query: { action: 'update' }
+                        }"
+                        class="text-xs text-green-600 hover:text-green-800 font-medium transition-colors duration-200 px-2 py-1 rounded hover:bg-green-50"
+                      >
+                        Update
+                      </router-link>
+                    </div>
                   </div>
                   <div class="space-y-2 text-xs ml-7">
                     <p class="text-slate-600">
                       <span class="font-semibold">Amount:</span> {{ formatCurrency(insuranceData.claim.claimAmount) }}
                     </p>
                     <p class="text-slate-600">
-                      <span class="font-semibold">Status:</span> {{ insuranceData.claim.status }}
+                      <span class="font-semibold">Status:</span> {{ insuranceData.status}}
                     </p>
-                  </div>
-                  <div class="mt-3 ml-7">
-                    <button
-                      @click="viewAIAnalysis"
-                      class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-lg text-purple-700 bg-purple-100 hover:bg-purple-200 hover:text-purple-800 transition-all duration-200"
-                    >
-                      <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                      </svg>
-                      AI Analysis
-                    </button>
+                    <p class="text-slate-600">
+                      <span class="font-semibold">Filed:</span> {{ formatDate(insuranceData.claim.filedAt) }}
+                    </p>
                   </div>
                 </div>
                 <div v-else class="text-center py-6">
                   <DocumentIcon class="mx-auto h-8 w-8 text-slate-300" />
                   <p class="mt-2 text-xs font-medium text-slate-700">No Claim</p>
                   <div class="mt-3 space-y-2">
-                    <button
+                    <router-link
                       v-if="insuranceData?.inspection && insuranceData.inspection.inspected === true"
-                      @click="processClaim"
+                      :to="{
+                        name: 'underwriter-applications-claim',
+                        params: { insuranceId: route.params.insuranceId, submissionId: route.params.submissionId },
+                        query: { action: 'file_claim' }
+                      }"
                       class="inline-flex items-center px-4 py-2 text-xs font-medium rounded-xl text-white bg-orange-500 hover:bg-orange-600 hover:shadow-lg hover:shadow-orange-500/30 transition-all duration-200"
                     >
                       File Claim
-                    </button>
-                    <button
-                      v-if="shouldShowAIAnalysis"
-                      @click="viewAIAnalysis"
-                      class="inline-flex items-center px-4 py-2 text-xs font-medium rounded-xl text-purple-600 bg-purple-50 border border-purple-200 hover:bg-purple-100 hover:border-purple-300 transition-all duration-200"
-                    >
-                      <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                      </svg>
-                      AI Analysis
-                    </button>
+                    </router-link>
                   </div>
                   <p v-if="!insuranceData?.inspection || !insuranceData.inspection.inspected" class="mt-3 text-xs text-slate-400">
                     {{ insuranceData?.inspection && insuranceData.inspection.schedule ? 'Awaiting completion' : 'Awaiting inspection' }}
@@ -561,9 +559,10 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useApplicationStore } from '@/stores/applications'
+import { useApplicationStore } from '@/stores/application'
 import { useInsuranceStore } from '@/stores/insurance'
 import { usePolicyStore } from '@/stores/policy'
+import { useClaimStore } from '@/stores/claim'
 import { useToastStore } from '@/stores/toast'
 import DetailField from '@/components/tables/DetailField.vue'
 import LoadingSpinner from '@/components/others/LoadingSpinner.vue'
@@ -584,6 +583,7 @@ const router = useRouter()
 const applicationStore = useApplicationStore()
 const insuranceStore = useInsuranceStore()
 const policyStore = usePolicyStore()
+const claimStore = useClaimStore()
 const toastStore = useToastStore()
 
 // State
@@ -602,6 +602,32 @@ const policyForm = ref({
   expiryDate: ''
 })
 const isGeneratingPolicy = ref(false)
+const aiAnalysisRequired = ref(null)
+const isUpdateClaimModalOpen = ref(false)
+const updateClaimForm = ref({
+  claimAmount: 0,
+  damageAssessment: ''
+})
+const updateClaimFiles = ref([])
+const isUpdatingClaim = ref(false)
+const currentClaim = ref(null)
+
+// Function to check if AI analysis is required for this application
+const checkAiAnalysisRequirement = async (submissionId) => {
+  try {
+    const result = await applicationStore.isAiAnalysisRequired(submissionId)
+    if (result.success) {
+      aiAnalysisRequired.value = result.data
+      console.log('AI Analysis requirement check:', result.data)
+    } else {
+      console.warn('Failed to check AI analysis requirement:', result.message)
+      aiAnalysisRequired.value = false
+    }
+  } catch (error) {
+    console.error('Error checking AI analysis requirement:', error)
+    aiAnalysisRequired.value = false
+  }
+}
 
 async function fetchApplicationDetails() {
   console.log('fetchApplicationDetails called with insuranceId:', route.params.insuranceId, 'submissionId:', route.params.submissionId)
@@ -629,6 +655,9 @@ async function fetchApplicationDetails() {
       insuranceStore.fetchInsuranceById(route.params.insuranceId),
       applicationStore.fetchApplicationWorkflow(route.params.submissionId)
     ])
+
+    // Check AI analysis requirement after initial fetch
+    await checkAiAnalysisRequirement(route.params.submissionId)
 
     // Process insurance result
     if (insuranceResult.status === 'fulfilled' && insuranceResult.value.success) {
@@ -895,10 +924,9 @@ const shouldShowClaim = computed(() => {
   return applicationTypeData.value?.workflow?.claim_enabled === true
 })
 
-// Check if AI analysis should be shown - show if we have application data and it's an agricultural/crop application
+// Check if AI analysis should be shown based on backend requirement check
 const shouldShowAIAnalysis = computed(() => {
-  // Always show AI Analysis for applications (since most agricultural applications can have AI analysis)
-  return applicationData.value !== null
+  return applicationData.value !== null && aiAnalysisRequired.value === true
 })
 
 const openImageModal = (imageUrl) => {
@@ -1018,14 +1046,15 @@ const generatePolicy = async () => {
 }
 
 const processClaim = () => {
-  // Navigate to damage claim review page
+  // Navigate to application claim page
   if (insuranceData.value?.insuranceId) {
     router.push({
       name: 'underwriter-applications-claim',
       params: { 
         insuranceId: insuranceData.value.insuranceId,
-        submissionId: insuranceData.value.submissionId
-      }
+        submissionId: route.params.submissionId
+      },
+      query: { action: 'file_claim' }
     })
   } else {
     toastStore.error('Cannot process claim: Insurance ID not found.')
@@ -1033,20 +1062,124 @@ const processClaim = () => {
 }
 
 const viewAIAnalysis = () => {
-  // Navigate to AI analysis page (DamageClaimReview)
+  // Navigate to AI analysis page (ApplicationClaim)
   if (insuranceData.value?.insuranceId && route.params.submissionId) {
     router.push({
-      name: 'damage-claim-review',
+      name: 'underwriter-applications-claim',
       params: {
         insuranceId: insuranceData.value.insuranceId,
         submissionId: route.params.submissionId
       },
       query: {
-        tab: 'ai-analysis'
+        action: 'ai-analysis'
       }
     })
   } else {
     toastStore.error('Required information not found')
+  }
+}
+
+// Update claim modal functions
+const openUpdateClaimModal = async () => {
+  if (!insuranceData.value?.insuranceId) {
+    toastStore.error('Insurance ID not found')
+    return
+  }
+
+  try {
+    // Fetch the current claim data
+    const result = await claimStore.getClaimsByInsuranceId(insuranceData.value.insuranceId)
+    
+    if (result.success && result.data) {
+      currentClaim.value = result.data
+      
+      // Populate form with current values
+      updateClaimForm.value = {
+        claimAmount: result.data.claimAmount || 0,
+        damageAssessment: result.data.damageAssessment || ''
+      }
+      
+      // Clear any previous files
+      updateClaimFiles.value = []
+      
+      isUpdateClaimModalOpen.value = true
+    } else {
+      toastStore.error(result.message || 'Failed to fetch claim data')
+    }
+  } catch (error) {
+    console.error('Error fetching claim for update:', error)
+    toastStore.error('An error occurred while fetching claim data')
+  }
+}
+
+const closeUpdateClaimModal = () => {
+  isUpdateClaimModalOpen.value = false
+  updateClaimForm.value = {
+    claimAmount: 0,
+    damageAssessment: ''
+  }
+  updateClaimFiles.value = []
+  currentClaim.value = null
+}
+
+const handleUpdateClaimFileSelect = (event) => {
+  const files = Array.from(event.target.files)
+  updateClaimFiles.value = [...updateClaimFiles.value, ...files]
+}
+
+const removeUpdateClaimFile = (index) => {
+  updateClaimFiles.value.splice(index, 1)
+}
+
+const formatFileSize = (bytes) => {
+  if (bytes === 0) return '0 Bytes'
+  const sizes = ['Bytes', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(1024))
+  return parseFloat((bytes / Math.pow(1024, i)).toFixed(2)) + ' ' + sizes[i]
+}
+
+const submitUpdateClaim = async () => {
+  if (!currentClaim.value?.id) {
+    toastStore.error('No claim ID found')
+    return
+  }
+
+  if (!updateClaimForm.value.claimAmount || updateClaimForm.value.claimAmount <= 0) {
+    toastStore.error('Please enter a valid claim amount')
+    return
+  }
+
+  try {
+    isUpdatingClaim.value = true
+
+    const updateData = {
+      claimAmount: updateClaimForm.value.claimAmount,
+      damageAssessment: updateClaimForm.value.damageAssessment
+    }
+
+    const result = await claimStore.updateClaim(
+      currentClaim.value.id,
+      updateData,
+      updateClaimFiles.value
+    )
+
+    if (result.success) {
+      // Update the insurance data with the updated claim
+      insuranceData.value.claim = result.data
+      
+      toastStore.success('Claim updated successfully!')
+      closeUpdateClaimModal()
+      
+      // Optionally refetch the application details to ensure consistency
+      await fetchApplicationDetails()
+    } else {
+      toastStore.error(result.message || 'Failed to update claim')
+    }
+  } catch (error) {
+    console.error('Error updating claim:', error)
+    toastStore.error('An error occurred while updating the claim')
+  } finally {
+    isUpdatingClaim.value = false
   }
 }
 
@@ -1059,6 +1192,7 @@ watch(() => [route.params.insuranceId, route.params.submissionId], ([newInsuranc
     applicationTypeData.value = null
     insuranceData.value = null
     workflowData.value = null
+    aiAnalysisRequired.value = null
     error.value = null
     fetchApplicationDetails()
   }

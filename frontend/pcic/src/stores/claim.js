@@ -191,7 +191,8 @@ export const useClaimStore = defineStore("claimStore",() => {
             const response = await axios.get(`${basePath.value}/insurance/${insuranceId}`)
             
             if (response.status === 200) {
-                claims.value = response.data
+                // Since backend now returns a single claim object, wrap it in an array for consistency
+                claims.value = response.data ? [response.data] : []
                 return {
                     success: true,
                     message: 'Claims fetched successfully',
@@ -216,6 +217,8 @@ export const useClaimStore = defineStore("claimStore",() => {
             loading.value = false
         }
     }
+
+
 
     // Update claim with multipart form data
     const updateClaim = async (claimId, claimData, supportingFiles = []) => {
@@ -309,8 +312,5 @@ export const useClaimStore = defineStore("claimStore",() => {
         updateClaim,
         deleteClaim,
         
-        // Legacy method aliases for backward compatibility
-        fetchAllClaims: getAllClaims,
-        createClaim: createClaimManually,
     }
 })

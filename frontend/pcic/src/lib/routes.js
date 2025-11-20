@@ -110,7 +110,7 @@ export const UNDERWRITER_ROUTES = [
         name: 'underwriter-applications-claim',
         component: () => import('@/pages/underwriter/applications/ApplicationClaim.vue'),
         meta: {
-            title: 'Application Detail',
+            title: 'Application Claim',
             guard: 'auth',
             roles: ['UNDERWRITER'],
         },

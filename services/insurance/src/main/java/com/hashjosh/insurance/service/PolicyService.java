@@ -1,9 +1,9 @@
 package com.hashjosh.insurance.service;
 
 import com.hashjosh.constant.pcic.enums.InsuranceStatus;
-import com.hashjosh.insurance.dto.policy.CreatePolicyRequest;
-import com.hashjosh.insurance.dto.policy.PolicyResponse;
-import com.hashjosh.insurance.dto.policy.UpdatePolicyRequest;
+import com.hashjosh.constant.policy.CreatePolicyRequest;
+import com.hashjosh.constant.policy.PolicyResponse;
+import com.hashjosh.constant.policy.UpdatePolicyRequest;
 import com.hashjosh.insurance.entity.Insurance;
 import com.hashjosh.insurance.entity.Policy;
 import com.hashjosh.insurance.exception.ApiException;

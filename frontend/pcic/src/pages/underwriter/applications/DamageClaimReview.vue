@@ -316,6 +316,10 @@ const isAutoPlaying = ref(false)
 const autoPlayInterval = ref(null)
 const isCreatingClaim = ref(false)
 
+// Action handling based on query parameters
+const currentAction = ref('view') // Default to view mode
+const showClaimActions = ref(false)
+
 // Get insurance ID and submission ID from route params (underwriter routes)
 const insuranceId = route.params.insuranceId
 const submissionId = route.params.submissionId

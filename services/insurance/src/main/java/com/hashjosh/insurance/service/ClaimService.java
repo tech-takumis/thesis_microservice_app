@@ -10,6 +10,7 @@ import com.hashjosh.insurance.clients.DocumentServiceClient;
 import com.hashjosh.insurance.dto.claim.ClaimAIRequest;
 import com.hashjosh.insurance.dto.claim.ClaimRequest;
 import com.hashjosh.insurance.dto.claim.ClaimResponse;
+import com.hashjosh.insurance.dto.claim.ClaimUpdateRequest;
 import com.hashjosh.insurance.entity.Claim;
 import com.hashjosh.insurance.entity.Insurance;
 import com.hashjosh.insurance.exception.ApiException;
@@ -136,38 +137,62 @@ public class ClaimService {
                 .toList();
     }
 
-    public List<ClaimResponse> getClaimsByInsuranceId(UUID insuranceId) {
-        List<Claim> claims = claimRepository.findByInsuranceId(insuranceId)
-                .map(List::of)
-                .orElse(List.of());
-        return claims.stream()
-                .map(claimMapper::toResponse)
-                .toList();
+    public ClaimResponse getClaimsByInsuranceId(UUID insuranceId) {
+        Claim claims = claimRepository.findByInsuranceId(insuranceId)
+                .orElseThrow(() -> ApiException.notFound("Claim not found for insurance ID: " + insuranceId));
+        return claimMapper.toResponse(claims);
     }
 
     @Transactional
-    public ClaimResponse updateClaim(UUID claimId, ClaimRequest request, List<MultipartFile> supportingFiles, String userId) {
+    public ClaimResponse updateClaim(UUID claimId, ClaimUpdateRequest request, List<MultipartFile> supportingFiles, String userId) {
         Claim existingClaim = claimRepository.findById(claimId)
                 .orElseThrow(() -> ApiException.notFound("Claim not found with ID: " + claimId));
 
-        // Upload new supporting files if provided
+        log.info("Updating claim ID: {} - claimAmount: {}, damageAssessment: {}, supportingFiles count: {}",
+                claimId, request.getClaimAmount(),
+                request.getDamageAssessment() != null ? "provided" : "not provided",
+                supportingFiles != null ? supportingFiles.size() : 0);
+
+        boolean hasUpdates = false;
+
+        // Update claim amount if provided
+        if (request.getClaimAmount() != null) {
+            if (request.getClaimAmount() <= 0) {
+                throw ApiException.badRequest("Claim amount must be greater than 0");
+            }
+            existingClaim.setClaimAmount(request.getClaimAmount());
+            log.info("Updated claim amount from {} to {}", existingClaim.getClaimAmount(), request.getClaimAmount());
+            hasUpdates = true;
+        }
+
+        // Update damage assessment if provided
+        if (request.getDamageAssessment() != null && !request.getDamageAssessment().trim().isEmpty()) {
+            existingClaim.setDamageAssessment(request.getDamageAssessment().trim());
+            log.info("Updated damage assessment for claim ID: {}", claimId);
+            hasUpdates = true;
+        }
+
+        // Upload and add new supporting files if provided
         if (supportingFiles != null && !supportingFiles.isEmpty()) {
             List<UUID> newDocumentIds = uploadSupportingFiles(supportingFiles, userId);
-            List<UUID> allDocumentIds = new ArrayList<>(existingClaim.getSupportingFiles());
+
+            // Get existing supporting files or initialize empty list
+            List<UUID> allDocumentIds = existingClaim.getSupportingFiles() != null
+                ? new ArrayList<>(existingClaim.getSupportingFiles())
+                : new ArrayList<>();
+
+            // Add new document IDs
             allDocumentIds.addAll(newDocumentIds);
             existingClaim.setSupportingFiles(allDocumentIds);
+
+            log.info("Added {} new supporting files. Total files: {}",
+                    newDocumentIds.size(), allDocumentIds.size());
+            hasUpdates = true;
         }
 
-        // Update fields
-        if (request.getDamageAssessment() != null) {
-            existingClaim.setDamageAssessment(request.getDamageAssessment());
-        }
-
-        if (request.getFieldValues() != null) {
-            existingClaim.setFieldValues(request.getFieldValues());
-            // Recalculate claim amount if field values changed
-            Double newClaimAmount = calculateClaimAmount(existingClaim.getInsurance(), request.getFieldValues());
-            existingClaim.setClaimAmount(newClaimAmount);
+        if (!hasUpdates) {
+            log.warn("No updates provided for claim ID: {}", claimId);
+            throw ApiException.badRequest("No valid updates provided. Please provide claim amount, damage assessment, or supporting files.");
         }
 
         existingClaim = claimRepository.save(existingClaim);
@@ -196,9 +221,20 @@ public class ClaimService {
             throw ApiException.conflict("Claim already exists for insurance ID: " + insurance.getId());
         }
 
-        if (insurance.getPolicy() == null) {
-            throw ApiException.badRequest("Insurance must have a policy before creating a claim");
+        // Check if insurance has inspection data with COC/Policy number
+        if (insurance.getInspection() == null || insurance.getInspection().getFieldValues() == null) {
+            throw ApiException.badRequest("Insurance must have inspection data before creating a claim");
         }
+
+        // Check for COC/Policy number in inspection field values
+        JsonNode inspectionValues = insurance.getInspection().getFieldValues();
+        String cocNumber = getCocNumberFromInspection(inspectionValues);
+
+        if (cocNumber == null || cocNumber.trim().isEmpty()) {
+            throw ApiException.badRequest("Insurance must have a COC/Policy number in inspection data before creating a claim");
+        }
+
+        log.info("Validated insurance with COC/Policy number: {}", cocNumber);
     }
 
     private List<UUID> uploadSupportingFiles(List<MultipartFile> files, String userId) {
@@ -421,9 +457,9 @@ public class ClaimService {
                     if (!monthStr.isEmpty()) {
                         int months = Integer.parseInt(monthStr);
                         if (months <= 1) return 0.60;
-                        if (months == 2) return 0.70;
-                        if (months == 3) return 0.85;
-                        if (months >= 4) return 1.0;
+                        else if (months == 2) return 0.70;
+                        else if (months == 3) return 0.85;
+                        else return 1.0; // months >= 4
                     }
                 } catch (NumberFormatException e) {
                     log.warn("Could not parse month from cultivation stage: {}", cultivationStage);
@@ -439,5 +475,31 @@ public class ClaimService {
         }
     }
 
+    private String getCocNumberFromInspection(JsonNode inspectionValues) {
+        log.debug("Checking for COC/Policy number in inspection field values: {}", inspectionValues);
+
+        // List of possible field names for COC/Policy number
+        String[] possibleFields = {
+            "coc_no", "coc_number", "policy_number", "pol_no",
+            "policy_no", "cic_no", "cic_number", "certificate_number"
+        };
+
+        for (String fieldName : possibleFields) {
+            JsonNode valueNode = inspectionValues.get(fieldName);
+            if (valueNode != null && !valueNode.isNull()) {
+                String value = valueNode.asText();
+                if (value != null && !value.trim().isEmpty()) {
+                    log.info("Found COC/Policy number in field '{}': {}", fieldName, value);
+                    return value.trim();
+                }
+            }
+        }
+
+        // Log all available field names for debugging
+        List<String> availableFields = new ArrayList<>();
+        inspectionValues.fieldNames().forEachRemaining(availableFields::add);
+        log.warn("No COC/Policy number found in inspection field values. Available fields: {}", availableFields);
+        return null;
+    }
 
 }

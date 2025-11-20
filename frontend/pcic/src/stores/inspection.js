@@ -97,6 +97,28 @@ export const useInspectionStore = defineStore('inspection', () => {
         }
     }
 
+    const fetchInspectionByInsuranceId = async (insuranceId) => {
+            try{
+                loading.value = true
+                error.value = false
+
+                const response = await axios.get(`${baseUrl.value}/insurance/${insuranceId}`)
+
+                if(response.status > 200 && response.status < 300 || response.status === 200){
+                    return { success: true, data: response.data, message: "Inspection fetched successfully" }
+                }
+                return { success: false, error: response.data.message, message: "Failed to fetch the inspection" }
+            }catch (error) {
+                console.error("Error fetching inspection:", error.response?.data || error.message)
+                error.value = error.response?.message
+                return { success: false, error: error.value, message: "Failed to fetch the inspection" }
+            }finally {
+                loading.value = false
+                error.value = null
+            }
+    
+    }
+
     const completeInspection = async (id, fieldValues, photos = []) => {
         try{
             loading.value = true
@@ -169,6 +191,7 @@ export const useInspectionStore = defineStore('inspection', () => {
         getInspectionSchedule,
         fetchInspections,
         scheduleInspection,
+        fetchInspectionByInsuranceId,
         createInspection,
         completeInspection,
         deleteInspection,

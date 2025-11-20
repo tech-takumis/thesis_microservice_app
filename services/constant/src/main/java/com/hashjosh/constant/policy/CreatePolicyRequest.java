@@ -1,4 +1,4 @@
-package com.hashjosh.insurance.dto.policy;
+package com.hashjosh.constant.policy;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.*;

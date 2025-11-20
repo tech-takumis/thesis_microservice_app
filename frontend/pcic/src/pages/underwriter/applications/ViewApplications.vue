@@ -209,7 +209,7 @@
                                     </th>
                                     <th
                                         class="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                                        Insurance ID
+                                        Application
                                     </th>
                                     <th
                                         class="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
@@ -286,21 +286,10 @@
                                     <div class="flex flex-col">
                                         <span class="underline"
                                             >{{
-                                                insurance.insuranceId?.substring(
-                                                    0,
-                                                    8,
-                                                )
+                                                insurance.applicationName
                                             }}...</span
                                         >
-                                        <span
-                                            class="text-xs text-slate-500 no-underline"
-                                            >{{
-                                                insurance.submissionId?.substring(
-                                                    0,
-                                                    8,
-                                                )
-                                            }}...</span
-                                        >
+                                    
                                     </div>
                                 </td>
                                 <!-- Applicant Name -->

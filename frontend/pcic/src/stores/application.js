@@ -24,15 +24,14 @@ export const useApplicationStore = defineStore('application', () => {
             const response = await axios.get(basePath.value)
             if(response.status === 200){
                 applications.value = response.data
-                return {success: "true", message: "Successfully fetch all applications", data: response.data}
+                return {success: true, message: "Successfully fetch all applications", data: response.data}
             }
 
-            return {success: "false", message: response.data.message, data: null}
-        }catch (error){
+            return {success: false, message: response.data.message, data: null}
+        }catch (err){
             console.log("Failed to fetch all applications");
-            error.value = error.data.message;
-            loading.value = false
-            return {success: "false", message: error.value, data: null}
+            error.value = err.response?.data?.message || err.message;
+            return {success: false, message: error.value, data: null}
         }finally {
             loading.value = false
         }
@@ -47,21 +46,22 @@ export const useApplicationStore = defineStore('application', () => {
 
             if(response.status === 200){
                 application.value = response.data
-                return {success: "true", message: "Successfully fetch application by id", data: response.data}
+                return {success: true, message: "Successfully fetch application by id", data: response.data}
             }
 
-            return {success: "false", message: response.data.message, data: null}
-        }catch (error){
+            return {success: false, message: response.data.message, data: null}
+        }catch (err){
             console.log("Failed to fetch application by id");
-            error.value = error.data.message;
-            loading.value = false
-            return {success: "false", message: error.value, data: null}
+            error.value = err.response?.data?.message || err.message;
+            return {success: false, error: error.value, data: null}
         }finally {
             loading.value = false
         }
     }
 
-    const getApplicationWorkflow = async (id) => {
+
+
+    const fetchApplicationWorkflow = async (id) => {
         try{
             loading.value = true
             error.value = null
@@ -70,15 +70,14 @@ export const useApplicationStore = defineStore('application', () => {
 
             if(response.status === 200){
                 workflow.value = response.data
-                return {success: "true", message: "Successfully fetch application workflow", data: response.data}
+                return {success: true, message: "Successfully fetch application workflow", data: response.data}
             }
 
-            return {success: "false", message: response.data.message, data: null}
-        }catch (error){
+            return {success: false, message: response.data.message, data: null}
+        }catch (err){
             console.log("Failed to fetch application workflow");
-            error.value = error.data.message;
-            loading.value = false
-            return {success: "false", message: error.value, data: null}
+            error.value = err.response?.data?.message || err.message;
+            return {success: false, message: error.value, data: null}
         }finally {
             loading.value = false
         }
@@ -93,15 +92,14 @@ export const useApplicationStore = defineStore('application', () => {
 
             if(response.status === 200){
                 applications.value = applications.value.map(app => app.id === id ? response.data : app)
-                return {success: "true", message: "Successfully update application", data: response.data}
+                return {success: true, message: "Successfully update application", data: response.data}
             }
 
-            return {success: "false", message: response.data.message, data: null}
-        }catch (error){
+            return {success: false, message: response.data.message, data: null}
+        }catch (err){
             console.log("Failed to update application");
-            error.value = error.data.message;
-            loading.value = false
-            return {success: "false", message: error.value, data: null}
+            error.value = err.response?.data?.message || err.message;
+            return {success: false, message: error.value, data: null}
         }finally {
             loading.value = false
         }
@@ -117,15 +115,35 @@ export const useApplicationStore = defineStore('application', () => {
 
             if(response.status === 200){
                 applications.value = applications.value.filter(app => app.id !== id)
-                return {success: "true", message: "Successfully delete application", data: null}
+                return {success: true, message: "Successfully delete application", data: null}
             }
 
-            return {success: "false", message: response.data.message, data: null}
-        }catch (error){
+            return {success: false, message: response.data.message, data: null}
+        }catch (err){
             console.log("Failed to delete application");
-            error.value = error.data.message;
+            error.value = err.response?.data?.message || err.message;
+            return {success: false, message: error.value, data: null}
+        }finally {
             loading.value = false
-            return {success: "false", message: error.value, data: null}
+        }
+    }
+
+    const isAiAnalysisRequired = async (applicationId) => {
+        try{
+            loading.value = true
+            error.value = null
+
+            const response = await axios.get(`${basePath.value}/${applicationId}/required-ai-analysis`)
+
+            if(response.status === 200){
+                return {success: true, message: "Successfully checked AI analysis requirement", data: response.data}
+            }
+
+            return {success: false, message: response.data.message, data: null}
+        }catch (err){
+            console.log("Failed to check AI analysis requirement");
+            error.value = err.response?.data?.message || err.message;
+            return {success: false, message: error.value, data: null}
         }finally {
             loading.value = false
         }
@@ -139,7 +157,9 @@ export const useApplicationStore = defineStore('application', () => {
         getWorkflow,
         fetchAllApplications,
         fetchApplicationById,
-        getApplicationWorkflow,
+        fetchApplicationWorkflow,
         updateApplication,
+        deleteApplication,
+        isAiAnalysisRequired
     }
 })

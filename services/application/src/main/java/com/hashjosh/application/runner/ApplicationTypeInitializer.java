@@ -74,6 +74,7 @@ public class ApplicationTypeInitializer implements CommandLineRunner {
                 .description("Application form for insuring rice or corn crops")
                 .layout("form")
                 .printable(true)
+                .requiredAIAnalysis(false)
                 .provider(provider1)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
@@ -174,6 +175,7 @@ public class ApplicationTypeInitializer implements CommandLineRunner {
                 .description("Claim form for indemnity of insured high-value crops")
                 .layout("form")
                 .printable(false)
+                .requiredAIAnalysis(true)
                 .provider(provider2)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
@@ -205,6 +207,7 @@ public class ApplicationTypeInitializer implements CommandLineRunner {
         claimBasicInfoFields.add(createField("variety_planted", "Variety Planted", FieldType.SELECT, true, false,createChoices(new String[]{"Inbred", "Inbred (Seed Production)", "Hybrid", "Hybrid (Seed Production)"}), claimBasicInfoSection));
         claimBasicInfoFields.add(createField("date_planting", "Actual Date of Planting", FieldType.DATE, true, false,null, claimBasicInfoSection));
         claimBasicInfoFields.add(createField("cic_no", "CIC Number", FieldType.TEXT, true, false,null, claimBasicInfoSection));
+
         // Additional fields for PCIC claim computation
         claimBasicInfoFields.add(createField("planting_method", "Planting Method", FieldType.SELECT, false, false,createChoices(new String[]{"Direct Seeding", "Transplanting"}), claimBasicInfoSection));
         claimBasicInfoFields.add(createField("tenurial_status", "Tenurial Status", FieldType.SELECT, false, false,createChoices(new String[]{"Owner", "Lessee", "Tenant"}), claimBasicInfoSection));
@@ -232,7 +235,6 @@ public class ApplicationTypeInitializer implements CommandLineRunner {
         // Additional fields for better claim assessment
         damageIndicatorsFields.add(createField("cause_of_damage", "Primary Cause of Damage", FieldType.SELECT, true, false,createChoices(new String[]{"Drought", "Flood", "Typhoon", "Pest Infestation", "Disease", "Hail", "Fire", "Other Natural Calamity"}), damageIndicatorsSection));
         damageIndicatorsFields.add(createField("damage_description", "Description of Damage", FieldType.TEXT, false, false,null, damageIndicatorsSection));
-        damageIndicatorsFields.add(createField("percentage_damage", "Estimated Percentage of Damage (%)", FieldType.NUMBER, false, false,null, damageIndicatorsSection));
         damageIndicatorsSection.setFields(damageIndicatorsFields);
 
         // Section III: Location Sketch Plan
@@ -243,6 +245,7 @@ public class ApplicationTypeInitializer implements CommandLineRunner {
                 .updatedAt(LocalDateTime.now())
                 .fields(new ArrayList<>())
                 .build();
+
         claimIndemnitySections.add(locationSketchSection);
 
         // Fields for Location Sketch Plan

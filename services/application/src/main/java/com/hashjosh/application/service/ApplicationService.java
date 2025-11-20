@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hashjosh.application.clients.DocumentServiceClient;
 import com.hashjosh.application.clients.AIClient;
 import com.hashjosh.application.clients.FarmerServiceClient;
+import com.hashjosh.application.clients.PolicyClient;
 import com.hashjosh.application.configs.CustomUserDetails;
 import com.hashjosh.application.dto.submission.ApplicationSubmissionDto;
 import com.hashjosh.application.dto.update.ApplicationUpdateDto;
@@ -25,6 +26,7 @@ import com.hashjosh.constant.ai.AIResultDTO;
 import com.hashjosh.constant.application.ApplicationResponseDto;
 import com.hashjosh.constant.document.dto.DocumentResponse;
 import com.hashjosh.constant.farmer.FarmerReponse;
+import com.hashjosh.constant.policy.PolicyResponse;
 import com.hashjosh.kafkacommon.application.ApplicationSubmittedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -54,6 +56,7 @@ public class ApplicationService {
     private final DocumentServiceClient documentServiceClient;
     private final DocumentRepository documentRepository;
     private final FarmerServiceClient farmerClient;
+    private final PolicyClient policyClient;
     private final WorkflowMapper workflowMapper;
 
     @Transactional(propagation = Propagation.REQUIRED)
@@ -69,6 +72,9 @@ public class ApplicationService {
             // We get the application type through the batch
             ApplicationType applicationType = applicationTypeRepository.findById(submission.getApplicationTypeId())
                     .orElseThrow(() -> ApiException.badRequest("Invalid application type ID"));
+
+            // Always validate policy if policy number exists in field values
+            validatePolicyExistence(submission, userDetails.getUserId());
 
             // Upload files first and create Document entities
             List<Document> documents = new ArrayList<>();
@@ -125,6 +131,7 @@ public class ApplicationService {
                     ApplicationSubmittedEvent.builder()
                             .submissionId(savedApplication.getId())
                             .applicationTypeId(savedApplication.getType().getId())
+                            .applicationTypeName(application.getType().getName())
                             .fullName(application.getFullName())
                             .provider(applicationType.getProvider().getName())
                             .objectKeysForAIAnalysis(objectKeysForAIAnalysis)
@@ -451,5 +458,78 @@ public class ApplicationService {
     public boolean isAiAnalysisRequired(UUID applicationId) {
         ApplicationType applicationType = applicationRepository.findApplicationTypeByApplicationId(applicationId);
         return applicationType.getRequiredAIAnalysis();
+    }
+
+    /**
+     * Extracts policy/COC number from submission field values
+     * Searches for common policy number field names
+     */
+    private String extractPolicyNumber(ApplicationSubmissionDto submission) {
+        // List of possible field names for policy/COC number
+        String[] possiblePolicyFields = {
+            "coc_no", "coc_number", "policy_number", "pol_no",
+            "policy_no", "cic_no", "cic_number", "certificate_number"
+        };
+
+        Map<String, Object> fieldValues = submission.getFieldValues();
+
+        for (String fieldName : possiblePolicyFields) {
+            Object value = fieldValues.get(fieldName);
+            if (value != null) {
+                String policyNumber = value.toString().trim();
+                if (!policyNumber.isEmpty()) {
+                    log.info("Found policy/COC number in field '{}': {}", fieldName, policyNumber);
+                    return policyNumber;
+                }
+            }
+        }
+
+        log.warn("No policy/COC number found in submission field values. Available fields: {}",
+                fieldValues.keySet());
+        return null;
+    }
+
+    /**
+     * Validates that a policy exists if policy number is provided in field values
+     * Extracts policy number from field values and verifies it exists in the policy service
+     * Skips validation if no policy number is found
+     */
+    private void validatePolicyExistence(ApplicationSubmissionDto submission, String userId) {
+        // Extract policy number from field values
+        String policyNumber = extractPolicyNumber(submission);
+
+        // Skip validation if no policy number is found
+        if (policyNumber == null || policyNumber.trim().isEmpty()) {
+            log.debug("No policy number found in submission field values, skipping policy validation");
+            return;
+        }
+
+        log.info("Validating policy existence for policy number: {}", policyNumber);
+
+        try {
+            // Fetch policy from policy service to validate it exists
+            PolicyResponse policy = policyClient.getPolicyByPolicyNumber(policyNumber, userId);
+
+            if (policy == null) {
+                throw ApiException.badRequest(
+                    "Policy with number '" + policyNumber + "' does not exist. " +
+                    "Please provide a valid policy/COC number."
+                );
+            }
+
+            log.info("Policy validation successful - Policy number: {}, Insurance ID: {}",
+                    policyNumber, policy.getInsuranceId());
+
+        } catch (ApiException e) {
+            // Re-throw ApiException as is
+            throw e;
+        } catch (Exception e) {
+            log.error("Error validating policy existence for policy number {}: {}",
+                    policyNumber, e.getMessage());
+            throw ApiException.badRequest(
+                "Failed to validate policy with number '" + policyNumber + "'. " +
+                "Please ensure the policy/COC number is correct and exists in the system."
+            );
+        }
     }
 }

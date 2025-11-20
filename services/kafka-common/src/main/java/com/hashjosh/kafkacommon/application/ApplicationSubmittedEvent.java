@@ -19,6 +19,7 @@ public class ApplicationSubmittedEvent  {
     private UUID submissionId;
 
     private UUID applicationTypeId;
+    private String applicationTypeName;
 
     @JsonProperty("provider")
     private String provider;

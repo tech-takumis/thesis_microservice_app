@@ -1,4 +1,4 @@
-package com.hashjosh.insurance.dto.policy;
+package com.hashjosh.constant.policy;
 
 import lombok.*;
 

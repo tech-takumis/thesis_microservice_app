@@ -1,8 +1,8 @@
 package com.hashjosh.insurance.mapper;
 
-import com.hashjosh.insurance.dto.policy.CreatePolicyRequest;
-import com.hashjosh.insurance.dto.policy.PolicyResponse;
-import com.hashjosh.insurance.dto.policy.UpdatePolicyRequest;
+import com.hashjosh.constant.policy.CreatePolicyRequest;
+import com.hashjosh.constant.policy.PolicyResponse;
+import com.hashjosh.constant.policy.UpdatePolicyRequest;
 import com.hashjosh.insurance.entity.Insurance;
 import com.hashjosh.insurance.entity.Policy;
 import org.springframework.stereotype.Component;

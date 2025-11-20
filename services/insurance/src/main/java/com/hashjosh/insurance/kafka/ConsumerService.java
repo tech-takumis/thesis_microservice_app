@@ -73,6 +73,8 @@ public class ConsumerService {
                 .batch(batch)
                 .submissionId(event.getSubmissionId())
                 .farmerId(event.getUserId())
+                .applicationTypeId(event.getApplicationTypeId())
+                .applicationTypeName(event.getApplicationTypeName())
                 .farmerName(event.getFullName())
                 .currentStatus(InsuranceStatus.PENDING)
                 .isAIProcessed(event.getObjectKeysForAIAnalysis() != null && !event.getObjectKeysForAIAnalysis().isEmpty())

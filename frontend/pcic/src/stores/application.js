@@ -22,7 +22,7 @@ export const useApplicationStore = defineStore('application', () => {
             error.value = null
 
             const response = await axios.get(basePath.value)
-            if(response.status === 200){
+            if(response.status > 200 && response.status < 300 || response.status === 200){
                 applications.value = response.data
                 return {success: true, message: "Successfully fetch all applications", data: response.data}
             }
@@ -44,7 +44,7 @@ export const useApplicationStore = defineStore('application', () => {
 
             const response = await axios.get(`${basePath.value}/${id}`)
 
-            if(response.status === 200){
+            if(response.status > 200 && response.status < 300 || response.status === 200){
                 application.value = response.data
                 return {success: true, message: "Successfully fetch application by id", data: response.data}
             }
@@ -68,7 +68,7 @@ export const useApplicationStore = defineStore('application', () => {
 
             const response = await axios.get(`${basePath.value}/${id}/workflow`)
 
-            if(response.status === 200){
+            if(response.status > 200 && response.status < 300 || response.status === 200){
                 workflow.value = response.data
                 return {success: true, message: "Successfully fetch application workflow", data: response.data}
             }
@@ -90,7 +90,7 @@ export const useApplicationStore = defineStore('application', () => {
 
             const response = await axios.put(`${basePath.value}/${id}`, data)
 
-            if(response.status === 200){
+            if(response.status > 200 && response.status < 300 || response.status === 200){
                 applications.value = applications.value.map(app => app.id === id ? response.data : app)
                 return {success: true, message: "Successfully update application", data: response.data}
             }
@@ -113,7 +113,7 @@ export const useApplicationStore = defineStore('application', () => {
 
             const response = await axios.delete(`${basePath.value}/${id}`)
 
-            if(response.status === 200){
+            if(response.status > 200 && response.status < 300 || response.status === 200){
                 applications.value = applications.value.filter(app => app.id !== id)
                 return {success: true, message: "Successfully delete application", data: null}
             }
@@ -135,7 +135,7 @@ export const useApplicationStore = defineStore('application', () => {
 
             const response = await axios.get(`${basePath.value}/${applicationId}/required-ai-analysis`)
 
-            if(response.status === 200){
+            if(response.status > 200 && response.status < 300 || response.status === 200){
                 return {success: true, message: "Successfully checked AI analysis requirement", data: response.data}
             }
 

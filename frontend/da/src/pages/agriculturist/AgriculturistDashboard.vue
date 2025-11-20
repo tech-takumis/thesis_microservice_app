@@ -13,18 +13,17 @@
                 <!-- Right Side: Notifications + Profile -->
                 <div class="flex items-center space-x-6">
                     <!-- Notifications -->
-                    <div class="relative notifications-dropdown">
+                    <!-- <div class="relative notifications-dropdown">
                         <button
                             class="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
                             @click="toggleNotificationsDropdown">
                             <Bell class="h-5 w-5" />
-                            <!-- Notification Badge -->
                             <span
                                 class="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
                                 {{ notificationCount }}
                             </span>
                         </button>
-                    </div>
+                    </div> -->
 
                     <!-- Profile Dropdown -->
                     <div class="relative select-none">
@@ -99,14 +98,6 @@
                                     <div
                                         class="border-t border-gray-100 my-1"></div>
 
-                                    <!-- Logout -->
-                                    <button
-                                        class="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition"
-                                        @click="handleLogoutClick">
-                                        <Briefcase
-                                            class="h-4 w-4 mr-3 text-red-500" />
-                                        Logout
-                                    </button>
                                 </div>
                             </div>
                         </transition>
@@ -418,11 +409,6 @@ const handlePreferencesClick = () => {
     console.log('Navigate to preferences page')
 }
 
-const handleLogoutClick = () => {
-    showProfileDropdown.value = false
-    // Handle logout
-    authStore.logout()
-}
 
 // Click outside handler for dropdowns
 const handleClickOutside = event => {

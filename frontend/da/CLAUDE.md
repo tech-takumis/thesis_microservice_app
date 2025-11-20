@@ -27,21 +27,35 @@ npm run tier:write   # Format code with Prettier
 
 The application requires a `.env` file with:
 - `VITE_APP_NAME`: Application name
-- `VITE_PUBLIC_BACKEND_URL`: Backend API URL (default: http://localhost:9001)
+- `VITE_PUBLIC_BACKEND_URL`: Backend API URL (defaults to http://localhost:9001 if not set)
 
 Copy `.env.example` to `.env` and configure for your environment.
+
+**Note**: The `.env.example` shows port 8000, but the actual backend default in `src/lib/axios.js` is 9001. WebSocket connection URL is currently hardcoded in `src/stores/websocket.js` to `ws://localhost:9001/ws`. If the backend runs on a different port, update both the environment variable and the WebSocket URL accordingly.
 
 ## Architecture
 
 ### Authentication & Authorization
 - **Cookie-based authentication** via Laravel Sanctum (configured in `src/lib/axios.js`)
-- **WebSocket token** stored in localStorage for real-time messaging
-- **Role-based routing** with three role types:
-  - `ADMIN`: Full system access
-  - Municipal Agriculturist: Application and claims management
+  - Cookies automatically sent with every request (`withCredentials: true`)
+  - Login endpoint: `/api/v1/agriculture/auth/login`
+  - Logout endpoint: `/api/v1/agriculture/auth/logout`
+  - Current user endpoint: `/api/v1/agriculture/auth/me`
+- **WebSocket token** returned during login and stored in localStorage for real-time messaging
+- **Role-based routing** with primary role types:
+  - `ADMIN`: Full system access (user management, analytics, reports)
+  - `PERSOR`: Personnel/registration role (user registration)
+  - Municipal Agriculturist: Application and claims management, voucher generation
   - Agricultural Extension Worker: Field operations and data submission
 - **Auth store** (`src/stores/auth.js`) manages user state, roles, and permissions
+  - User data includes nested roles and permissions structure
+  - `hasRole(roleName)` method for role checks (case-insensitive)
+  - `hasPermission(permissionName)` method for permission checks (supports arrays)
+  - `defaultRoute` computed property provides role-based landing page
 - **Route guards** in `src/router/index.js` enforce authentication and role-based access
+  - Authenticated users redirected from login to their `defaultRoute`
+  - Protected routes require authentication initialization
+  - Registration route requires valid token in query parameter
 
 ### State Management (Pinia)
 All stores are in `src/stores/`:
@@ -51,15 +65,25 @@ All stores are in `src/stores/`:
 - `message.js`: Private messaging between users
 - `notification.js`: Application notifications
 - `dashboard.js`: Dashboard statistics
-- Additional domain stores: `agriculture.js`, `farmer.js`, `insurance.js`, `program.js`, `transaction.js`, `verification.js`, `document.js`, `post.js`, `role.js`, `permission.js`, `schedule.js`, `psgc.js`, `ai.js`
+- Additional domain stores: `agriculture.js`, `farmer.js`, `insurance.js`, `program.js`, `transaction.js`, `verification.js`, `document.js`, `post.js`, `role.js`, `permission.js`, `schedule.js`, `psgc.js`, `ai.js`, `claim.js`, `voucher.js`
 
 ### Routing Structure
 Routes are organized by role in `src/lib/route.js`:
 - `ADMIN_ROUTES`: User management, roles, applications, approvals, analytics, reports
-- `MUNICIPALITY_ROUTES`: Agricultural operations, vouchers, claims, messaging
+- `MUNICIPALITY_ROUTES`: Agricultural operations, vouchers, claims, messaging, AI damage analysis
 - `AGRICULTURAL_EXTENSION_WORKER_ROUTES`: Field operations, training, diagnostics
 
 Navigation configs are in `src/lib/navigation.js` with corresponding sidebar items per role.
+
+Key route patterns:
+- Application detail pages: `/role/submit-crop-data/application-type/submission-detail/:id/:applicationTypeId`
+- Application location map: `/agriculturist/submit-crop-data/application/:applicationId/map`
+- Application verification: `/agriculturist/application/verification/:applicationId/:applicationTypeId`
+- Voucher management: `/agriculturist/voucher/*` for generation, listing, and details
+- AI damage analysis: `/agriculturist/ai/damage-result/:applicationId/:applicationTypeId`
+- Claims detail: `/agriculturist/process-claims/:id/detail`
+- Transaction detail: `/agriculturist/transactions/:id/detail`
+- Program detail: `/agriculturist/monitor-programs/:id/detail`
 
 ### Component Organization
 ```
@@ -71,7 +95,7 @@ src/components/
 ├── logo-icon/       # ApplicationLogo
 ├── messages/        # ChatInterface, MessageList
 ├── modals/          # Modal dialogs (Application details, filters, roles, etc.)
-├── others/          # Utilities (LoadingSpinner, Toast, StatusBadge, PermissionGuard, RoleBasedComponent)
+├── others/          # Utilities (LoadingSpinner, Toast, NotificationToast, StatusBadge, PermissionGuard, RoleBasedComponent)
 └── tables/          # Table components (BaseTable, ApplicationTable, ApplicationRow)
 ```
 
@@ -80,11 +104,17 @@ src/components/
 - `GuestLayout.vue`: Layout for login/register pages
 
 ### Real-time Features
-WebSocket implementation using STOMP (`@stomp/stompjs`):
-- Private messaging: `/user/queue/private.messages`
-- Application notifications: `/user/queue/application.notifications`
-- Auto-reconnection logic with exponential backoff
-- Token-based authentication for WebSocket connections
+WebSocket implementation using STOMP (`@stomp/stompjs`) in `src/stores/websocket.js`:
+- Connection URL: `ws://localhost:9001/ws?token={webSocketToken}`
+- WebSocket token obtained during login and stored in localStorage as `webSocketToken`
+- Subscription topics:
+  - Private messaging: `/user/queue/private.messages`
+  - Application notifications: `/user/queue/application.notifications`
+- Auto-reconnection logic with 10-second delay (max 5 attempts)
+- Connection state tracked with `connected` ref
+- Subscriptions managed with cleanup on disconnect
+- Message store (`src/stores/message.js`) handles incoming messages
+- Notification store (`src/stores/notification.js`) handles incoming notifications
 
 ### Utilities
 - `src/utils/formatAddress.js`: Philippine address formatting helpers
@@ -93,10 +123,12 @@ WebSocket implementation using STOMP (`@stomp/stompjs`):
 
 ### HTTP Client Configuration
 `src/lib/axios.js`:
-- Base URL from environment variable
+- Base URL from environment variable (defaults to `http://localhost:9001`)
 - Credentials included on all requests (`withCredentials: true`)
-- Automatic 401/403 error handling with redirect to login
-- Excludes login requests from automatic 401 redirect
+- Automatic error handling:
+  - **401 Unauthorized**: Redirects to login (excludes login requests)
+  - **403 Forbidden**: Logs access denied errors
+  - **503 Service Unavailable**: Shows toast notification and redirects to role-appropriate dashboard
 
 ### Philippine Standard Geographic Code (PSGC)
 `src/lib/psgcAxios.js` provides a separate axios instance for PSGC location data (regions, provinces, municipalities, barangays).
@@ -104,9 +136,14 @@ WebSocket implementation using STOMP (`@stomp/stompjs`):
 ## Key Technical Patterns
 
 ### Permission & Role Checks
-- Use `PermissionGuard` component or `RoleBasedComponent` for conditional rendering
-- Auth store provides `hasRole(roleName)` and `hasPermission(permissionName)` methods
+- Use `PermissionGuard` component or `RoleBasedComponent` for conditional rendering in templates
+- Auth store provides helper methods:
+  - `hasRole(roleName)`: Case-insensitive role check
+  - `hasPermission(permissionName)`: Permission check (accepts string or array)
 - Route meta includes `role` field for route-level access control
+- Role names are case-insensitive in checks but stored as-is from backend
+- Common roles: `ADMIN`, `PERSOR`
+- Check `src/lib/route.js` for role-specific route definitions
 
 ### Route Navigation Guards
 The router performs:
@@ -116,9 +153,15 @@ The router performs:
 4. Role-based access checks
 5. Token validation for registration routes
 
-### Axios Interceptors
-- Request: Placeholder for adding auth tokens if needed
-- Response: Handles 401 (redirect to login) and 403 (access denied) errors
+### API Communication Patterns
+- All API calls go through the configured axios instance (`src/lib/axios.js`)
+- Store actions consistently return objects with `{ success: boolean, data/error, message }` structure
+- Base API paths:
+  - Authentication: `/api/v1/agriculture/auth/*`
+  - Applications: `/api/v1/applications/*`
+  - Other resources follow `/api/v1/{resource}` pattern
+- PSGC location data fetched from external API: `https://psgc.gitlab.io/api`
+- Registration requires a token query parameter: `/api/v1/agriculture/auth/registration?token={token}`
 
 ### Alias Configuration
 `@` is aliased to `./src` in `vite.config.js` for cleaner imports.

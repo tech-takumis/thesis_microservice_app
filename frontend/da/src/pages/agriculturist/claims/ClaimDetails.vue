@@ -129,19 +129,6 @@
                         </span>
                       </div>
                     </div>
-
-                    <!-- Insurance ID -->
-                    <div class="flex flex-col">
-                      <span class="text-[10px] font-semibold text-green-600 uppercase tracking-wider mb-1">
-                        Insurance ID
-                      </span>
-                      <div class="w-full bg-white rounded-md px-3 py-2.5 border border-gray-200 shadow-sm hover:shadow transition-all duration-150">
-                        <span class="text-sm text-gray-900 font-medium break-words font-mono">
-                          {{ claim.insuranceId }}
-                        </span>
-                      </div>
-                    </div>
-                   
                   </div>
                 </div>
               </div>

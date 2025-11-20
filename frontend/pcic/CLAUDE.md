@@ -166,6 +166,9 @@ src/components/
 │   ├── AuthenticatedLayout.vue
 │   └── SidebarNavigation.vue
 ├── modals/          # Modal dialogs
+├── notifications/   # Toast notifications
+├── others/          # Shared utilities (LoadingSpinner, etc.)
+├── tables/          # Table-related components
 ├── teller/          # Teller-specific components
 └── underwriter/     # Underwriter-specific components
 
@@ -180,7 +183,9 @@ src/pages/
 ├── teller/
 │   └── payments/
 └── underwriter/
-    └── applications/
+    ├── applications/
+    ├── risk-assessment/
+    └── tools/
 ```
 
 ### Styling
@@ -265,7 +270,7 @@ The auth store's `getRedirectPath()` method (used in `src/router/index.js:23,120
 
 ### Application Field Data Types
 
-Available data types for dynamic application forms (`src/lib/navigation.js:99`):
+Available data types for dynamic application forms (`src/lib/navigation.js:93`):
 - `TEXT`: Text input fields
 - `NUMBER`: Numeric input fields
 - `DATE`: Date picker fields
@@ -299,15 +304,42 @@ Always reference `DESIGN_SYSTEM.md` when creating new components or pages to ens
 - **Styling**: Tailwind CSS 3.2
 - **Icons**: lucide-vue-next, @heroicons/vue
 - **Charts**: Chart.js 4.5 + vue-chartjs 5.3
+- **Maps**: Leaflet 1.9.4 with @vue-leaflet/vue-leaflet 0.10.1
 - **Forms**: @tailwindcss/forms plugin
+
+## Key Features & Functionality
+
+### Geographic Features
+The application includes geographic analysis and mapping capabilities:
+- Leaflet integration for interactive maps
+- Geolocation support for application submissions
+- Geographic risk assessment tools
+
+### Real-time Features
+WebSocket integration for real-time updates:
+- WebSocket token stored in localStorage after login
+- Used for real-time notifications and data synchronization
+
+### AI Integration
+AI-powered features include:
+- Damage assessment analysis for claims
+- Automated risk evaluation
+- See `src/stores/ai.js` and damage claim review pages
+
+### File Upload System
+Standardized file upload patterns:
+- Image upload with preview grids
+- File validation and size limits
+- Upload zone components with drag-and-drop
 
 ## Recent Development Focus
 
 Based on recent commits:
-- Program monitoring for Department of Agriculture frontend
-- Transaction page implementation
-- Damage claim review with AI damage analysis
-- Application submission details and verification workflows
+- Mobile tray notification system integration
+- Voucher entity and management functionality
+- Program service migration from agriculture service
+- Application map view for location visualization
+- Damage claim review with AI-powered analysis
 
 ## Branch Strategy
 

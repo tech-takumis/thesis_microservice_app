@@ -257,15 +257,6 @@
               <a :href="fileUrl" target="_blank" class="text-blue-600 text-sm hover:underline font-medium">View</a>
             </div>
           </div>
-
-          <!-- Action Buttons -->
-          <div class="flex flex-col space-y-3 pt-4">
-            <button
-              class="w-full bg-green-600 text-white py-2 rounded-md text-sm font-semibold hover:bg-green-700 transition"
-            >
-              Approved
-            </button>
-          </div>
         </aside>
       </section>
         </div>

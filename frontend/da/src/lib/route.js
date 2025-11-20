@@ -138,6 +138,15 @@ export const MUNICIPALITY_ROUTES = [
             guard: 'auth'
         }
     },
+     {
+        path: '/agriculturist/submit-crop-data/application/:applicationId/map',
+        name: 'agriculturist-submit-crop-data-map',
+        component: () => import('@/pages/agriculturist/applications/ApplicationMap.vue'),
+        meta: {
+            title: 'Application Location Map',
+            guard: 'auth'
+        }
+    },
     {
         path: '/agriculturist/ai/damage-result/:applicationId/:applicationTypeId',
         name: 'agriculturist-damage-report',
@@ -171,6 +180,15 @@ export const MUNICIPALITY_ROUTES = [
         component: () => import('@/pages/agriculturist/operations/AgriculturistVoucher.vue'),
         meta: {
             title: 'Voucher Generation',
+            guard: 'auth'
+        }
+    },
+     {
+        path: '/agriculturist/voucher/scanner',
+        name: 'agriculturist-voucher-scanner',
+        component: () => import('@/pages/agriculturist/operations/VoucherScanner.vue'),
+        meta: {
+            title: 'Voucher Scanner',
             guard: 'auth'
         }
     },

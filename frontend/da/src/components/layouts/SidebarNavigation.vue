@@ -11,8 +11,8 @@
       <span v-if="!collapsed" class="mt-2 text-xs font-semibold bg-green-100 text-gray-700 px-4 py-1.5 rounded-full transition duration-300 hover:bg-green-100">{{ roleTitle }}</span>
 
             <button @click="collapsed = !collapsed" :aria-expanded="!collapsed" class="absolute top-2 right-1 rounded bg-green-600 text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-300">
-                <ChevronLeft v-if="!collapsed" class="h-4 w-4 text-white" />
-                <ChevronRight v-else class="h-4 w-4 text-white" />
+                <ChevronLeft v-if="!collapsed" class="size-6 text-white" />
+                <ChevronRight v-else class="size-4 text-white" />
             </button>
     </div>
 

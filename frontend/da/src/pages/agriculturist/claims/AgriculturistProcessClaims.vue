@@ -334,7 +334,7 @@ onMounted(async () => {
                                     </td>
                                     <td class="px-4 py-4 text-sm text-gray-600 max-w-xs">
                                         <div class="truncate" :title="claim.damageAssessment">
-                                            {{ claim.damageAssessment || 'N/A' }}
+                                            {{ claim.damageAssessment.slice(0, 20) + ".." || 'N/A' }}
                                         </div>
                                     </td>
                                 </tr>

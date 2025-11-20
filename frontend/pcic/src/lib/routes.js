@@ -102,7 +102,6 @@ export const UNDERWRITER_ROUTES = [
             title: 'Damage Claim Review',
             guard: 'auth',
             roles: ['UNDERWRITER'],
-            // Expected query parameters: action (view|edit)
         },
     },
     {
@@ -114,6 +113,15 @@ export const UNDERWRITER_ROUTES = [
             guard: 'auth',
             roles: ['UNDERWRITER'],
         },
+    },
+     {
+        path: '/agriculturist/submit-crop-data/application/:applicationId/map',
+        name: 'agriculturist-submit-crop-data-map',
+        component: () => import('@/pages/underwriter/applications/ApplicationMap.vue'),
+        meta: {
+            title: 'Application Location Map',
+            guard: 'auth'
+        }
     },
     {
         path: '/underwriter/risk-factors',

@@ -5,7 +5,8 @@ import { MUNICIPAL_AGRICULTURIST_NAVIGATION } from '@/lib/navigation'
 import { useRouter } from 'vue-router'
 import { useFarmerStore } from '@/stores/farmer'
 import { useVoucherStore } from '@/stores/voucher'
-import { Search, RotateCcw, Check } from 'lucide-vue-next'
+import { Search, RotateCcw, Check, FileText, User } from 'lucide-vue-next'
+import { ChevronRightIcon, TicketIcon } from '@heroicons/vue/24/outline'
 
 const navigation = MUNICIPAL_AGRICULTURIST_NAVIGATION
 const router = useRouter()
@@ -158,6 +159,10 @@ const handleBack = () => {
   router.push({'name': "agriculturist-dashboard"})
 }
 
+const navigateToVoucherList = () => {
+  router.push({ name: 'agriculturist-voucher-all' })
+}
+
 const resetForm = () => {
   voucherInfo.value = {
     title: '',
@@ -227,6 +232,31 @@ onMounted(async () => {
     page-title="Create Voucher"
   >
     <div class="p-4 sm:p-6 h-full flex flex-col space-y-6">
+      <!-- Breadcrumb Navigation -->
+      <nav class="flex mb-2" aria-label="Breadcrumb">
+        <ol class="flex items-center space-x-4">
+          <li>
+            <div>
+              <button
+                @click="navigateToVoucherList"
+                class="text-gray-400 hover:text-gray-500 flex items-center gap-1"
+              >
+                <TicketIcon class="flex-shrink-0 h-5 w-5" />
+                <span class="text-sm font-medium">Voucher List</span>
+              </button>
+            </div>
+          </li>
+          <li>
+            <div class="flex items-center">
+              <ChevronRightIcon class="flex-shrink-0 h-5 w-5 text-gray-400" />
+              <span class="ml-4 text-sm font-medium text-green-600">
+                Voucher Generator
+              </span>
+            </div>
+          </li>
+        </ol>
+      </nav>
+
       <!-- Header Section -->
       <div class="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center border-b border-gray-300 pb-3">
         <div class="flex items-center gap-2">
@@ -290,7 +320,7 @@ onMounted(async () => {
               Clear
             </button>
           </div>
-          <div class="border border-gray-200 rounded-xl flex-1 overflow-y-auto divide-y divide-gray-100 min-h-0">
+          <div class="border-none flex-1 overflow-y-auto divide-y min-h-0">
             <div
               v-for="farmer in filteredFarmers"
               :key="farmer.id"

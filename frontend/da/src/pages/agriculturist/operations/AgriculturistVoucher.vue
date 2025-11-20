@@ -184,7 +184,7 @@ onMounted(async () => {
       <div class="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center border-b border-gray-300 pb-3">
         <div class="flex items-center gap-2">
           <FileText class="w-6 h-6 text-green-600" />
-          <h1 class="text-2xl font-semibold text-gray-900 leading-tight">
+          <h1 class="text-2xl font-semibold text-green-600 leading-tight">
             Create Voucher
           </h1>
         </div>

@@ -15,7 +15,7 @@
             >
                 <div class="flex items-center justify-between mb-2">
                     <div class="flex items-center space-x-2">
-                        <ClipboardList class="h-5 w-5 text-gray-800" />
+                        <ClipboardList class="h-5 w-5 text-green-600" />
                         <h4 class="font-medium text-gray-900 text-sm">{{ program.name }}</h4>
                     </div>
                     <PermissionGuard :permission="['CAN_MANAGE_PROGRAM']">
@@ -35,14 +35,14 @@
                         <span class="text-gray-500">beneficiaries</span>
                     </div>
                     <div class="flex items-center space-x-1">
-                        <Wallet class="h-4 w-4 text-yellow-600" />
+                        <Wallet class="h-4 w-4 text-yellow-400" />
                         <span class="font-semibold">₱{{ program.budget }}K</span>
                     </div>
                 </div>
 
                 <div class="mt-2">
                     <div class="w-full bg-gray-200 rounded-full h-1.5">
-                        <div class="bg-yellow-600 h-1.5 rounded-full" :style="{ width: program.progress + '%' }"></div>
+                        <div class="bg-yellow-400 h-1.5 rounded-full" :style="{ width: program.progress + '%' }"></div>
                     </div>
                     <p class="text-xs text-gray-600 mt-1">{{ program.progress }}% Complete</p>
                 </div>

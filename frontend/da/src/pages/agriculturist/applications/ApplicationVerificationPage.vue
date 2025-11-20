@@ -402,7 +402,7 @@ onMounted(async () => {
             <li>
               <div class="flex items-center">
                 <ChevronRightIcon class="flex-shrink-0 h-5 w-5 text-gray-400" />
-                <span class="ml-4 text-sm font-medium text-green-600">
+                <span class="ml-4 text-sm font-medium text-black">
                   Verification
                 </span>
               </div>
@@ -411,9 +411,9 @@ onMounted(async () => {
         </nav>
 
         <!-- Header -->
-        <div class="flex items-center justify-between">
+        <div class="flex items-center justify-between ml-5">
           <div>
-            <h1 v-if="applicationTypeData" class="text-3xl font-bold text-gray-700">
+            <h1 v-if="applicationTypeData" class="text-3xl font-bold text-green-600">
               {{ applicationTypeData.name }}
             </h1>
             <p class="mt-1 text-sm text-gray-600">
@@ -446,7 +446,7 @@ onMounted(async () => {
     <!-- Dynamic Fields -->
     <BaseCard class="shadow-sm rounded-xl border border-gray-200">
       <template #header>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 bg-gray-100">
           <DocumentIcon class="h-5 w-5 text-green-600" />
           <h3 class="text-lg font-semibold text-gray-800">
             Dynamic Fields
@@ -458,7 +458,7 @@ onMounted(async () => {
         <div
           v-for="(value, key) in getFilteredDynamicFields()"
           :key="key"
-          class="pb-4 border-b last:border-none last:pb-0"
+          class="pb-4 border-b border-gray-300 last:border-none last:pb-0"
         >
           <div class="flex items-start justify-between">
             <!-- Field label & value -->
@@ -637,7 +637,7 @@ onMounted(async () => {
     <BaseCard class="shadow-sm rounded-xl border border-gray-200 mb-10">
       <template #header>
         <div class="flex items-center gap-2">
-          <ShieldCheckIcon class="h-5 w-5 text-green-600" />
+          <ArrowUpTrayIcon class="h-5 w-5 text-green-600" />
           <h3 class="text-lg font-semibold text-gray-800">
             Submit Verification
           </h3>

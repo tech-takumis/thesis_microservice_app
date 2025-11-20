@@ -2,7 +2,7 @@
     <div class="flex h-screen overflow-hidden print:h-auto print:bg-white">
         <!-- Desktop Sidebar -->
         <div
-            class="hidden md:flex md:w-69 flex-shrink-0 md:flex-col h-full print:hidden">
+            class="hidden md:flex md:w-69 flex-shrink-0 md:flex-col print:hidden">
             <div class="flex flex-col h-full bg-white">
                 <!-- Main Navigation -->
                 <div class="flex-1 overflow-y-auto overflow-x-hidden">
@@ -92,11 +92,13 @@
                 </div>
             </header>
 
-
-            <!-- Main content Container (full-bleed dashboard) -->
+            <!-- Main content Container -->
             <main class="flex-1 relative overflow-hidden print:overflow-visible print:bg-white border-none bg-white">
-                <div class="h-full w-full p-4 flex flex-col min-h-0">
-                    <slot />
+                <div class="h-full flex flex-col">
+                    <!-- Dashboard Content with proper flex layout -->
+                    <div class="flex-1 p-4 bg-gray-100 flex flex-col overflow-hidden">
+                        <slot />
+                    </div>
                 </div>
             </main>
         </div>

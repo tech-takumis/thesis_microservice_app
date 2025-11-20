@@ -35,7 +35,7 @@
                 <li v-if="route.params.id">
                   <div class="flex items-center">
                     <ChevronRightIcon class="flex-shrink-0 h-5 w-5 text-gray-400" />
-                    <span class="ml-4 text-sm font-medium text-green-600">
+                    <span class="ml-4 text-sm font-medium text-black">
                       Applications submission
                     </span>
                   </div>
@@ -53,7 +53,7 @@
 
             <div class="flex items-center justify-between gap-4">
               <!-- Title -->
-              <h1 class="text-2xl font-semibold text-gray-900 flex-shrink-0">
+              <h1 class="text-2xl font-semibold text-green-600 flex-shrink-0">
                 Farmer Applications
               </h1>
 

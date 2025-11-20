@@ -8,7 +8,8 @@
             <!-- Fixed Navbar (does not scroll) -->
             <nav
                 class="flex-shrink-0 bg-transparent border-0 shadow-none px-2 lg:px-4 py-3 mb-4 flex items-center justify-between">
-                <h4 class="text-3xl font-bold text-gray-700">Dashboard</h4>
+                <h4 class="text-2xl font-semibold text-green-600">Dashboard</h4>
+                
                 <!-- Right Side: Notifications + Profile -->
                 <div class="flex items-center space-x-6">
                     <!-- Notifications -->

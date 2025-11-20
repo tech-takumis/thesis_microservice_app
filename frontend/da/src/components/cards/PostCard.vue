@@ -2,7 +2,7 @@
   <div class="bg-white rounded-2xl border border-none pb-4 space-y-6 relative">
 
       <!-- 🧾 Post Input Card -->
-      <div class="bg-gray-100 rounded-xl p-4 border border-gray-300 shadow-sm">
+      <div class="bg-gray-100 rounded-xl shadow-md p-4 border border-gray-300 shadow-sm">
         <!-- Post Text -->
         <textarea
           v-model="newPostContent"
@@ -58,7 +58,7 @@
       <div
         v-for="post in posts"
         :key="post.id"
-        class="border border-gray-300 bg-gray-100 rounded-xl p-5 shadow-sm hover:shadow-md transition-all duration-200"
+        class="border border-gray-300 bg-gray-100 rounded-xl p-5"
       >
         <!-- 🧑 Author Header -->
         <div class="flex items-start justify-between mb-3">

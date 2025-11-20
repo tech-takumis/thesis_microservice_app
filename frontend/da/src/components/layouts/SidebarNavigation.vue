@@ -1,9 +1,9 @@
 <template>
   <!-- Sidebar Container (root) -->
-    <div class="sidebar-width-transition" :class="['flex flex-col h-full bg-gray-100 overflow-hidden border border-gray-200 shadow-sm', collapsed ? 'w-20' : 'w-72']">
+    <div class="sidebar-width-transition" :class="['flex flex-col h-full bg-gray-100 overflow-hidden border border-gray-300 shadow-sm', collapsed ? 'w-20' : 'w-72']">
 
     <!-- Header Section -->
-    <div class="flex flex-col items-center px-4 pt-4 pb-4 border-b border-gray-200 relative">
+    <div class="flex flex-col items-center px-4 pt-4 pb-4 border-b border-gray-300 relative">
       <img src="@/assets/da_image.png" alt="DA Logo" :class="collapsed ? 'h-10 w-auto rounded-lg transition-transform duration-300' : 'h-12 w-auto rounded-lg transition-transform duration-300 hover:scale-110'" />
 
       <h1 v-if="!collapsed" class="mt-2 text-lg font-semibold text-gray-800 tracking-wide text-center">Bayugan City Agriculture</h1>

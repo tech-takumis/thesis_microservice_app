@@ -93,7 +93,7 @@
             </header>
 
             <!-- Main content Container (full-bleed dashboard) -->
-            <main class="flex-1 relative overflow-hidden print:overflow-visible print:bg-white border-none bg-white">
+            <main class="flex-1 relative overflow-hidden print:overflow-visible print:bg-white border-none bg-gray-50">
                 <div class="h-full w-full p-4 flex flex-col min-h-0">
                     <slot />
                 </div>

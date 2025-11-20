@@ -11,13 +11,12 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class VerificationEvent {
+public class VerificationCompletedEvent {
     private UUID submissionId;
     private UUID userId;
-    private String verificationType;
-    private String report;
-    private String status; // COMPLETED, REJECTED
-    private String rejectionReason;
+    private String verifierName;
+    private String status;
+    private String remarks ;
     private LocalDateTime verifiedAt;
 
 }

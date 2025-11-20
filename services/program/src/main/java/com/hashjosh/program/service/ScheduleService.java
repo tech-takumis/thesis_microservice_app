@@ -39,7 +39,7 @@ public class ScheduleService {
         existing.setType(dto.getType());
         existing.setScheduleDate(dto.getScheduleDate());
         existing.setPriority(dto.getPriority());
-        existing.setMetaData(dto.getMetaData());
+        existing.setNotes(dto.getNotes());
         return mapper.toDto(repository.save(existing));
     }
 

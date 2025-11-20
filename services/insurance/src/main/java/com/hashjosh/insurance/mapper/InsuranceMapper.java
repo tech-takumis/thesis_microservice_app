@@ -23,6 +23,7 @@ public class InsuranceMapper {
         return InsuranceResponse.builder()
                 .insuranceId(insurance.getId())
                 .submissionId(insurance.getSubmissionId())
+                .applicationName(insurance.getApplicationTypeName())
                 .batch(batchMapper.toBatchResponseDTO(insurance.getBatch()))
                 .policy(insurance.getPolicy() != null ? policyMapper.toResponse(insurance.getPolicy()) : null)
                 .claim(insurance.getClaim() != null ? claimMapper.toResponse(insurance.getClaim()) : null)

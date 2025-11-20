@@ -21,7 +21,8 @@ public class Insurance {
     private UUID id;
 
     private UUID submissionId;
-
+    private UUID applicationTypeId;
+    private String applicationTypeName;
     private UUID farmerId;
 
     private String farmerName;

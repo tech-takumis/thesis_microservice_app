@@ -16,7 +16,7 @@ public class ProgramMapper {
                 .type(program.getType())
                 .status(program.getStatus())
                 .completion(program.getCompletion())
-                .extraFields(program.getExtraFields())
+                .notes(program.getNotes())
                 .createdAt(program.getCreatedAt())
                 .updatedAt(program.getUpdatedAt())
                 .build();
@@ -28,7 +28,7 @@ public class ProgramMapper {
                 .type(dto.getType())
                 .status(dto.getStatus())
                 .completion(dto.getCompletion())
-                .extraFields(dto.getExtraFields())
+                .notes(dto.getNotes())
                 .createdAt(LocalDateTime.now())
                 .build();
     }

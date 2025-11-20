@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:mobile/data/models/application_data.dart';
 import 'package:mobile/data/models/application_submission.dart';
+import 'package:mobile/data/utils/api_error_handler.dart';
 import 'package:mobile/injection_container.dart'; // For getIt
 import '../../presentation/controllers/auth_controller.dart';
 import 'storage_service.dart';
@@ -654,6 +655,7 @@ class ApplicationApiService {
       }
     } on DioException catch (e) {
       print('❌ Application submission failed: ${e.message}');
+      print('❌ Response status: ${e.response?.statusCode}');
       print('❌ Response data: ${e.response?.data}');
 
       // Check if it's still the octet-stream error and try manual approach
@@ -664,28 +666,46 @@ class ApplicationApiService {
         return await _submitApplicationManual(authState, request, files);
       }
 
-      if (e.response?.data is Map<String, dynamic> || e.response?.data is Map) {
-        return ApplicationSubmissionResponse.fromJson(e.response?.data);
-      } else if (e.response?.data is String) {
+      // Use ApiErrorHandler to parse and handle the error
+      final apiError = ApiErrorHandler.parseApiErrorResponse(e.response?.data);
+
+      if (apiError != null) {
+        print('🔍 Parsed API error: ${apiError.message} (Status: ${apiError.status})');
+        final userMessage = ApiErrorHandler.getUserFriendlyMessage(apiError);
+
+        return ApplicationSubmissionResponse(
+          success: false,
+          message: userMessage,
+          applicationId: ''
+        );
+      } else if (e.response?.data != null) {
+        // Try to parse as regular ApplicationSubmissionResponse
         try {
-          final Map<String, dynamic> json = jsonDecode(e.response?.data);
-          return ApplicationSubmissionResponse.fromJson(json);
+          if (e.response!.data is Map<String, dynamic>) {
+            return ApplicationSubmissionResponse.fromJson(e.response!.data);
+          } else if (e.response!.data is String) {
+            final Map<String, dynamic> json = jsonDecode(e.response!.data);
+            return ApplicationSubmissionResponse.fromJson(json);
+          }
         } catch (_) {
-          return ApplicationSubmissionResponse(success: false, message: (e.response?.data?.toString() ?? ''), applicationId: '');
+          // Parsing failed, use raw error message
         }
       }
-      if (e.type == DioExceptionType.connectionTimeout ||
-          e.type == DioExceptionType.receiveTimeout ||
-          e.type == DioExceptionType.sendTimeout) {
-        return ApplicationSubmissionResponse(success: false, message: 'Connection timeout. Please try again.', applicationId: '');
-      } else if (e.type == DioExceptionType.connectionError) {
-        return ApplicationSubmissionResponse(success: false, message: 'Cannot connect to server. Please check your connection.', applicationId: '');
-      }
-      return ApplicationSubmissionResponse(success: false, message: 'Failed to submit application', applicationId: '');
+
+      // Use ApiErrorHandler for network/timeout errors
+      final errorMessage = ApiErrorHandler.handleDioException(e);
+      return ApplicationSubmissionResponse(
+        success: false,
+        message: errorMessage,
+        applicationId: ''
+      );
     } catch (e) {
       print('❌ Unexpected error: ${e.toString()}');
-      // Show error for unsupported file type
-      return ApplicationSubmissionResponse(success: false, message: e.toString(), applicationId: '');
+      return ApplicationSubmissionResponse(
+        success: false,
+        message: 'An unexpected error occurred. Please try again.',
+        applicationId: ''
+      );
     }
   }
 
@@ -833,9 +853,53 @@ class ApplicationApiService {
       );
 
       return ApplicationSubmissionResponse.fromJson(response.data);
+    } on DioException catch (e) {
+      print('❌ Manual multipart submission failed: ${e.message}');
+      print('❌ Response status: ${e.response?.statusCode}');
+      print('❌ Response data: ${e.response?.data}');
+
+      // Use ApiErrorHandler for consistent error handling
+      final apiError = ApiErrorHandler.parseApiErrorResponse(e.response?.data);
+
+      if (apiError != null) {
+        print('🔍 Parsed API error (manual): ${apiError.message} (Status: ${apiError.status})');
+        final userMessage = ApiErrorHandler.getUserFriendlyMessage(apiError);
+
+        return ApplicationSubmissionResponse(
+          success: false,
+          message: userMessage,
+          applicationId: ''
+        );
+      } else if (e.response?.data != null) {
+        // Try to parse as regular ApplicationSubmissionResponse
+        try {
+          if (e.response!.data is Map<String, dynamic>) {
+            return ApplicationSubmissionResponse.fromJson(e.response!.data);
+          } else if (e.response!.data is String) {
+            final Map<String, dynamic> json = jsonDecode(e.response!.data);
+            return ApplicationSubmissionResponse.fromJson(json);
+          }
+        } catch (_) {
+          // Parsing failed, use raw error message
+        }
+      }
+
+      // Use ApiErrorHandler for network/timeout errors
+      final errorMessage = ApiErrorHandler.handleDioException(e);
+      return ApplicationSubmissionResponse(
+        success: false,
+        message: errorMessage,
+        applicationId: ''
+      );
     } catch (e) {
-      print('❌ Manual multipart submission failed: $e');
-      return ApplicationSubmissionResponse(success: false, message: 'Manual submission failed: $e', applicationId: '');
+      print('❌ Manual multipart submission unexpected error: $e');
+      return ApplicationSubmissionResponse(
+        success: false,
+        message: 'An unexpected error occurred. Please try again.',
+        applicationId: ''
+      );
     }
   }
+
+
 }

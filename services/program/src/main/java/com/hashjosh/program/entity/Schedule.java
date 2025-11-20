@@ -38,9 +38,8 @@ public class Schedule {
     @Column(name = "priority", nullable = false)
     private SchedulePriority priority;
 
-    @Column(name = "meta_data", nullable = false, columnDefinition = "jsonb")
-    @Type(JsonBinaryType.class)
-    private JsonNode metaData;
+    @Column(name = "notes")
+    private String notes;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)

@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
+import java.util.UUID;
+
 @Service
 @Slf4j
 public class ScheduleClient {
@@ -24,12 +26,12 @@ public class ScheduleClient {
                 .build();
     }
 
-    public ScheduleResponseDto createSchedule(ScheduleRequestDto request, String userId) {
+    public ScheduleResponseDto createSchedule(ScheduleRequestDto request, UUID userId) {
         try {
             return restClient.post()
                     .uri("") // baseUrl already has /api/v1/schedules
                     .header("X-Internal-Service", applicationName)
-                    .header("X-User-Id", userId)
+                    .header("X-User-Id", String.valueOf(userId))
                     .body(request)
                     .exchange((req, res) -> {
                         if (res.getStatusCode().is2xxSuccessful()) {
@@ -52,11 +54,11 @@ public class ScheduleClient {
         }
     }
 
-    public ScheduleResponseDto getInspectionScheduleById(String scheduleId,String userId) {
+    public ScheduleResponseDto getInspectionScheduleById(UUID scheduleId,UUID userId) {
         return restClient.get()
                 .uri("/{id}", scheduleId)
                 .header("X-Internal-Service", applicationName)
-                .header("X-User-Id",userId)
+                .header("X-User-Id", String.valueOf(userId))
                 .retrieve()
                 .onStatus(
                         status -> status.is4xxClientError() || status.is5xxServerError(),

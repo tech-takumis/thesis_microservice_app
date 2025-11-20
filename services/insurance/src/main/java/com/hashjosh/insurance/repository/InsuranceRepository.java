@@ -14,4 +14,6 @@ public interface InsuranceRepository extends JpaRepository<Insurance, UUID> {
     List<Insurance> findByBatch_ApplicationTypeId(UUID batchApplicationTypeId);
 
     Optional<Insurance> findBySubmissionId(UUID submissionId);
+
+    List<Insurance> findByVerificationIsNotNull();
 }

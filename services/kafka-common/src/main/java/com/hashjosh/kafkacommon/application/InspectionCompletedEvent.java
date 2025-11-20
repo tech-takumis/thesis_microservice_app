@@ -18,9 +18,8 @@ public class InspectionCompletedEvent {
     @JsonProperty("userID")
     private UUID userId;
     @JsonProperty("status")
-    private String status; // COMPLETED, INVALID
-    @JsonProperty("comments")
-    private String comments;
+    private String status;
+    private String inspectorName;
     @JsonProperty("inspectedAt")
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private LocalDateTime inspectedAt;

@@ -15,7 +15,7 @@ public class ScheduleMapper {
                 .type(schedule.getType())
                 .scheduleDate(schedule.getScheduleDate())
                 .priority(schedule.getPriority())
-                .metaData(schedule.getMetaData())
+                .notes(schedule.getNotes())
                 .createdAt(schedule.getCreatedAt())
                 .updatedAt(schedule.getUpdatedAt())
                 .build();
@@ -26,7 +26,7 @@ public class ScheduleMapper {
                 .type(dto.getType())
                 .scheduleDate(dto.getScheduleDate())
                 .priority(dto.getPriority())
-                .metaData(dto.getMetaData())
+                .notes(dto.getNotes())
                 .createdAt(LocalDateTime.now())
                 .build();
     }

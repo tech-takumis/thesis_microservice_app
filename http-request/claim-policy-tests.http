@@ -1,0 +1,115 @@
+### Insurance Microservice - Claim Management API Test
+
+# Test Claim Creation (Manual)
+POST http://localhost:8080/api/v1/claims
+Content-Type: multipart/form-data; boundary=boundary123
+X-User-Id: 123e4567-e89b-12d3-a456-426614174000
+
+--boundary123
+Content-Disposition: form-data; name="claim"
+Content-Type: application/json
+
+{
+    "insuranceId": "550e8400-e29b-41d4-a716-446655440000",
+    "damageAssessment": "Severe crop damage due to pest infestation",
+    "fieldValues": {
+        "damage_percentage": 75.5,
+        "affected_area": 2.5,
+        "damage_type": "pest_damage",
+        "assessment_date": "2024-11-19"
+    }
+}
+
+--boundary123
+Content-Disposition: form-data; name="supportingFiles"; filename="damage_photo1.jpg"
+Content-Type: image/jpeg
+
+[Binary file content]
+--boundary123--
+
+### Test Claim Creation (AI Result)
+POST http://localhost:8080/api/v1/claims/ai
+Content-Type: multipart/form-data; boundary=boundary456
+X-User-Id: 123e4567-e89b-12d3-a456-426614174000
+
+--boundary456
+Content-Disposition: form-data; name="claim"
+Content-Type: application/json
+
+{
+    "insuranceId": "550e8400-e29b-41d4-a716-446655440000",
+    "applicationId": "b2e2cecb-401d-46ce-9a7c-0ef2ee8213dc"
+}
+
+--boundary456
+Content-Disposition: form-data; name="supportingFiles"; filename="ai_analysis.pdf"
+Content-Type: application/pdf
+
+[Binary file content]
+--boundary456--
+
+### Get All Claims
+GET http://localhost:8080/api/v1/claims?page=0&size=10
+
+### Get Claim by ID
+GET http://localhost:8080/api/v1/claims/123e4567-e89b-12d3-a456-426614174001
+
+### Get Claims by Insurance ID
+GET http://localhost:8080/api/v1/claims/insurance/550e8400-e29b-41d4-a716-446655440000?page=0&size=10
+
+### Update Claim
+PUT http://localhost:8080/api/v1/claims/123e4567-e89b-12d3-a456-426614174001
+Content-Type: multipart/form-data; boundary=boundary789
+X-User-Id: 123e4567-e89b-12d3-a456-426614174000
+
+--boundary789
+Content-Disposition: form-data; name="claim"
+Content-Type: application/json
+
+{
+    "damageAssessment": "Updated assessment after field inspection",
+    "fieldValues": {
+        "damage_percentage": 80.0,
+        "updated_assessment_date": "2024-11-20"
+    }
+}
+--boundary789--
+
+### Delete Claim
+DELETE http://localhost:8080/api/v1/claims/123e4567-e89b-12d3-a456-426614174001
+
+# Policy Management Tests
+
+### Create Policy
+POST http://localhost:8080/api/v1/policies
+Content-Type: application/json
+
+{
+    "insuranceId": "550e8400-e29b-41d4-a716-446655440000",
+    "effectiveDate": "2024-11-19T00:00:00",
+    "expiryDate": "2025-11-19T23:59:59"
+}
+
+### Get Policy by ID
+GET http://localhost:8080/api/v1/policies/123e4567-e89b-12d3-a456-426614174002
+
+### Get Policy by Insurance ID
+GET http://localhost:8080/api/v1/policies/insurance/550e8400-e29b-41d4-a716-446655440000
+
+### Get All Policies
+GET http://localhost:8080/api/v1/policies
+
+### Get Active Policies
+GET http://localhost:8080/api/v1/policies/active
+
+### Update Policy
+PUT http://localhost:8080/api/v1/policies/123e4567-e89b-12d3-a456-426614174002
+Content-Type: application/json
+
+{
+    "effectiveDate": "2024-12-01T00:00:00",
+    "expiryDate": "2025-12-01T23:59:59"
+}
+
+### Delete Policy
+DELETE http://localhost:8080/api/v1/policies/123e4567-e89b-12d3-a456-426614174002

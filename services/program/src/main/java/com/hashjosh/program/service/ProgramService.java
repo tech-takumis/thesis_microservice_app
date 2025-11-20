@@ -41,7 +41,7 @@ public class ProgramService {
         existing.setType(dto.getType());
         existing.setStatus(dto.getStatus());
         existing.setCompletion(dto.getCompletion());
-        existing.setExtraFields(dto.getExtraFields());
+        existing.setNotes(dto.getNotes());
         return mapper.toDto(repository.save(existing));
     }
 

@@ -20,7 +20,7 @@ public class InspectionResponse {
     private UUID insuranceId;
 
     private UUID inspectorId;
-
+    private boolean isInspected;
     private String inspectorName;
 
     private LocalDateTime inspectedAt;

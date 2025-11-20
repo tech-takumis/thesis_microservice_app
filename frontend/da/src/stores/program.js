@@ -99,7 +99,7 @@ export const useProgramStore = defineStore('program', () => {
             const payload = mapToBackendFormat(data)
             const response = await axios.post('/api/v1/programs', payload)
 
-            if (response.data && response.data.programId) {
+            if ((response.status > 200 && response.status < 300) || response.status === 200) {
                 const program = mapProgramData(response.data)
                 programs.value.unshift(program)
 

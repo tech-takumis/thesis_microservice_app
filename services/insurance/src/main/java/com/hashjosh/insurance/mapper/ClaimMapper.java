@@ -19,10 +19,12 @@ public class ClaimMapper {
                 .id(claim.getId())
                 .insuranceId(claim.getInsurance().getId())
                 .filedAt(claim.getFiledAt())
+                .farmerId(claim.getInsurance().getFarmerId())
+                .farmerName(claim.getInsurance().getFarmerName())
                 .damageAssessment(claim.getDamageAssessment())
                 .claimAmount(claim.getClaimAmount())
                 .supportingFiles(getPresignedUrl(claim))
-                .fieldValues(claim.getFieldValues())
+                .fieldValues(claim.getInsurance().getInspection().getFieldValues())
                 .build();
     }
 

@@ -173,6 +173,8 @@
                             autofocus
                           >
                             <option value="TRAINING">Training</option>
+                            <option value="WORKSHOP">Workshop</option>
+                            <option value="RESEARCH">Research</option>
                             <option value="DISTRIBUTION">Distribution</option>
                             <option value="MONITORING">Monitoring</option>
                             <option value="CONSULTATION">Consultation</option>
@@ -520,18 +522,6 @@
               </div>
             </div>
 
-            <!-- Action Buttons -->
-            <div class="flex justify-end gap-3 px-2 mt-4">
-              <button
-                @click="goBack"
-                class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
-              >
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                </svg>
-                Back to Programs
-              </button>
-            </div>
           </div>
         </div>
       </div>

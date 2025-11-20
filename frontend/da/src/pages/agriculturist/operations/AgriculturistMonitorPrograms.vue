@@ -95,6 +95,11 @@ const fetchPrograms = async () => {
     await programStore.getAllPrograms()
 }
 
+const closeModal = () => {
+    showCreateModal.value = false
+    resetForm()
+}
+
 const handleCreateProgram = async () => {
     try {
         if (!newProgram.value.name || !newProgram.value.type || !newProgram.value.status) {
@@ -110,8 +115,7 @@ const handleCreateProgram = async () => {
         const result = await programStore.createProgram(programData)
 
         if (result.success) {
-            showCreateModal.value = false
-            resetForm()
+            closeModal()
             notificationStore.showSuccess('Program created successfully!')
         } else {
             notificationStore.showError(`Failed to create program: ${result.message}`)
@@ -236,10 +240,6 @@ onMounted(async () => {
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <h1 class="text-2xl font-bold text-gray-900">Program Monitoring</h1>
-                    <p class="text-sm text-gray-600">
-                        {{ filteredPrograms.length }} program{{ filteredPrograms.length !== 1 ? 's' : '' }}
-                        {{ searchQuery || hasActiveFilters ? '(filtered)' : '' }}
-                    </p>
                 </div>
                 <BaseButton
                     class="bg-green-600 hover:bg-green-700"
@@ -323,6 +323,8 @@ onMounted(async () => {
                                 <select v-model="filters.type" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-green-500 focus:border-transparent">
                                     <option value="">All Types</option>
                                     <option value="TRAINING">Training</option>
+                                    <option value="WORKSHOP">Workshop</option>
+                                    <option value="RESEARCH">Research</option>
                                     <option value="DISTRIBUTION">Distribution</option>
                                     <option value="MONITORING">Monitoring</option>
                                     <option value="CONSULTATION">Consultation</option>
@@ -387,7 +389,6 @@ onMounted(async () => {
                                     <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                     <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Completion</th>
                                     <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th>
-                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Updated At</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
@@ -424,7 +425,6 @@ onMounted(async () => {
                                         </div>
                                     </td>
                                     <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatDate(program.createdAt) }}</td>
-                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatDate(program.updatedAt) }}</td>
                                 </tr>
                                 <tr v-if="filteredPrograms.length === 0">
                                     <td colspan="7" class="px-4 py-8 text-center text-gray-500">
@@ -496,124 +496,140 @@ onMounted(async () => {
         </div>
 
         <!-- Create Program Modal -->
-        <div v-if="showCreateModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 p-4">
-            <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-                <!-- Modal Header -->
-                <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-                    <h3 class="text-lg font-medium text-gray-900">Create New Program</h3>
-                    <button
-                        @click="showCreateModal = false"
-                        class="text-gray-400 hover:text-gray-600 transition-colors">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
-                </div>
+        <Transition name="modal">
+            <div v-if="showCreateModal" class="fixed inset-0 z-50">
+                <!-- Backdrop -->
+                <Transition name="backdrop">
+                    <div
+                        v-if="showCreateModal"
+                        class="absolute inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+                        @click="closeModal">
+                    </div>
+                </Transition>
 
-                <!-- Modal Body -->
-                <div class="px-6 py-6">
-                    <form @submit.prevent="handleCreateProgram" class="space-y-6">
-                        <!-- Row 1: Program Name and Type -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label for="programName" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Program Name <span class="text-red-500">*</span>
-                                </label>
-                                <input
-                                    id="programName"
-                                    v-model="newProgram.name"
-                                    type="text"
-                                    required
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                                    placeholder="Enter program name" />
-                            </div>
-
-                            <div>
-                                <label for="type" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Program Type <span class="text-red-500">*</span>
-                                </label>
-                                <select
-                                    id="type"
-                                    v-model="newProgram.type"
-                                    required
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent">
-                                    <option value="TRAINING">Training</option>
-                                    <option value="DISTRIBUTION">Distribution</option>
-                                    <option value="MONITORING">Monitoring</option>
-                                    <option value="CONSULTATION">Consultation</option>
-                                </select>
-                            </div>
+                <!-- Slide Panel -->
+                <Transition name="slide">
+                    <div
+                        v-if="showCreateModal"
+                        class="absolute right-0 top-0 h-full w-5/12 bg-white shadow-2xl flex flex-col">
+                        <!-- Modal Header -->
+                        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center flex-shrink-0">
+                            <h3 class="text-lg font-medium text-gray-900">Create New Program</h3>
+                            <button
+                                @click="closeModal"
+                                class="text-gray-400 hover:text-gray-600 transition-colors">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
                         </div>
 
-                        <!-- Row 2: Status and Completion Percentage -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label for="status" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Status <span class="text-red-500">*</span>
-                                </label>
-                                <select
-                                    id="status"
-                                    v-model="newProgram.status"
-                                    required
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent">
-                                    <option value="PENDING">Pending</option>
-                                    <option value="ACTIVE">Active</option>
-                                    <option value="COMPLETED">Completed</option>
-                                    <option value="INACTIVE">Inactive</option>
-                                    <option value="CANCELLED">Cancelled</option>
-                                </select>
-                            </div>
+                        <!-- Modal Body -->
+                        <div class="flex-1 overflow-y-auto px-6 py-6">
+                            <form @submit.prevent="handleCreateProgram" class="space-y-6">
+                                <!-- Program Name -->
+                                <div>
+                                    <label for="programName" class="block text-sm font-medium text-gray-700 mb-2">
+                                        Program Name <span class="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        id="programName"
+                                        v-model="newProgram.name"
+                                        type="text"
+                                        required
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                        placeholder="Enter program name" />
+                                </div>
 
-                            <div>
-                                <label for="completion" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Completion Percentage
-                                </label>
-                                <input
-                                    id="completion"
-                                    v-model="newProgram.completion"
-                                    type="number"
-                                    min="0"
-                                    max="100"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                                    placeholder="0" />
-                            </div>
+                                <!-- Program Type -->
+                                <div>
+                                    <label for="type" class="block text-sm font-medium text-gray-700 mb-2">
+                                        Program Type <span class="text-red-500">*</span>
+                                    </label>
+                                    <select
+                                        id="type"
+                                        v-model="newProgram.type"
+                                        required
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                                        <option value="TRAINING">Training</option>
+                                        <option value="WORKSHOP">Workshop</option>
+                                        <option value="RESEARCH">Research</option>
+                                        <option value="DISTRIBUTION">Distribution</option>
+                                        <option value="MONITORING">Monitoring</option>
+                                        <option value="CONSULTATION">Consultation</option>
+                                    </select>
+                                </div>
+
+                                <!-- Status -->
+                                <div>
+                                    <label for="status" class="block text-sm font-medium text-gray-700 mb-2">
+                                        Status <span class="text-red-500">*</span>
+                                    </label>
+                                    <select
+                                        id="status"
+                                        v-model="newProgram.status"
+                                        required
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                                        <option value="PENDING">Pending</option>
+                                        <option value="ACTIVE">Active</option>
+                                        <option value="COMPLETED">Completed</option>
+                                        <option value="INACTIVE">Inactive</option>
+                                        <option value="CANCELLED">Cancelled</option>
+                                    </select>
+                                </div>
+
+                                <!-- Completion Percentage -->
+                                <div>
+                                    <label for="completion" class="block text-sm font-medium text-gray-700 mb-2">
+                                        Completion Percentage
+                                    </label>
+                                    <input
+                                        id="completion"
+                                        v-model="newProgram.completion"
+                                        type="number"
+                                        min="0"
+                                        max="100"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                        placeholder="0" />
+                                </div>
+
+                                <!-- Notes -->
+                                <div>
+                                    <label for="notes" class="block text-sm font-medium text-gray-700 mb-2">
+                                        Notes
+                                    </label>
+                                    <textarea
+                                        id="notes"
+                                        v-model="newProgram.notes"
+                                        rows="4"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                        placeholder="Enter program notes (optional)"></textarea>
+                                </div>
+                            </form>
                         </div>
 
-                        <!-- Row 3: Notes -->
-                        <div>
-                            <label for="notes" class="block text-sm font-medium text-gray-700 mb-2">
-                                Notes
-                            </label>
-                            <textarea
-                                id="notes"
-                                v-model="newProgram.notes"
-                                rows="4"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                                placeholder="Enter program notes (optional)"></textarea>
+                        <!-- Modal Footer -->
+                        <div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3 flex-shrink-0">
+                            <BaseButton
+                                variant="secondary"
+                                @click="closeModal">
+                                Cancel
+                            </BaseButton>
+                            <BaseButton
+                                class="bg-green-600 hover:bg-green-700"
+                                @click="handleCreateProgram"
+                                :disabled="programStore.isLoading">
+                                <svg v-if="programStore.isLoading" class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                {{ programStore.isLoading ? 'Creating...' : 'Create Program' }}
+                            </BaseButton>
                         </div>
-                    </form>
-                </div>
-
-                <!-- Modal Footer -->
-                <div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
-                    <BaseButton
-                        variant="secondary"
-                        @click="showCreateModal = false">
-                        Cancel
-                    </BaseButton>
-                    <BaseButton
-                        class="bg-green-600 hover:bg-green-700"
-                        @click="handleCreateProgram"
-                        :disabled="programStore.isLoading">
-                        <svg v-if="programStore.isLoading" class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        {{ programStore.isLoading ? 'Creating...' : 'Create Program' }}
-                    </BaseButton>
-                </div>
+                    </div>
+                </Transition>
             </div>
-        </div>
+        </Transition>
 
         <!-- Notification Toast -->
         <NotificationToast />
@@ -656,5 +672,33 @@ onMounted(async () => {
 /* Ensure minimum width for mobile layout */
 .min-w-0 {
     min-width: 0;
+}
+
+/* Modal Backdrop Animation */
+.backdrop-enter-active,
+.backdrop-leave-active {
+    transition: opacity 0.3s ease;
+}
+
+.backdrop-enter-from,
+.backdrop-leave-to {
+    opacity: 0;
+}
+
+/* Slide Panel Animation */
+.slide-enter-active {
+    transition: transform 0.3s ease-out;
+}
+
+.slide-leave-active {
+    transition: transform 0.3s ease-in;
+}
+
+.slide-enter-from {
+    transform: translateX(100%);
+}
+
+.slide-leave-to {
+    transform: translateX(100%);
 }
 </style>

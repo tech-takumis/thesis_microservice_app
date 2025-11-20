@@ -181,7 +181,7 @@ onMounted(async () => {
     <div class="p-4 sm:p-6 min-h-screen flex flex-col space-y-6 print:hidden">
 
       <!-- Header Section -->
-      <div class="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center border-b border-gray-200 pb-3">
+      <div class="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center border-b border-gray-300 pb-3">
         <div class="flex items-center gap-2">
           <FileText class="w-6 h-6 text-green-600" />
           <h1 class="text-2xl font-semibold text-gray-900 leading-tight">
@@ -212,7 +212,7 @@ onMounted(async () => {
       <!-- ===== Two-Column Layout ===== -->
       <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 flex-grow">
         <!-- === Farmer Selection === -->
-        <div class="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 flex flex-col h-[550px]">
+        <div class="bg-gray-100 border border-gray-300 rounded-2xl shadow-sm p-6 flex flex-col h-[550px]">
           <div class="flex items-center justify-between mb-4">
             <h2 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
               <User class="w-5 h-5 text-green-600" />
@@ -271,7 +271,7 @@ onMounted(async () => {
         </div>
 
 <!-- === Voucher Information === -->
-<div class="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 flex flex-col h-[550px]">
+<div class="bg-gray-100 border border-gray-300 rounded-2xl shadow-sm p-6 flex flex-col h-[550px]">
   <!-- Header -->
   <div class="flex items-center gap-2 mb-5">
     <FileText class="w-5 h-5 text-green-600" />

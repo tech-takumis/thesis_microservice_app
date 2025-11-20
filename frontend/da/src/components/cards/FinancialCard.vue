@@ -1,11 +1,11 @@
 <template>
-    <div class="bg-white rounded-2xl shadow-md border border-gray-100 p-6">
+    <div class="bg-gray-100 rounded-xl border border-gray-300 p-6">
         <div class="flex items-center justify-between mb-6">
             <div class="flex items-center space-x-3">
-                <div class="p-2 bg-red-50 rounded-lg">
-                    <CreditCard class="h-6 w-6 text-red-600" />
+                <div class="p-2 bg-green-100 rounded-lg">
+                    <CreditCard class="h-6 w-6 text-green-600" />
                 </div>
-                <h3 class="text-lg font-semibold text-red-600">Latest Transactions</h3>
+                <h3 class="text-lg font-semibold text-green-600">Latest Transactions</h3>
             </div>
             <PermissionGuard :permission="['CAN_MANAGE_FINANCE']">
                 <button
@@ -21,7 +21,7 @@
             <div
                 v-for="transaction in latestTransactions"
                 :key="transaction.id"
-                class="flex items-center justify-between border border-gray-200 rounded-lg p-3 hover:bg-gray-50 transition"
+                class="flex items-center justify-between border border-gray-300 rounded-lg p-3"
             >
                 <div class="flex items-center space-x-3">
                     <div
@@ -32,14 +32,14 @@
                         <ArrowUpCircle v-else class="h-5 w-5 text-red-600" />
                     </div>
                     <div>
-                        <p class="font-medium text-gray-900 text-sm">{{ transaction.description }}</p>
-                        <p class="text-xs text-gray-500">{{ transaction.date }}</p>
+                        <p class="font-medium text-gray-800 text-sm">{{ transaction.description }}</p>
+                        <p class="text-xs text-gray-900">{{ transaction.date }}</p>
                     </div>
                 </div>
                 <div class="text-right">
                     <p
                         class="text-sm font-bold"
-                        :class="transaction.type === 'income' ? 'text-green-600' : 'text-red-600'"
+                        :class="transaction.type === 'income' ? 'text-green-600' : 'text-red-700'"
                     >
                         {{ transaction.type === 'income' ? '+' : '-' }}₱{{ transaction.amount.toLocaleString() }}
                     </p>

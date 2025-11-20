@@ -15,9 +15,9 @@
 
       <!-- 💭 Chat Messages Container -->
       <div
-        class="flex-1 flex flex-col bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden"
+        class="flex-1 flex flex-col bg-white border border-gray-300 rounded-2xl shadow-sm overflow-hidden"
       >
-        <div v-if="!selectedFarmer" class="flex-1 flex items-center justify-center bg-white">
+        <div v-if="!selectedFarmer" class="flex-1 flex items-center justify-center bg-gray-100">
           <div class="text-center space-y-3">
             <User class="h-20 w-20 text-gray-300 mx-auto" />
             <h3 class="text-xl font-medium text-gray-900">No conversation selected</h3>
@@ -66,7 +66,7 @@
           <!-- Message List -->
           <div
             ref="messagesContainer"
-            class="flex-1 overflow-y-auto p-5 space-y-4 bg-white scroll-smooth"
+            class="flex-1 overflow-y-auto p-5 space-y-4 bg-gray-100 scroll-smooth"
           >
             <div v-if="messages.length === 0" class="text-center text-gray-500 mt-8">
               No messages yet. Start the conversation!
@@ -249,10 +249,10 @@
        
       <!-- 🧑‍🌾 Farmer List Sidebar -->
       <div
-        class="md:w-80 lg:w-96 flex flex-col bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden"
+        class="md:w-80 lg:w-96 flex flex-col bg-gray-100 border border-gray-300 rounded-2xl overflow-hidden"
       >
         <!-- 🔍 Search Bar -->
-        <div class="p-4 border-b border-gray-200 bg-white sticky top-0 z-10 shadow-sm">
+        <div class="p-4 bg-gray-100 sticky top-0 z-10 ">
           <div class="relative">
             <Search
               class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
@@ -279,7 +279,7 @@
               v-for="farmer in filteredFarmers"
               :key="farmer.id"
               :class="[
-                'w-full p-4 flex items-center gap-4 hover:bg-gray-100 transition border-b border-gray-100 text-left',
+                'w-full p-4 flex items-center gap-4 hover:bg-green-100 transition border-b border-gray-100 text-left',
                 selectedFarmer?.id === farmer.id ? 'bg-green-100' : '',
               ]"
               @click="selectFarmer(farmer)"

@@ -41,9 +41,8 @@ public class Program {
     @Column(nullable = false, name = "completion")
     private int completion;
 
-    @Column(name = "extra_fields", nullable = false, columnDefinition = "jsonb")
-    @Type(JsonBinaryType.class)
-    private JsonNode extraFields;
+    @Column(name = "notes")
+    private String notes;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)

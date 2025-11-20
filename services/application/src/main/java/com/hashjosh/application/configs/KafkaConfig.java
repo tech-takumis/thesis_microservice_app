@@ -17,23 +17,7 @@ public class KafkaConfig {
                 .build();
     }
 
-    @Bean
-    public NewTopic applicationForwarded(){
-        return TopicBuilder
-                .name("application-forwarded")
-                .partitions(1)
-                .replicas(1)
-                .build();
-    }
 
-    @Bean
-    public NewTopic applicationReceived(){
-        return TopicBuilder
-                .name("application-received")
-                .partitions(1)
-                .replicas(1)
-                .build();
-    }
 
     @Bean
     public NewTopic applicationVerified(){
@@ -44,14 +28,6 @@ public class KafkaConfig {
                 .build();
     }
 
-    @Bean
-    public NewTopic applicationUnderReview(){
-        return TopicBuilder
-                .name("application-underReview")
-                .partitions(1)
-                .replicas(1)
-                .build();
-    }
 
     @Bean
     public NewTopic applicationInspectionSchedule(){

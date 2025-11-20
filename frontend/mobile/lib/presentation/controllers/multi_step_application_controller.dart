@@ -36,13 +36,13 @@ class MultiStepApplicationController {
   final Map<String, Map<String, TextEditingController>> _boundaryControllers = {};
 
   // Loading and error states
-  bool _isLoading = false;
-  String _errorMessage = '';
-  double _uploadProgress = 0.0;
+  final ValueNotifier<bool> _isLoading = ValueNotifier(false);
+  final ValueNotifier<String> _errorMessage = ValueNotifier('');
+  final ValueNotifier<double> _uploadProgress = ValueNotifier(0.0);
 
-  bool get isLoading => _isLoading;
-  String get errorMessage => _errorMessage;
-  double get uploadProgress => _uploadProgress;
+  ValueNotifier<bool> get isLoading => _isLoading;
+  ValueNotifier<String> get errorMessage => _errorMessage;
+  ValueNotifier<double> get uploadProgress => _uploadProgress;
 
   void initialize() {
     _initializeFormKeys();
@@ -273,15 +273,15 @@ class MultiStepApplicationController {
   // Submission
   Future<ApplicationSubmissionResponse> submitApplication(AuthState authState) async {
     if (!_validateCurrentStep()) {
-      _errorMessage = 'Please fill in all required fields';
-      _isLoading = false;
-      return ApplicationSubmissionResponse(success: false, message: _errorMessage, applicationId: '');
+      _errorMessage.value = 'Please fill in all required fields';
+      _isLoading.value = false;
+      return ApplicationSubmissionResponse(success: false, message: _errorMessage.value, applicationId: '');
     }
 
     try {
-      _isLoading = true;
-      _errorMessage = '';
-      _uploadProgress = 0.0;
+      _isLoading.value = true;
+      _errorMessage.value = '';
+      _uploadProgress.value = 0.0;
 
       // Collect files (no need to upload one by one)
       final fileEntries = _fileValues.entries.where((entry) => entry.value != null);
@@ -292,8 +292,9 @@ class MultiStepApplicationController {
           if (field.fieldType == 'SIGNATURE' && field.required) {
             final file = _fileValues[field.key];
             if (file == null) {
-              _errorMessage = "Signature field '${field.fieldName}' is required.";
-              return ApplicationSubmissionResponse(success: false, message: _errorMessage, applicationId: '');
+              _errorMessage.value = "Signature field '${field.fieldName}' is required.";
+              _isLoading.value = false;
+              return ApplicationSubmissionResponse(success: false, message: _errorMessage.value, applicationId: '');
             }
           }
         }
@@ -381,16 +382,28 @@ class MultiStepApplicationController {
         filesMap,
       );
 
-      _isLoading = false;
-      print('✅ Application submission completed: ${response.success}');
+      _isLoading.value = false;
+
+      if (response.success) {
+        print('✅ Application submission completed successfully');
+        _errorMessage.value = ''; // Clear any previous errors
+      } else {
+        print('❌ Application submission failed: ${response.message}');
+        _errorMessage.value = response.message;
+      }
+
       return response;
     } catch (e) {
-      _isLoading = false;
-      _errorMessage = 'Failed to submit application: $e';
-      print('❌ Failed to submit application: $e');
-      return ApplicationSubmissionResponse(success: false, message: _errorMessage, applicationId: '');
+      _isLoading.value = false;
+      _errorMessage.value = 'An unexpected error occurred while submitting your application. Please try again.';
+      print('❌ Unexpected error during submission: $e');
+      return ApplicationSubmissionResponse(
+        success: false,
+        message: _errorMessage.value,
+        applicationId: ''
+      );
     } finally {
-      _isLoading = false;
+      _isLoading.value = false;
     }
   }
 
@@ -418,7 +431,7 @@ class MultiStepApplicationController {
   }
 
   void clearError() {
-    _errorMessage = '';
+    _errorMessage.value = '';
   }
 
   void dispose() {
@@ -430,5 +443,8 @@ class MultiStepApplicationController {
         controller.dispose();
       }
     }
+    _isLoading.dispose();
+    _errorMessage.dispose();
+    _uploadProgress.dispose();
   }
 }

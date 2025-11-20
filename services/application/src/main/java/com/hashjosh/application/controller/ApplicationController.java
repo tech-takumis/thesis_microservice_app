@@ -4,7 +4,9 @@ import com.hashjosh.application.dto.submission.ApplicationSubmissionDto;
 import com.hashjosh.application.dto.submission.ApplicationSubmissionResponse;
 import com.hashjosh.application.dto.update.ApplicationUpdateDto;
 import com.hashjosh.application.dto.update.ApplicationUpdateResponse;
+import com.hashjosh.application.dto.workflow.ApplicationWorkflowResponse;
 import com.hashjosh.application.model.Application;
+import com.hashjosh.application.model.ApplicationWorkflow;
 import com.hashjosh.application.service.ApplicationService;
 import com.hashjosh.constant.application.ApplicationResponseDto;
 import jakarta.validation.Valid;
@@ -65,6 +67,21 @@ public class ApplicationController {
         } else {
             return new ResponseEntity<>(applicationService.findAll(), HttpStatus.OK);
         }
+    }
+
+    @GetMapping("/{applicationId}/required-ai-analysis")
+    public ResponseEntity<Boolean> isAiAnalysisRequired(
+            @PathVariable("applicationId") UUID applicationId
+    ){
+        boolean isRequired = applicationService.isAiAnalysisRequired(applicationId);
+        return ResponseEntity.ok(isRequired);
+    }
+
+    @GetMapping("/{application-id}/workflow")
+    public ResponseEntity<ApplicationWorkflowResponse> getApplicationWorkflow(
+            @PathVariable("application-id") UUID applicationId
+    ){
+        return ResponseEntity.ok(applicationService.getApplicationWorkflow(applicationId));
     }
 
     @GetMapping("/{application-id}")

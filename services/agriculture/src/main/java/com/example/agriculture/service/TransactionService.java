@@ -8,9 +8,8 @@ import com.example.agriculture.mapper.TransactionMapper;
 import com.example.agriculture.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,9 +42,11 @@ public class TransactionService {
     }
 
     @Transactional(readOnly = true)
-    public Page<TransactionResponse> getAllTransactions(Pageable pageable) {
-        return transactionRepository.findAll(pageable)
-                .map(transactionMapper::toTransactionResponse);
+    public List<TransactionResponse> getAllTransactions() {
+        return transactionRepository.findAll()
+                .stream()
+                .map(transactionMapper::toTransactionResponse)
+                .toList();
     }
 
     @Transactional
@@ -66,18 +67,21 @@ public class TransactionService {
     }
 
     @Transactional(readOnly = true)
-    public Page<TransactionResponse> findTransactionsByType(String type, Pageable pageable) {
-        return transactionRepository.findByType(type, pageable)
-                .map(transactionMapper::toTransactionResponse);
+    public List<TransactionResponse> findTransactionsByType(String type) {
+        return transactionRepository.findByType(type)
+                .stream()
+                .map(transactionMapper::toTransactionResponse)
+                .toList();
     }
 
     @Transactional(readOnly = true)
-    public Page<TransactionResponse> findTransactionsByDateRange(
+    public List<TransactionResponse> findTransactionsByDateRange(
             LocalDateTime startDate,
-            LocalDateTime endDate,
-            Pageable pageable) {
-        return transactionRepository.findByDateBetween(startDate, endDate, pageable)
-                .map(transactionMapper::toTransactionResponse);
+            LocalDateTime endDate) {
+        return transactionRepository.findByDateBetween(startDate, endDate)
+                .stream()
+                .map(transactionMapper::toTransactionResponse)
+                .toList();
     }
 
     private Transaction findTransactionById(UUID id) {

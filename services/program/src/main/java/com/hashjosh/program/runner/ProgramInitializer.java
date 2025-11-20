@@ -44,12 +44,7 @@ public class ProgramInitializer {
                     ProgramType.TRAINING,
                     ProgramStatus.ACTIVE,
                     75,
-                    objectMapper.createObjectNode()
-                            .put("location", "National Rice Research Institute, Munoz, Nueva Ecija")
-                            .put("trainer", "Dr. Emil Q. Javier")
-                            .put("target_farmers", "5,000")
-                            .put("budget", "PHP 1,500,000,000")
-                            .put("duration", "2023-2028")
+                    "Additional notes here."
             ));
 
             programs.add(createProgram(
@@ -57,12 +52,7 @@ public class ProgramInitializer {
                     ProgramType.WORKSHOP,
                     ProgramStatus.ACTIVE,
                     60,
-                    objectMapper.createObjectNode()
-                            .put("location", "Philippine Rice Research Institute")
-                            .put("trainer", "Engr. Roberto G. Bayot")
-                            .put("equipment_types", "Combine Harvesters, Transplanters")
-                            .put("target_regions", "Regions I, II, III, IV-A, V")
-                            .put("budget", "PHP 5,000,000,000")
+                    "Additional notes here."
             ));
 
             // National Rice Program
@@ -71,12 +61,7 @@ public class ProgramInitializer {
                     ProgramType.TRAINING,
                     ProgramStatus.COMPLETED,
                     100,
-                    objectMapper.createObjectNode()
-                            .put("location", "IRRI, Los Baños, Laguna")
-                            .put("trainer", "Dr. Shaobing Peng")
-                            .put("target_farmers", "10,000")
-                            .put("yield_increase", "20%")
-                            .put("implementation_period", "2020-2024")
+                    "Additional notes here."
             ));
 
             programs.add(createProgram(
@@ -84,12 +69,7 @@ public class ProgramInitializer {
                     ProgramType.WORKSHOP,
                     ProgramStatus.ACTIVE,
                     85,
-                    objectMapper.createObjectNode()
-                            .put("location", "Regional Training Centers")
-                            .put("trainer", "DA-RFO Trainers")
-                            .put("components", "P1-P6: Palay Check System")
-                            .put("target_provinces", "Top 20 rice-producing provinces")
-                            .put("farmer_organization", "Philippine Council of Agriculture")
+                    "Additional notes here."
             ));
 
             // Corn Program
@@ -98,12 +78,7 @@ public class ProgramInitializer {
                     ProgramType.TRAINING,
                     ProgramStatus.ACTIVE,
                     70,
-                    objectMapper.createObjectNode()
-                            .put("location", "Bureau of Plant Industry, Los Baños")
-                            .put("trainer", "Dr. Antonio G. Laforteza")
-                            .put("seed_varieties", "IPB Varieties 9419, 9459")
-                            .put("target_farmers", "8,000")
-                            .put("budget", "PHP 800,000,000")
+                    "Additional notes here."
             ));
 
             programs.add(createProgram(
@@ -111,12 +86,7 @@ public class ProgramInitializer {
                     ProgramType.WORKSHOP,
                     ProgramStatus.COMPLETED,
                     95,
-                    objectMapper.createObjectNode()
-                            .put("location", "Corn Program Implementation Units")
-                            .put("trainer", "DA-Corn Program Specialists")
-                            .put("topics", "Corn Production Technology, Post-Harvest")
-                            .put("beneficiaries", "50,000 farmers")
-                            .put("period", "2019-2023")
+                    "Additional notes here."
             ));
 
             // Organic Agriculture Program
@@ -125,12 +95,7 @@ public class ProgramInitializer {
                     ProgramType.TRAINING,
                     ProgramStatus.ACTIVE,
                     80,
-                    objectMapper.createObjectNode()
-                            .put("location", "Organic Agriculture Centers")
-                            .put("trainer", "Organic Agriculture Specialists")
-                            .put("certification", "NPOP, JAS, EU Organic")
-                            .put("target_farmers", "15,000")
-                            .put("budget", "PHP 1,200,000,000")
+                    "Additional notes here."
             ));
 
             programs.add(createProgram(
@@ -138,12 +103,7 @@ public class ProgramInitializer {
                     ProgramType.WORKSHOP,
                     ProgramStatus.ACTIVE,
                     65,
-                    objectMapper.createObjectNode()
-                            .put("location", "DA Regional Field Offices")
-                            .put("trainer", "NOAP Technical Experts")
-                            .put("modules", "Compost Production, Bio-Control Agents")
-                            .put("target_provinces", "All 17 regions")
-                            .put("duration", "3-day intensive training")
+                    "Additional notes here."
             ));
 
             // High-Value Crops Program
@@ -152,12 +112,7 @@ public class ProgramInitializer {
                     ProgramType.TRAINING,
                     ProgramStatus.COMPLETED,
                     100,
-                    objectMapper.createObjectNode()
-                            .put("location", "High Value Crops Development Center")
-                            .put("trainer", "HVC Specialists")
-                            .put("crops", "Tomato, Onion, Garlic, Pepper")
-                            .put("market_linkage", "SM Supermarket, Puregold")
-                            .put("beneficiaries", "12,000 farmers")
+                    "Additional notes here."
             ));
 
             programs.add(createProgram(
@@ -165,12 +120,7 @@ public class ProgramInitializer {
                     ProgramType.WORKSHOP,
                     ProgramStatus.ACTIVE,
                     75,
-                    objectMapper.createObjectNode()
-                            .put("location", "Fruit Crops Centers")
-                            .put("trainer", "DA-HVCDP Trainers")
-                            .put("crops", "Mango, Banana, Pineapple, Durian")
-                            .put("export_markets", "Middle East, China, Japan")
-                            .put("budget", "PHP 2,500,000,000")
+                   "Additional notes here."
             ));
 
             programRepository.saveAll(programs);
@@ -180,7 +130,7 @@ public class ProgramInitializer {
         }
     }
 
-    private Program createProgram(String name, ProgramType type, ProgramStatus status, int completion, ObjectNode extraFields) {
+    private Program createProgram(String name, ProgramType type, ProgramStatus status, int completion, String notes) {
         Program program = new Program();
         program.setName(name);
         program.setType(type);
@@ -188,7 +138,7 @@ public class ProgramInitializer {
         program.setCompletion(completion);
         program.setCreatedAt(LocalDateTime.now());
         program.setUpdatedAt(LocalDateTime.now());
-        program.setExtraFields(extraFields);
+        program.setNotes(notes);
         return program;
     }
 }

@@ -1,5 +1,6 @@
 package com.hashjosh.insurance.service;
 
+import com.hashjosh.constant.pcic.enums.InsuranceStatus;
 import com.hashjosh.insurance.clients.DocumentServiceClient;
 import com.hashjosh.insurance.config.CustomUserDetails;
 import com.hashjosh.insurance.dto.verification.VerificationRequest;
@@ -7,10 +8,12 @@ import com.hashjosh.insurance.dto.verification.VerificationResponse;
 import com.hashjosh.insurance.entity.Insurance;
 import com.hashjosh.insurance.entity.Verification;
 import com.hashjosh.insurance.exception.ApiException;
+import com.hashjosh.insurance.kafka.KafkaProducer;
 import com.hashjosh.insurance.mapper.VerificationMapper;
 import com.hashjosh.insurance.repository.InsuranceRepository;
 import com.hashjosh.insurance.repository.VerificationRepository;
 import com.hashjosh.constant.document.dto.DocumentResponse;
+import com.hashjosh.kafkacommon.application.VerificationCompletedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -36,108 +39,9 @@ public class VerificationService {
     private final InsuranceRepository insuranceRepository;
     private final VerificationMapper verificationMapper;
     private final DocumentServiceClient documentServiceClient;
+    private final KafkaProducer kafkaProducer;
 
-    public VerificationResponse createVerification(UUID insuranceId, VerificationRequest request) {
-        // Get verifier info from SecurityContext
-        CustomUserDetails userDetails = getCurrentUserDetails();
 
-        // Find the insurance
-        Insurance insurance = insuranceRepository.findById(insuranceId)
-                .orElseThrow(() -> new ApiException("Insurance not found", HttpStatus.NOT_FOUND));
-
-        // Check if verification already exists for this insurance
-        if (verificationRepository.findByInsuranceId(insuranceId).isPresent()) {
-            throw new ApiException("Verification already exists for this insurance", HttpStatus.CONFLICT);
-        }
-
-        // Create verification
-        Verification verification = verificationMapper.toEntity(
-                request,
-                insurance,
-                userDetails.getUserId(),
-                userDetails.getFirstName() + " " + userDetails.getLastName()
-        );
-
-        Verification savedVerification = verificationRepository.save(verification);
-        return verificationMapper.toResponse(savedVerification);
-    }
-
-    public VerificationResponse createVerificationBySubmissionId(UUID submissionId, VerificationRequest request) {
-        // Get verifier info from SecurityContext
-        CustomUserDetails userDetails = getCurrentUserDetails();
-
-        // Find the insurance by submissionId
-        Insurance insurance = insuranceRepository.findBySubmissionId(submissionId)
-                .orElseThrow(() -> new ApiException("Insurance not found for submission ID: " + submissionId, HttpStatus.NOT_FOUND));
-
-        // Check if verification already exists for this insurance
-        if (verificationRepository.findByInsuranceId(insurance.getId()).isPresent()) {
-            throw new ApiException("Verification already exists for this insurance", HttpStatus.CONFLICT);
-        }
-
-        // Create verification
-        Verification verification = verificationMapper.toEntity(
-                request,
-                insurance,
-                userDetails.getUserId(),
-                userDetails.getFirstName() + " " + userDetails.getLastName()
-        );
-
-        Verification savedVerification = verificationRepository.save(verification);
-        return verificationMapper.toResponse(savedVerification);
-    }
-
-    public VerificationResponse createVerificationWithFiles(
-            UUID insuranceId,
-            VerificationRequest request,
-            Map<String, MultipartFile> fileMap
-    ) {
-        try {
-            // Get verifier info from SecurityContext
-            CustomUserDetails userDetails = getCurrentUserDetails();
-
-            // Find the insurance
-            Insurance insurance = insuranceRepository.findById(insuranceId)
-                    .orElseThrow(() -> new ApiException("Insurance not found", HttpStatus.NOT_FOUND));
-
-            // Check if verification already exists for this insurance
-            if (verificationRepository.findByInsuranceId(insuranceId).isPresent()) {
-                throw new ApiException("Verification already exists for this insurance", HttpStatus.CONFLICT);
-            }
-
-            // Upload files and get document IDs
-            List<UUID> documentIds = new ArrayList<>();
-            if (fileMap != null && !fileMap.isEmpty()) {
-                for (Map.Entry<String, MultipartFile> entry : fileMap.entrySet()) {
-                    MultipartFile file = entry.getValue();
-
-                    // Upload document using DocumentServiceClient
-                    DocumentResponse docResponse = documentServiceClient.uploadDocument(file, userDetails.getUserId().toString());
-                    documentIds.add(docResponse.getDocumentId());
-
-                    log.info("Uploaded verification document: {} -> {}", entry.getKey(), file.getOriginalFilename());
-                }
-            }
-
-            // Create verification with document IDs
-            Verification verification = verificationMapper.toEntity(
-                    request,
-                    insurance,
-                    userDetails.getUserId(),
-                    userDetails.getFirstName() + " " + userDetails.getLastName(),
-                    documentIds
-            );
-
-            Verification savedVerification = verificationRepository.save(verification);
-            return verificationMapper.toResponse(savedVerification);
-
-        } catch (ApiException e) {
-            throw e;
-        } catch (Exception e) {
-            log.error("Failed to create verification with files for insurance {}: {}", insuranceId, e.getMessage(), e);
-            throw new ApiException("Failed to create verification: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
 
     public VerificationResponse createVerificationWithFilesBySubmissionId(
             UUID submissionId,
@@ -193,6 +97,21 @@ public class VerificationService {
             );
 
             Verification savedVerification = verificationRepository.save(verification);
+
+            insurance.setCurrentStatus(InsuranceStatus.VERIFIED);
+            insuranceRepository.save(insurance);
+
+            VerificationCompletedEvent event = VerificationCompletedEvent.builder()
+                    .submissionId(submissionId)
+                    .userId(insurance.getFarmerId())
+                    .verifierName(userDetails.getFirstName() + " " + userDetails.getLastName())
+                    .remarks(request.getRemarks())
+                    .status(insurance.getCurrentStatus().name())
+                    .verifiedAt(savedVerification.getVerifiedAt())
+                    .build();
+
+            kafkaProducer.publishEvent("application-verified", event);
+
             return verificationMapper.toResponse(savedVerification);
 
         } catch (ApiException e) {
@@ -229,26 +148,6 @@ public class VerificationService {
     public Page<VerificationResponse> getAllVerifications(Pageable pageable) {
         Page<Verification> verifications = verificationRepository.findAll(pageable);
         return verifications.map(verificationMapper::toResponse);
-    }
-
-    public VerificationResponse updateVerification(UUID verificationId, VerificationRequest request) {
-        // Get verifier info from SecurityContext
-        CustomUserDetails userDetails = getCurrentUserDetails();
-
-        // Find existing verification
-        Verification verification = verificationRepository.findById(verificationId)
-                .orElseThrow(() -> new ApiException("Verification not found", HttpStatus.NOT_FOUND));
-
-        // Update verification
-        verificationMapper.updateEntity(
-                verification,
-                request,
-                userDetails.getUserId(),
-                userDetails.getFirstName() + " " + userDetails.getLastName()
-        );
-
-        Verification updatedVerification = verificationRepository.save(verification);
-        return verificationMapper.toResponse(updatedVerification);
     }
 
     public VerificationResponse updateVerificationWithFiles(

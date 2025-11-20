@@ -72,12 +72,45 @@ export const UNDERWRITER_ROUTES = [
             roles: ['UNDERWRITER'],
         },
     },
+    {
+        path: '/underwriter/applications/type/insurance/:insuranceId/:submissionId/detail',
+        name: 'underwriter-applications-detail',
+        component: () => import('@/pages/underwriter/applications/ApplicationDetail.vue'),
+        meta: {
+            title: 'Application Detail',
+            guard: 'auth',
+            roles: ['UNDERWRITER'],
+            // Expected query parameters: action (view|edit)
+        },
+    },
+    {
+        path: '/underwriter/application/:insuranceId/inspection',
+        name: 'application-inspection',
+        component: () => import('@/pages/underwriter/applications/ApplicationInspection.vue'),
+        meta: {
+            title: 'Application Inspection',
+            guard: 'auth',
+            roles: ['UNDERWRITER'],
+            // Expected query parameters: action (view|edit)
+        },
+    },
      {
-        path: '/underwriter/damage/claim-review',
+        path: '/underwriter/damage/:insuranceId/:submissionId/claim-review',
         name: 'damage-claim-review',
         component: () => import('@/pages/underwriter/applications/DamageClaimReview.vue'),
         meta: {
-            title: 'All Applications',
+            title: 'Damage Claim Review',
+            guard: 'auth',
+            roles: ['UNDERWRITER'],
+            // Expected query parameters: action (view|edit)
+        },
+    },
+    {
+        path: '/underwriter/applications/insurance/:insuranceId/:submissionId/claim',
+        name: 'underwriter-applications-claim',
+        component: () => import('@/pages/underwriter/applications/ApplicationClaim.vue'),
+        meta: {
+            title: 'Application Claim',
             guard: 'auth',
             roles: ['UNDERWRITER'],
         },
@@ -85,7 +118,7 @@ export const UNDERWRITER_ROUTES = [
     {
         path: '/underwriter/risk-factors',
         name: 'underwriter-risk-factors',
-        component: () => import('@/pages/underwriter/applications/ViewApplications.vue'),
+        component: () => import('@/pages/underwriter/risk-assessment/RiskFactor.vue'),
         meta: {
             title: 'Risk Factors',
             guard: 'auth',
@@ -93,19 +126,9 @@ export const UNDERWRITER_ROUTES = [
         },
     },
     {
-        path: '/underwriter/risk-history',
-        name: 'underwriter-risk-history',
-        component: () => import('@/pages/underwriter/applications/ViewApplications.vue'),
-        meta: {
-            title: 'Risk History',
-            guard: 'auth',
-            roles: ['UNDERWRITER'],
-        },
-    },
-    {
         path: '/underwriter/risk-geo',
         name: 'underwriter-risk-geo',
-        component: () => import('@/pages/underwriter/applications/ViewApplications.vue'),
+        component: () => import('@/pages/underwriter/risk-assessment/GeographicAnalysis.vue'),
         meta: {
             title: 'Geographic Analysis',
             guard: 'auth',
@@ -115,7 +138,7 @@ export const UNDERWRITER_ROUTES = [
     {
         path: '/underwriter/guidelines-eligibility',
         name: 'underwriter-guidelines-eligibility',
-        component: () => import('@/pages/underwriter/GuidelinesEligibility.vue'),
+        component: () => import('@/pages/underwriter/tools/GuidelinesEligibility.vue'),
         meta: {
             title: 'Guidelines & Eligibility',
             guard: 'auth',
@@ -125,7 +148,7 @@ export const UNDERWRITER_ROUTES = [
     {
         path: '/underwriter/guidelines-coverage',
         name: 'underwriter-guidelines-coverage',
-        component: () => import('@/pages/underwriter/GuidelinesCoverage.vue'),
+        component: () => import('@/pages/underwriter/tools/GuidelinesCoverage.vue'),
         meta: {
             title: 'Guidelines & Coverage',
             guard: 'auth',
@@ -135,7 +158,7 @@ export const UNDERWRITER_ROUTES = [
     {
         path: '/underwriter/guidelines-manual',
         name: 'underwriter-guidelines-manual',
-        component: () => import('@/pages/underwriter/GuidelinesManual.vue'),
+        component: () => import('@/pages/underwriter/tools/GuidelinesManual.vue'),
         meta: {
             title: 'Guidelines Manual',
             guard: 'auth',

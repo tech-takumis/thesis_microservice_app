@@ -1,0 +1,43 @@
+### Create Policy
+POST http://localhost:8080/api/v1/policies
+Content-Type: application/json
+
+{
+  "insuranceId": "550e8400-e29b-41d4-a716-446655440000",
+  "effectiveDate": "2024-01-01T00:00:00",
+  "expiryDate": "2024-12-31T23:59:59"
+}
+
+### Get Policy by ID
+GET http://localhost:8080/api/v1/policies/550e8400-e29b-41d4-a716-446655440001
+
+### Get Policy by Insurance ID
+GET http://localhost:8080/api/v1/policies/insurance/550e8400-e29b-41d4-a716-446655440000
+
+### Get Policy by Policy Number
+GET http://localhost:8080/api/v1/policies/policy-number/POL-001-2024
+
+### Get All Policies
+GET http://localhost:8080/api/v1/policies
+
+### Get Policies by Farmer ID
+GET http://localhost:8080/api/v1/policies/farmer/550e8400-e29b-41d4-a716-446655440002
+
+### Get Active Policies
+GET http://localhost:8080/api/v1/policies/active
+
+### Get Expired Policies
+GET http://localhost:8080/api/v1/policies/expired
+
+### Update Policy
+PUT http://localhost:8080/api/v1/policies/550e8400-e29b-41d4-a716-446655440001
+Content-Type: application/json
+
+{
+  "policyNumber": "POL-001-2024-UPDATED",
+  "effectiveDate": "2024-02-01T00:00:00",
+  "expiryDate": "2025-01-31T23:59:59"
+}
+
+### Delete Policy
+DELETE http://localhost:8080/api/v1/policies/550e8400-e29b-41d4-a716-446655440001

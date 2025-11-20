@@ -17,5 +17,5 @@ public class ProgramUpdateRequestDto {
     private ProgramType type;
     private ProgramStatus status;
     private int completion;
-    private JsonNode extraFields;
+    private String notes;
 }

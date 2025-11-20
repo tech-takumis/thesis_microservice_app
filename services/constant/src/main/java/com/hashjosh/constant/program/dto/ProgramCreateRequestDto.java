@@ -1,6 +1,5 @@
 package com.hashjosh.constant.program.dto;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.hashjosh.constant.program.enums.ProgramStatus;
 import com.hashjosh.constant.program.enums.ProgramType;
 import lombok.*;
@@ -16,5 +15,5 @@ public class ProgramCreateRequestDto {
     private ProgramType type;
     private ProgramStatus status;
     private int completion;
-    private JsonNode extraFields;
+    private String notes;
 }

@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(/tmp/app_detail_template.txt)",
+      "Bash(/tmp/app_detail_script.txt)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

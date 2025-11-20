@@ -1,17 +1,21 @@
 package com.hashjosh.kafkacommon.application;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Getter
+@Setter
 @AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class InspectionScheduledEvent {
+    private UUID insuranceId;
     private UUID submissionId;
-    private UUID userId;
+    private UUID farmerId;
+    private String farmernName;
+    private String status;
     private UUID scheduleId;
-    private LocalDateTime inspectionDate;
     private LocalDateTime scheduledAt;
 }

@@ -11,9 +11,8 @@ import com.example.agriculture.repository.BeneficiaryRepository;
 import com.example.agriculture.repository.ProgramRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
+
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,9 +55,11 @@ public class ProgramService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ProgramResponse> getAllPrograms(Pageable pageable) {
-        return programRepository.findAll(pageable)
-                .map(programMapper::toProgramResponse);
+    public List<ProgramResponse> getAllPrograms() {
+        return programRepository.findAll()
+                .stream()
+                .map(programMapper::toProgramResponse)
+                .toList();
     }
 
     @Transactional

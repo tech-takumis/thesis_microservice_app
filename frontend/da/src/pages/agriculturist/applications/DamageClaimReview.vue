@@ -53,7 +53,7 @@
         <!-- Page Header -->
         <div class="flex items-start justify-between w-full">
           <div>
-            <h1 class="text-2xl font-bold text-gray-900">Damage Claim Review</h1>
+            <h1 class="text-2xl font-bold text-gray-900">AI Analysis</h1>
             <p class="text-sm text-gray-500 mt-1">
               Submitted by <span class="font-semibold text-gray-700">{{ farmerName }}</span> — {{ formatDate(applicationData?.submittedAt) }}
             </p>

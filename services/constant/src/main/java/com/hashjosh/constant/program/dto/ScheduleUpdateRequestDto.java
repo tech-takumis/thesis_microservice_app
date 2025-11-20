@@ -18,5 +18,5 @@ public class ScheduleUpdateRequestDto {
     private ScheduleType type;
     private LocalDateTime scheduleDate;
     private SchedulePriority priority;
-    private JsonNode metaData;
+    private String notes;
 }

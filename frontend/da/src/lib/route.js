@@ -161,7 +161,7 @@ export const MUNICIPALITY_ROUTES = [
         name: 'agriculturist-voucher-program',
         component: () => import('@/pages/agriculturist/operations/AgriculturistVoucher.vue'),
         meta: {
-            title: 'Develop Plans',
+            title: 'Voucher Program',
             guard: 'auth'
         }
     },
@@ -170,7 +170,16 @@ export const MUNICIPALITY_ROUTES = [
         name: 'agriculturist-transaction',
         component: () => import('@/pages/agriculturist/operations/AgriculturistTransaction.vue'),
         meta: {
-            title: 'Coordinate Agencies',
+            title: 'Transactions',
+            guard: 'auth'
+        }
+    },
+    {
+        path: '/agriculturist/transactions/:id/detail',
+        name: 'agriculturist-transaction-detail',
+        component: () => import('@/pages/agriculturist/operations/TransactionDetail.vue'),
+        meta: {
+            title: 'Transaction Detail',
             guard: 'auth'
         }
     },
@@ -180,6 +189,15 @@ export const MUNICIPALITY_ROUTES = [
         component: () => import('@/pages/agriculturist/operations/AgriculturistMonitorPrograms.vue'),
         meta: {
             title: 'Monitor Programs',
+            guard: 'auth'
+        }
+    },
+     {
+        path: '/agriculturist/monitor-programs/:id/detail',
+        name: 'agriculturist-monitor-programs-detail',
+        component: () => import('@/pages/agriculturist/operations/ProgramDetail.vue'),
+        meta: {
+            title: 'Program Detail',
             guard: 'auth'
         }
     },

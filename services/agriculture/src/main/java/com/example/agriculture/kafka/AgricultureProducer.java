@@ -1,6 +1,5 @@
 package com.example.agriculture.kafka;
 
-import com.hashjosh.kafkacommon.agriculture.AgricultureRegistrationContract;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.KafkaHeaders;

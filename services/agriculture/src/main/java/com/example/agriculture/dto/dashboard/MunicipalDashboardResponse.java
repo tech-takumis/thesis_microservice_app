@@ -1,6 +1,5 @@
 package com.example.agriculture.dto.dashboard;
 
-import com.example.agriculture.dto.program.ProgramResponse;
 import com.example.agriculture.dto.transaction.TransactionResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,7 +15,5 @@ import java.util.UUID;
 @Builder
 public class MunicipalDashboardResponse {
     private UUID dashboardId;
-    private long activePrograms;
-    private List<ProgramResponse> programs;
     private List<TransactionResponse> transactions;
 }

@@ -1,55 +1,65 @@
 <template>
-  <div class="bg-white rounded-2xl border border-none pb-4 space-y-6 relative">
+  <div class="bg-gray-100 rounded-2xl border border-none pb-4 space-y-6 relative">
 
       <!-- 🧾 Post Input Card -->
-      <div class="bg-gray-100 rounded-xl shadow-md p-4 border border-gray-300 shadow-sm">
+      <div class="bg-gray-100 rounded-xl p-4 border border-gray-300 shadow-sm">
         <!-- Post Text -->
         <textarea
           v-model="newPostContent"
           placeholder="Write Post..."
           class="w-full p-3 border border-gray-300 rounded-lg focus:border-green-400 focus:ring-2 focus:ring-green-400/40 transition duration-200 disabled:opacity-50"
           rows="3"
+          @focus="isTextareaActive = true"
+          @blur="handleTextareaBlur"
         ></textarea>
 
         <!-- Attach + Post Button -->
-        <div class="mt-4 flex items-center justify-between">
-          <div class="flex items-center space-x-3">
-            <label class="flex items-center cursor-pointer">
-              <input
-                type="file"
-                accept="image/*,video/*"
-                class="hidden"
-                multiple
-                @change="handleFileUpload"
-              />
-              <div
-                class="flex items-center justify-center w-9 h-9 border border-gray-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition"
+        <transition
+          enter-active-class="transition ease-out duration-200"
+          enter-from-class="opacity-0 transform -translate-y-2"
+          enter-to-class="opacity-100 transform translate-y-0"
+          leave-active-class="transition ease-in duration-150"
+          leave-from-class="opacity-100 transform translate-y-0"
+          leave-to-class="opacity-0 transform -translate-y-2">
+          <div v-show="isTextareaActive || newPostContent.trim()" class="mt-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <label class="flex items-center cursor-pointer">
+                <input
+                  type="file"
+                  accept="image/*,video/*"
+                  class="hidden"
+                  multiple
+                  @change="handleFileUpload"
+                />
+                <div
+                  class="flex items-center justify-center w-9 h-9 border border-gray-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition"
+                >
+                  <Paperclip class="h-5 w-5 text-gray-600 hover:text-green-600" />
+                </div>
+              </label>
+
+              <!-- Show selected files -->
+              <span
+                v-if="selectedFile.length"
+                class="text-xs text-gray-600 truncate max-w-[180px]"
               >
-                <Paperclip class="h-5 w-5 text-gray-600 hover:text-green-600" />
-              </div>
-            </label>
+                <template v-for="file in selectedFile" :key="file.name">{{ file.name }} </template>
+              </span>
+            </div>
 
-            <!-- Show selected files -->
-            <span
-              v-if="selectedFile.length"
-              class="text-xs text-gray-600 truncate max-w-[180px]"
+            <button
+              class="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-all shadow-sm"
+              :disabled="!newPostContent.trim() || creatingPost"
+              @click="onCreatePost"
             >
-              <template v-for="file in selectedFile" :key="file.name">{{ file.name }} </template>
-            </span>
+              <span v-if="!creatingPost">Post</span>
+              <span v-else class="flex items-center gap-2">
+                <Loader2 class="h-4 w-4 animate-spin" />
+                <span>Posting...</span>
+              </span>
+            </button>
           </div>
-
-          <button
-            class="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-all shadow-sm"
-            :disabled="!newPostContent.trim() || creatingPost"
-            @click="onCreatePost"
-          >
-            <span v-if="!creatingPost">Post</span>
-            <span v-else class="flex items-center gap-2">
-              <Loader2 class="h-4 w-4 animate-spin" />
-              <span>Posting...</span>
-            </span>
-          </button>
-        </div>
+        </transition>
       </div>
     </div>
 
@@ -168,6 +178,7 @@ const stickyHeader = ref(null)
 const createPostSection = ref(null)
 const isScrolledPastForm = ref(false)
 const carouselIndexes = reactive({})
+const isTextareaActive = ref(false)
 
 const props = defineProps({
   posts: {
@@ -183,6 +194,16 @@ const handleFileUpload = async (event) => {
     const files = Array.from(event.target.files || [])
     if (!files.length) return
     selectedFile.value = files
+}
+
+const handleTextareaBlur = () => {
+    // Keep the controls visible if there's content
+    if (!newPostContent.value.trim()) {
+        // Use setTimeout to allow click events on buttons to fire before hiding
+        setTimeout(() => {
+            isTextareaActive.value = false
+        }, 200)
+    }
 }
 
 // Use a wrapper to ensure console.log works and await createPost
@@ -214,6 +235,7 @@ const createPost = async () => {
         await postStore.createPost(formData)
         newPostContent.value = ''
         selectedFile.value = []
+        isTextareaActive.value = false
     } catch (error) {
         console.error('Error creating post:', error)
     } finally {

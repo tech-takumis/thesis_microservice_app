@@ -8,10 +8,12 @@ import { MUNICIPAL_AGRICULTURIST_NAVIGATION } from '@/lib/navigation'
 import { useProgramStore } from '@/stores/program.js'
 import { useNotificationStore } from '@/stores/notification.js'
 import { ref, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
 
 const navigation = MUNICIPAL_AGRICULTURIST_NAVIGATION
 const programStore = useProgramStore()
 const notificationStore = useNotificationStore()
+const router = useRouter()
 
 // State
 const showFilters = ref(false)
@@ -22,21 +24,18 @@ const searchQuery = ref('')
 // Filter states
 const filters = ref({
     name: '',
+    type: '',
     status: '',
-    budget: { min: '', max: '' },
-    completion: { min: '', max: '' },
-    date: { start: '', end: '' }
+    completion: { min: '', max: '' }
 })
 
 // New program form
 const newProgram = ref({
     name: '',
-    description: '',
-    budget: '',
-    completedPercentage: 0,
-    status: 'planned',
-    startDate: new Date().toISOString().split('T')[0],
-    endDate: ''
+    type: 'TRAINING',
+    status: 'PENDING',
+    completion: 0,
+    notes: ''
 })
 
 // Computed
@@ -48,9 +47,9 @@ const filteredPrograms = computed(() => {
         const query = searchQuery.value.toLowerCase()
         filtered = filtered.filter(program =>
             program.name.toLowerCase().includes(query) ||
-            program.description.toLowerCase().includes(query) ||
+            (program.notes && program.notes.toLowerCase().includes(query)) ||
             program.status.toLowerCase().includes(query) ||
-            program.budget.toString().includes(query)
+            (program.type && program.type.toLowerCase().includes(query))
         )
     }
 
@@ -61,32 +60,20 @@ const filteredPrograms = computed(() => {
         )
     }
 
+    if (filters.value.type) {
+        filtered = filtered.filter(p => p.type === filters.value.type)
+    }
+
     if (filters.value.status) {
         filtered = filtered.filter(p => p.status === filters.value.status)
     }
 
-    if (filters.value.budget.min) {
-        filtered = filtered.filter(p => p.budget >= parseFloat(filters.value.budget.min))
-    }
-
-    if (filters.value.budget.max) {
-        filtered = filtered.filter(p => p.budget <= parseFloat(filters.value.budget.max))
-    }
-
     if (filters.value.completion.min) {
-        filtered = filtered.filter(p => p.completedPercentage >= parseFloat(filters.value.completion.min))
+        filtered = filtered.filter(p => p.completion >= parseFloat(filters.value.completion.min))
     }
 
     if (filters.value.completion.max) {
-        filtered = filtered.filter(p => p.completedPercentage <= parseFloat(filters.value.completion.max))
-    }
-
-    if (filters.value.date.start) {
-        filtered = filtered.filter(p => new Date(p.startDate) >= new Date(filters.value.date.start))
-    }
-
-    if (filters.value.date.end) {
-        filtered = filtered.filter(p => new Date(p.endDate) <= new Date(filters.value.date.end))
+        filtered = filtered.filter(p => p.completion <= parseFloat(filters.value.completion.max))
     }
 
     return filtered
@@ -94,13 +81,10 @@ const filteredPrograms = computed(() => {
 
 const hasActiveFilters = computed(() => {
     return filters.value.name ||
+           filters.value.type ||
            filters.value.status ||
-           filters.value.budget.min ||
-           filters.value.budget.max ||
            filters.value.completion.min ||
-           filters.value.completion.max ||
-           filters.value.date.start ||
-           filters.value.date.end
+           filters.value.completion.max
 })
 
 const selectedProgramsCount = computed(() => selectedPrograms.value.size)
@@ -113,22 +97,14 @@ const fetchPrograms = async () => {
 
 const handleCreateProgram = async () => {
     try {
-        if (!newProgram.value.name || !newProgram.value.description || !newProgram.value.budget || !newProgram.value.startDate || !newProgram.value.endDate) {
+        if (!newProgram.value.name || !newProgram.value.type || !newProgram.value.status) {
             notificationStore.showError('Please fill in all required fields before creating the program.')
-            return
-        }
-
-        if (new Date(newProgram.value.endDate) <= new Date(newProgram.value.startDate)) {
-            notificationStore.showError('End date must be after start date.')
             return
         }
 
         const programData = {
             ...newProgram.value,
-            budget: parseFloat(newProgram.value.budget),
-            completedPercentage: parseInt(newProgram.value.completedPercentage),
-            startDate: newProgram.value.startDate + 'T00:00:00',
-            endDate: newProgram.value.endDate + 'T00:00:00'
+            completion: parseInt(newProgram.value.completion)
         }
 
         const result = await programStore.createProgram(programData)
@@ -136,7 +112,7 @@ const handleCreateProgram = async () => {
         if (result.success) {
             showCreateModal.value = false
             resetForm()
-            notificationStore.showSuccess('Program created successfully! 🎉')
+            notificationStore.showSuccess('Program created successfully!')
         } else {
             notificationStore.showError(`Failed to create program: ${result.message}`)
         }
@@ -149,10 +125,9 @@ const handleCreateProgram = async () => {
 const clearFilters = () => {
     filters.value = {
         name: '',
+        type: '',
         status: '',
-        budget: { min: '', max: '' },
-        completion: { min: '', max: '' },
-        date: { start: '', end: '' }
+        completion: { min: '', max: '' }
     }
 }
 
@@ -174,21 +149,15 @@ const toggleProgramSelection = (programId) => {
     selectedPrograms.value = newSelectedSet
 }
 
-const formatCurrency = (amount) => {
-    if (!amount && amount !== 0) return '₱0.00'
-    return new Intl.NumberFormat('en-PH', {
-        style: 'currency',
-        currency: 'PHP'
-    }).format(amount)
-}
-
 const formatDate = (dateString) => {
     if (!dateString) return 'N/A'
     try {
         return new Date(dateString).toLocaleDateString('en-PH', {
             year: 'numeric',
             month: 'short',
-            day: 'numeric'
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
         })
     } catch (error) {
         return 'Invalid Date'
@@ -196,13 +165,32 @@ const formatDate = (dateString) => {
 }
 
 const getStatusColor = (status) => {
-    switch (status?.toLowerCase()) {
-        case 'ongoing':
+    switch (status?.toUpperCase()) {
+        case 'ACTIVE':
             return 'bg-blue-100 text-blue-800'
-        case 'completed':
+        case 'COMPLETED':
             return 'bg-green-100 text-green-800'
-        case 'planned':
+        case 'PENDING':
             return 'bg-yellow-100 text-yellow-800'
+        case 'INACTIVE':
+            return 'bg-gray-100 text-gray-800'
+        case 'CANCELLED':
+            return 'bg-red-100 text-red-800'
+        default:
+            return 'bg-gray-100 text-gray-800'
+    }
+}
+
+const getTypeColor = (type) => {
+    switch (type?.toUpperCase()) {
+        case 'TRAINING':
+            return 'bg-purple-100 text-purple-800'
+        case 'DISTRIBUTION':
+            return 'bg-green-100 text-green-800'
+        case 'MONITORING':
+            return 'bg-blue-100 text-blue-800'
+        case 'CONSULTATION':
+            return 'bg-orange-100 text-orange-800'
         default:
             return 'bg-gray-100 text-gray-800'
     }
@@ -217,13 +205,18 @@ const getCompletionColor = (percentage) => {
 const resetForm = () => {
     newProgram.value = {
         name: '',
-        description: '',
-        budget: '',
-        completedPercentage: 0,
-        status: 'planned',
-        startDate: new Date().toISOString().split('T')[0],
-        endDate: ''
+        type: 'TRAINING',
+        status: 'PENDING',
+        completion: 0,
+        notes: ''
     }
+}
+
+const navigateToProgramDetail = (programId) => {
+    router.push({
+        name: 'agriculturist-monitor-programs-detail',
+        params: { id: programId }
+    })
 }
 
 // Lifecycle
@@ -315,7 +308,7 @@ onMounted(async () => {
 
                     <!-- Filter Panel -->
                     <div v-if="showFilters" class="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                             <div>
                                 <label class="block text-xs font-medium text-gray-700 mb-1">Program Name</label>
                                 <input
@@ -326,29 +319,26 @@ onMounted(async () => {
                             </div>
 
                             <div>
-                                <label class="block text-xs font-medium text-gray-700 mb-1">Status</label>
-                                <select v-model="filters.status" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-green-500 focus:border-transparent">
-                                    <option value="">All Status</option>
-                                    <option value="planned">Planned</option>
-                                    <option value="ongoing">Ongoing</option>
-                                    <option value="completed">Completed</option>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Type</label>
+                                <select v-model="filters.type" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-green-500 focus:border-transparent">
+                                    <option value="">All Types</option>
+                                    <option value="TRAINING">Training</option>
+                                    <option value="DISTRIBUTION">Distribution</option>
+                                    <option value="MONITORING">Monitoring</option>
+                                    <option value="CONSULTATION">Consultation</option>
                                 </select>
                             </div>
 
                             <div>
-                                <label class="block text-xs font-medium text-gray-700 mb-1">Budget Range</label>
-                                <div class="flex gap-2">
-                                    <input
-                                        v-model="filters.budget.min"
-                                        type="number"
-                                        placeholder="Min"
-                                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-green-500 focus:border-transparent" />
-                                    <input
-                                        v-model="filters.budget.max"
-                                        type="number"
-                                        placeholder="Max"
-                                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-green-500 focus:border-transparent" />
-                                </div>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Status</label>
+                                <select v-model="filters.status" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-green-500 focus:border-transparent">
+                                    <option value="">All Status</option>
+                                    <option value="PENDING">Pending</option>
+                                    <option value="ACTIVE">Active</option>
+                                    <option value="COMPLETED">Completed</option>
+                                    <option value="INACTIVE">Inactive</option>
+                                    <option value="CANCELLED">Cancelled</option>
+                                </select>
                             </div>
 
                             <div>
@@ -367,20 +357,6 @@ onMounted(async () => {
                                         placeholder="Max %"
                                         min="0"
                                         max="100"
-                                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-green-500 focus:border-transparent" />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label class="block text-xs font-medium text-gray-700 mb-1">Date Range</label>
-                                <div class="flex gap-2">
-                                    <input
-                                        v-model="filters.date.start"
-                                        type="date"
-                                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-green-500 focus:border-transparent" />
-                                    <input
-                                        v-model="filters.date.end"
-                                        type="date"
                                         class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-green-500 focus:border-transparent" />
                                 </div>
                             </div>
@@ -407,17 +383,16 @@ onMounted(async () => {
                                             @change="toggleSelectAll" />
                                     </th>
                                     <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Program Name</th>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                                     <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Budget</th>
                                     <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Completion</th>
-                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start Date</th>
-                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">End Date</th>
-                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Beneficiaries</th>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Updated At</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
-                                <tr v-for="program in filteredPrograms" :key="program.id" class="hover:bg-gray-50">
-                                    <td class="px-4 py-4 whitespace-nowrap">
+                                <tr v-for="program in filteredPrograms" :key="program.id" class="hover:bg-gray-50 cursor-pointer transition-colors" @click="navigateToProgramDetail(program.id)">
+                                    <td class="px-4 py-4 whitespace-nowrap" @click.stop>
                                         <input
                                             type="checkbox"
                                             :checked="selectedPrograms.has(program.id)"
@@ -426,36 +401,33 @@ onMounted(async () => {
                                     </td>
                                     <td class="px-4 py-4 text-sm text-gray-900 max-w-xs">
                                         <div class="font-medium truncate" :title="program.name">{{ program.name }}</div>
-                                        <div class="text-xs text-gray-500 truncate" :title="program.description">{{ program.description }}</div>
+                                        <div class="text-xs text-gray-500 truncate" :title="program.notes">{{ program.notes || 'No notes' }}</div>
+                                    </td>
+                                    <td class="px-4 py-4 whitespace-nowrap">
+                                        <span :class="getTypeColor(program.type)" class="px-2 py-1 text-xs font-medium rounded-full capitalize">
+                                            {{ program.type }}
+                                        </span>
                                     </td>
                                     <td class="px-4 py-4 whitespace-nowrap">
                                         <span :class="getStatusColor(program.status)" class="px-2 py-1 text-xs font-medium rounded-full capitalize">
                                             {{ program.status }}
                                         </span>
                                     </td>
-                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                        {{ formatCurrency(program.budget) }}
-                                    </td>
                                     <td class="px-4 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
                                             <div class="w-16 bg-gray-200 rounded-full h-2 mr-2">
-                                                <div class="bg-green-600 h-2 rounded-full" :style="{ width: `${program.completedPercentage}%` }"></div>
+                                                <div class="bg-green-600 h-2 rounded-full" :style="{ width: `${program.completion}%` }"></div>
                                             </div>
-                                            <span :class="getCompletionColor(program.completedPercentage)" class="text-sm font-medium">
-                                                {{ program.completedPercentage }}%
+                                            <span :class="getCompletionColor(program.completion)" class="text-sm font-medium">
+                                                {{ program.completion }}%
                                             </span>
                                         </div>
                                     </td>
-                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatDate(program.startDate) }}</td>
-                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatDate(program.endDate) }}</td>
-                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                            {{ program.beneficiaries.length }}
-                                        </span>
-                                    </td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatDate(program.createdAt) }}</td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatDate(program.updatedAt) }}</td>
                                 </tr>
                                 <tr v-if="filteredPrograms.length === 0">
-                                    <td colspan="8" class="px-4 py-8 text-center text-gray-500">
+                                    <td colspan="7" class="px-4 py-8 text-center text-gray-500">
                                         No programs found
                                     </td>
                                 </tr>
@@ -468,23 +440,25 @@ onMounted(async () => {
                 <div class="md:hidden flex flex-col flex-1 min-h-0">
                     <div class="flex-1 overflow-y-auto">
                         <div class="divide-y divide-gray-200">
-                            <div v-for="program in filteredPrograms" :key="program.id" class="p-4">
+                            <div v-for="program in filteredPrograms" :key="program.id" class="p-4 cursor-pointer hover:bg-gray-50 transition-colors" @click="navigateToProgramDetail(program.id)">
                                 <div class="flex items-start justify-between mb-3">
                                     <div class="flex items-start gap-3 flex-1 min-w-0">
-                                        <input
-                                            type="checkbox"
-                                            :checked="selectedPrograms.has(program.id)"
-                                            class="mt-1 rounded border-gray-300 text-green-600 focus:ring-green-500 flex-shrink-0"
-                                            @change="toggleProgramSelection(program.id)" />
+                                        <div @click.stop>
+                                            <input
+                                                type="checkbox"
+                                                :checked="selectedPrograms.has(program.id)"
+                                                class="mt-1 rounded border-gray-300 text-green-600 focus:ring-green-500 flex-shrink-0"
+                                                @change="toggleProgramSelection(program.id)" />
+                                        </div>
                                         <div class="flex-1 min-w-0">
                                             <p class="text-sm font-medium text-gray-900 break-words">{{ program.name }}</p>
-                                            <p class="text-xs text-gray-600 mt-1 break-words">{{ program.description }}</p>
-                                            <div class="flex items-center mt-2 gap-2">
+                                            <p class="text-xs text-gray-600 mt-1 break-words">{{ program.notes || 'No notes' }}</p>
+                                            <div class="flex items-center mt-2 gap-2 flex-wrap">
+                                                <span :class="getTypeColor(program.type)" class="px-2 py-1 text-xs font-medium rounded-full capitalize">
+                                                    {{ program.type }}
+                                                </span>
                                                 <span :class="getStatusColor(program.status)" class="px-2 py-1 text-xs font-medium rounded-full capitalize">
                                                     {{ program.status }}
-                                                </span>
-                                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                                    {{ program.beneficiaries.length }} beneficiaries
                                                 </span>
                                             </div>
                                         </div>
@@ -492,23 +466,23 @@ onMounted(async () => {
                                 </div>
                                 <div class="ml-8 space-y-2">
                                     <div class="flex justify-between text-sm">
-                                        <span class="text-gray-600">Budget:</span>
-                                        <span class="font-medium">{{ formatCurrency(program.budget) }}</span>
-                                    </div>
-                                    <div class="flex justify-between text-sm">
                                         <span class="text-gray-600">Completion:</span>
                                         <div class="flex items-center">
                                             <div class="w-12 bg-gray-200 rounded-full h-2 mr-2">
-                                                <div class="bg-green-600 h-2 rounded-full" :style="{ width: `${program.completedPercentage}%` }"></div>
+                                                <div class="bg-green-600 h-2 rounded-full" :style="{ width: `${program.completion}%` }"></div>
                                             </div>
-                                            <span :class="getCompletionColor(program.completedPercentage)" class="font-medium">
-                                                {{ program.completedPercentage }}%
+                                            <span :class="getCompletionColor(program.completion)" class="font-medium">
+                                                {{ program.completion }}%
                                             </span>
                                         </div>
                                     </div>
                                     <div class="flex justify-between text-sm">
-                                        <span class="text-gray-600">Duration:</span>
-                                        <span class="font-medium">{{ formatDate(program.startDate) }} - {{ formatDate(program.endDate) }}</span>
+                                        <span class="text-gray-600">Created:</span>
+                                        <span class="font-medium">{{ formatDate(program.createdAt) }}</span>
+                                    </div>
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-gray-600">Updated:</span>
+                                        <span class="font-medium">{{ formatDate(program.updatedAt) }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -539,7 +513,7 @@ onMounted(async () => {
                 <!-- Modal Body -->
                 <div class="px-6 py-6">
                     <form @submit.prevent="handleCreateProgram" class="space-y-6">
-                        <!-- Row 1: Program Name and Status -->
+                        <!-- Row 1: Program Name and Type -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label for="programName" class="block text-sm font-medium text-gray-700 mb-2">
@@ -555,6 +529,25 @@ onMounted(async () => {
                             </div>
 
                             <div>
+                                <label for="type" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Program Type <span class="text-red-500">*</span>
+                                </label>
+                                <select
+                                    id="type"
+                                    v-model="newProgram.type"
+                                    required
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                                    <option value="TRAINING">Training</option>
+                                    <option value="DISTRIBUTION">Distribution</option>
+                                    <option value="MONITORING">Monitoring</option>
+                                    <option value="CONSULTATION">Consultation</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Row 2: Status and Completion Percentage -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
                                 <label for="status" class="block text-sm font-medium text-gray-700 mb-2">
                                     Status <span class="text-red-500">*</span>
                                 </label>
@@ -563,37 +556,21 @@ onMounted(async () => {
                                     v-model="newProgram.status"
                                     required
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent">
-                                    <option value="planned">Planned</option>
-                                    <option value="ongoing">Ongoing</option>
-                                    <option value="completed">Completed</option>
+                                    <option value="PENDING">Pending</option>
+                                    <option value="ACTIVE">Active</option>
+                                    <option value="COMPLETED">Completed</option>
+                                    <option value="INACTIVE">Inactive</option>
+                                    <option value="CANCELLED">Cancelled</option>
                                 </select>
                             </div>
-                        </div>
-
-                        <!-- Row 2: Budget and Completion Percentage -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label for="budget" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Budget (₱) <span class="text-red-500">*</span>
-                                </label>
-                                <input
-                                    id="budget"
-                                    v-model="newProgram.budget"
-                                    type="number"
-                                    step="0.01"
-                                    min="0"
-                                    required
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                                    placeholder="Enter budget amount" />
-                            </div>
 
                             <div>
-                                <label for="completedPercentage" class="block text-sm font-medium text-gray-700 mb-2">
+                                <label for="completion" class="block text-sm font-medium text-gray-700 mb-2">
                                     Completion Percentage
                                 </label>
                                 <input
-                                    id="completedPercentage"
-                                    v-model="newProgram.completedPercentage"
+                                    id="completion"
+                                    v-model="newProgram.completion"
                                     type="number"
                                     min="0"
                                     max="100"
@@ -602,45 +579,17 @@ onMounted(async () => {
                             </div>
                         </div>
 
-                        <!-- Row 3: Start Date and End Date -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label for="startDate" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Start Date <span class="text-red-500">*</span>
-                                </label>
-                                <input
-                                    id="startDate"
-                                    v-model="newProgram.startDate"
-                                    type="date"
-                                    required
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent" />
-                            </div>
-
-                            <div>
-                                <label for="endDate" class="block text-sm font-medium text-gray-700 mb-2">
-                                    End Date <span class="text-red-500">*</span>
-                                </label>
-                                <input
-                                    id="endDate"
-                                    v-model="newProgram.endDate"
-                                    type="date"
-                                    required
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent" />
-                            </div>
-                        </div>
-
-                        <!-- Row 4: Description -->
+                        <!-- Row 3: Notes -->
                         <div>
-                            <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
-                                Description <span class="text-red-500">*</span>
+                            <label for="notes" class="block text-sm font-medium text-gray-700 mb-2">
+                                Notes
                             </label>
                             <textarea
-                                id="description"
-                                v-model="newProgram.description"
+                                id="notes"
+                                v-model="newProgram.notes"
                                 rows="4"
-                                required
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                                placeholder="Enter program description"></textarea>
+                                placeholder="Enter program notes (optional)"></textarea>
                         </div>
                     </form>
                 </div>

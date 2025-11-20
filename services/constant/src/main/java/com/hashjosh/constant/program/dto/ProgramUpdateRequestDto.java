@@ -1,16 +1,13 @@
 package com.hashjosh.constant.program.dto;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.hashjosh.constant.program.enums.ProgramStatus;
 import com.hashjosh.constant.program.enums.ProgramType;
-import lombok.Builder;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
-@Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class ProgramUpdateRequestDto {
     private String name;

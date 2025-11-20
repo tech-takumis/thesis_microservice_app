@@ -8,6 +8,15 @@ This is a Flutter mobile application built for a thesis microservices architectu
 
 ## Development Commands
 
+### Setup and Installation
+```bash
+# Install dependencies (run after cloning or updating pubspec.yaml)
+flutter pub get
+
+# Generate Hive type adapters (required before first run)
+flutter pub run build_runner build --delete-conflicting-outputs
+```
+
 ### Running the Application
 ```bash
 # Run on emulator/device (debug mode)
@@ -19,6 +28,7 @@ flutter run -d <device_id>
 
 # Hot reload: Press 'r' in terminal
 # Hot restart: Press 'R' in terminal
+# Quit: Press 'q' in terminal
 ```
 
 ### Building
@@ -132,7 +142,13 @@ final authApi = getIt<AuthApiService>();
 final appApi = getIt<ApplicationApiService>();
 ```
 
-**Important**: `StorageService` uses `registerSingletonAsync` and must be awaited during initialization. `AuthApiService` is attached to `StorageService` after registration to avoid circular dependencies.
+**Important**:
+- `StorageService` uses `registerSingletonAsync` and must be awaited during initialization
+- `AuthApiService` is attached to `StorageService` after registration to avoid circular dependencies
+- Different Dio instances are created for different services to isolate interceptor configurations:
+  - `authDio` - Used by `AuthApiService`, `PostApiService`, `NotificationApiService` (with auth interceptor)
+  - `appDio` - Used by `ApplicationApiService`
+  - `psgcDio` - Used by `PSGCService` (external API)
 
 ### Routing (go_router)
 
@@ -158,6 +174,7 @@ All API services use `http://localhost:9001/api/v1` as the base URL. Update this
 | `NotificationApiService` | In-app notifications | `lib/data/services/notification_api.dart` |
 | `WebSocketService` | STOMP WebSocket for real-time updates | `lib/data/services/websocket.dart` |
 | `StorageService` | Local Hive storage for tokens/credentials | `lib/data/services/storage_service.dart` |
+| `LocalNotificationService` | Phone notifications (notification tray) | `lib/data/services/local_notification_service.dart` |
 | `PSGCService` | Philippine geographical data (provinces, cities, barangays) | `lib/data/services/psgc_service.dart` |
 | `LocationService` | GPS location fetching | `lib/data/services/location_service.dart` |
 | `DocumentService` | File picking and image processing | `lib/data/services/document_service.dart` |
@@ -174,9 +191,37 @@ All API services use `http://localhost:9001/api/v1` as the base URL. Update this
 - **Protocol**: STOMP over WebSocket
 - **URL**: `ws://localhost:9001/ws`
 - **Subscriptions**:
-  - `/user/queue/private.messages` - Private messages
-  - `/user/queue/application.notifications` - Application status updates
+  - `/user/queue/private.messages` - Private messages (shows local notification)
+  - `/user/queue/application.notifications` - Application status updates (shows local notification)
 - **Authentication**: Bearer token passed during connection
+
+### Local Notifications (Phone Notification Tray)
+
+The app uses `flutter_local_notifications` to show notifications in the phone's notification tray:
+
+- **Initialization**: `LocalNotificationService` is initialized during app startup in `injection_container.dart`
+- **Permissions**: Automatically requests notification permissions on Android 13+ (POST_NOTIFICATIONS)
+- **Notification Channel**: `application_notifications` channel with high priority
+- **Triggers**: Automatically shows notifications when:
+  - WebSocket receives application notifications (`/user/queue/application.notifications`)
+  - WebSocket receives private messages (`/user/queue/private.messages`)
+- **Works when app is closed**: Notifications appear even when the app is in background or closed (as long as WebSocket connection is active)
+- **Configuration**: AndroidManifest.xml includes required permissions and receivers for boot completion and scheduled notifications
+
+## App Initialization Sequence
+
+The app follows this initialization sequence in `main.dart`:
+
+1. **Flutter Binding**: `WidgetsFlutterBinding.ensureInitialized()`
+2. **Dependency Setup**: `setupDependencies()` from `injection_container.dart`
+   - Registers Dio instances
+   - Registers and awaits `StorageService.init()` (loads tokens from Hive)
+   - Registers `AuthApiService` and attaches it to `StorageService`
+   - Registers all other API services and controllers
+3. **Hive Initialization**: `Hive.initFlutter()` and adapter registration
+4. **App Launch**: `ProviderScope` wraps `AppEntry` widget
+5. **Auth Check**: `authProvider` validates tokens and determines initial route
+6. **Router Setup**: `goRouterProvider` creates router with appropriate initial location
 
 ## Authentication Flow
 
@@ -252,7 +297,25 @@ Located in `lib/data/models/`:
 - `AuthApiService` needs `StorageService` for token management
 - `StorageService` needs `AuthApiService` for token refresh
 
-**Solution**: Register `StorageService` first without `AuthApiService`, then attach it later via `attachAuthApiService()`.
+**Solution** (implemented in `injection_container.dart`):
+```dart
+// 1. Register StorageService first (async) without AuthApiService
+getIt.registerSingletonAsync<StorageService>(() async {
+  final storageService = StorageService();
+  await storageService.init();
+  return storageService;
+});
+
+// 2. Wait for StorageService to be ready
+final storage = await getIt.getAsync<StorageService>();
+
+// 3. Create and register AuthApiService
+final authApi = AuthApiService(authDio, baseUrl: '...', storageService: storage);
+getIt.registerSingleton<AuthApiService>(authApi);
+
+// 4. Attach AuthApiService to StorageService
+await storage.attachAuthApiService(authApi);
+```
 
 ### State Management Fragmentation
 
@@ -295,6 +358,17 @@ This app assumes the backend provides:
 4. STOMP WebSocket endpoint at `/ws`
 5. Philippine PSGC data for location selection
 
+## Key Pages and Features
+
+The app includes these main screens (in `lib/presentation/pages/`):
+- `login_page.dart` / `multi_step_register_page.dart` - Authentication
+- `home_page.dart` - Main feed with social posts
+- `application_page.dart` / `multi_step_application_page.dart` - Application forms
+- `application_tracker_page.dart` / `application_detail_page.dart` - Application status
+- `contact_department_page.dart` - Messaging interface
+- `notification_page.dart` - In-app notifications
+- `profile_page.dart` - User profile
+
 ## Troubleshooting
 
 ### "Hive box not found" error
@@ -308,3 +382,10 @@ Verify backend is running at `http://localhost:9001` and WebSocket endpoint is a
 
 ### Location permission denied
 Check `android/app/src/main/AndroidManifest.xml` and `ios/Runner/Info.plist` for location permissions.
+
+### Hot reload not working after changing models
+Run `flutter pub run build_runner build --delete-conflicting-outputs` to regenerate Hive adapters, then hot restart (press 'R').
+
+### Notifications not showing on Android 13+
+Ensure notification permissions are granted. The app requests permissions automatically, but if denied, you need to manually enable them in:
+Settings > Apps > mobile > Notifications

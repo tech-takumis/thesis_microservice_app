@@ -13,6 +13,7 @@ import 'data/services/message_service.dart';
 import 'data/services/websocket.dart';
 import 'data/services/notification_api.dart';
 import 'data/services/notification_service.dart';
+import 'data/services/local_notification_service.dart';
 
 final getIt = GetIt.instance;
 
@@ -73,6 +74,12 @@ Future<void> setupDependencies() async {
   getIt.registerLazySingleton<DocumentService>(() => DocumentService());
   getIt.registerLazySingleton<MessageService>(() => MessageService());
   getIt.registerLazySingleton<NotificationService>(() => NotificationService());
+
+  // Local notification service
+  final localNotificationService = LocalNotificationService();
+  await localNotificationService.initialize();
+  await localNotificationService.createNotificationChannel();
+  getIt.registerSingleton<LocalNotificationService>(localNotificationService);
 
   // Controllers
   getIt.registerSingleton<ApplicationController>(

@@ -38,9 +38,9 @@ npm run tier:write
 
 Copy `.env.example` to `.env` and configure:
 - `VITE_APP_NAME`: Application name
-- `VITE_PUBLIC_BACKEND_URL`: Backend API URL (example default: http://localhost:8000, but configured to http://localhost:9001 in axios.js)
+- `VITE_PUBLIC_BACKEND_URL`: Backend API URL (defaults to `http://localhost:9001` in `src/lib/axios.js:4`)
 
-The application expects a Laravel backend with Sanctum authentication at the configured backend URL.
+The application expects a backend with Sanctum authentication at the configured backend URL. Note: The `.env.example` shows `http://localhost:8000`, but the actual axios configuration defaults to `http://localhost:9001` if not set.
 
 ## Architecture
 
@@ -56,10 +56,11 @@ The application expects a Laravel backend with Sanctum authentication at the con
 
 **Auth Store** (`src/stores/auth.js`):
 - Manages user data, roles, and permissions
-- Persisted to localStorage via `pinia-plugin-persistedstate`
+- **Only persisted store** - Uses `pinia-plugin-persistedstate` to save to localStorage
 - Contains role hierarchy and permission maps
 - Provides computed properties: `isAuthenticate`, `userRoles`, `userPermissions`, `userPrimaryRole`
-- WebSocket token stored in localStorage for real-time features
+- WebSocket token stored separately in localStorage for real-time features
+- All other stores are session-based and cleared on page refresh
 
 **Authentication Flow**:
 1. Login (`src/stores/auth.js:62-98`):
@@ -103,22 +104,37 @@ meta: {
 ### State Management (Pinia)
 
 Stores in `src/stores/`:
-- `auth.js`: Authentication, roles, permissions (persisted)
-- `authorization.js`: Authorization helpers
+- `auth.js`: Authentication, roles, permissions (persisted to localStorage)
+- `authorization.js`: Composite store combining role and permission stores
+- `toast.js`: Toast notification system with auto-dismiss
 - `claim.js`: Claims data
 - `inspection.js`: Inspection data
 - `insurance.js`: Insurance application data
 - `application.js`: Application management
-- `applications.js`: Multiple applications handling
 - `user.js`: User management
 - `role.js`: Role management
 - `permission.js`: Permission management
+- `policy.js`: Policy management
+- `ai.js`: AI-related functionality
 
 **Store Configuration**:
 - All stores use Composition API pattern (`defineStore` with setup function)
-- Auth store is persisted to localStorage via `pinia-plugin-persistedstate` (`src/main.js:13`)
+- **Only auth store is persisted** to localStorage via `pinia-plugin-persistedstate` (`src/main.js:13`)
 - All stores have access to Vue Router via plugin injection (`src/main.js:16-18`)
 - HMR (Hot Module Replacement) enabled for stores in development
+- Authorization store uses composite pattern, combining role and permission stores
+
+**Toast Notification System** (`src/stores/toast.js`):
+- Provides centralized notification management
+- Methods: `success()`, `error()`, `warning()`, `info()`
+- Auto-dismiss with configurable duration
+- Usage example:
+```javascript
+import { useToastStore } from '@/stores/toast'
+const toast = useToastStore()
+toast.success('Operation completed', 3000)
+toast.error('Something went wrong', 4000)
+```
 
 ### Navigation System
 
@@ -133,11 +149,12 @@ Navigation is rendered via `SidebarNavigation.vue` component within `Authenticat
 
 **Axios Instance** (`src/lib/axios.js`):
 - Base URL from environment variable or defaults to `http://localhost:9001`
-- Credentials mode enabled for cookie-based auth
-- Request interceptor: Can add bearer tokens if needed
-- Response interceptor:
-  - 401 errors redirect to login (`src/lib/axios.js:34`)
-  - 403 errors log access denial (`src/lib/axios.js:37-39`)
+- Credentials mode enabled (`withCredentials: true`) for cookie-based auth
+- Request interceptor: Configured for adding auth tokens if needed (currently unused)
+- Response interceptor handles global error scenarios:
+  - **401 Unauthorized**: Automatically redirects to login page (`src/lib/axios.js:34`)
+  - **403 Forbidden**: Logs access denial error to console (`src/lib/axios.js:37-39`)
+  - All other errors are rejected for component-level handling
 
 ### Component Organization
 
@@ -227,7 +244,9 @@ if (import.meta.hot) {
 
 **Important Notes**:
 - All stores have access to Vue Router via `this.router` (injected in `src/main.js:16-18`)
-- Auth store is the only persisted store (configured in auth store definition)
+- **Only auth store is persisted** (configured in auth store definition with `pinia-plugin-persistedstate`)
+- All other stores are session-based and will reset on page refresh
+- Always enable HMR for stores in development by adding the HMR acceptance block
 
 ### Accessing Current User Role
 
@@ -255,6 +274,21 @@ Available data types for dynamic application forms (`src/lib/navigation.js:99`):
 - `ENUM`: Dropdown/select fields
 - `GEOLOCATION`: Geographic location fields
 
+## Design System
+
+**IMPORTANT**: This project uses a consistent design system documented in `DESIGN_SYSTEM.md`. All new pages and components **MUST** follow the design patterns defined there.
+
+Key design principles:
+- **Color Palette**: Slate colors for text/backgrounds, Blue for primary actions
+- **Typography**: Font-light for titles, font-medium for buttons/headings, font-semibold for labels
+- **Cards**: `bg-white/70 backdrop-blur-sm rounded-2xl border border-slate-200/60 shadow-sm`
+- **Inputs**: `rounded-xl border-2 border-slate-200 px-4 py-3` with blue focus states
+- **Buttons**: `rounded-xl bg-blue-500 hover:bg-blue-600 hover:shadow-lg hover:shadow-blue-500/30`
+- **Spacing**: `space-y-6` for sections, `gap-x-6 gap-y-5` for forms
+- **Transitions**: `transition-all duration-200` for all interactive elements
+
+Always reference `DESIGN_SYSTEM.md` when creating new components or pages to ensure visual consistency.
+
 ## Technology Stack
 
 - **Framework**: Vue.js 3 with Composition API
@@ -263,7 +297,7 @@ Available data types for dynamic application forms (`src/lib/navigation.js:99`):
 - **Routing**: Vue Router 4.1
 - **HTTP Client**: Axios 1.3
 - **Styling**: Tailwind CSS 3.2
-- **Icons**: lucide-vue-next
+- **Icons**: lucide-vue-next, @heroicons/vue
 - **Charts**: Chart.js 4.5 + vue-chartjs 5.3
 - **Forms**: @tailwindcss/forms plugin
 

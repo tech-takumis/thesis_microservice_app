@@ -22,6 +22,8 @@ import java.util.UUID;
 public class ApplicationResponseDto{
     UUID id;
     UUID applicationTypeId;
+    String applicationTypeName;
+    String coordinates;
     List<String> fileUploads;
     @JsonProperty("dynamicFields")
     JsonNode jsonDynamicFields;

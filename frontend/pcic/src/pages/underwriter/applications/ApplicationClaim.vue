@@ -1,75 +1,72 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100/50">
-    <div class="max-w-7xl mx-auto px-8 py-8 sm:px-12 lg:px-16">
-      <!-- Breadcrumb Navigation -->
-      <nav class="flex mb-8" aria-label="Breadcrumb">
-        <ol class="flex items-center space-x-4">
-          <li>
-            <div>
+  <AuthenticatedLayout
+    :navigation="underwriterNavigation"
+    role-title="Underwriter Portal"
+    page-title="Claim Processing"
+  >
+    <template #header>
+      <div class="space-y-4">
+        <!-- Breadcrumb Navigation -->
+        <nav class="flex" aria-label="Breadcrumb">
+          <ol class="flex items-center space-x-1.5">
+            <li>
               <router-link
                 :to="{ name: 'underwriter-dashboard' }"
-                class="text-gray-400 hover:text-gray-500"
+                class="text-slate-400 hover:text-slate-700 transition-colors duration-200"
               >
-                <HomeIcon class="flex-shrink-0 h-5 w-5" />
+                <HomeIcon class="h-4 w-4" />
                 <span class="sr-only">Dashboard</span>
               </router-link>
-            </div>
-          </li>
-          <li>
-            <div class="flex items-center">
-              <ChevronRightIcon class="flex-shrink-0 h-5 w-5 text-gray-400" />
+            </li>
+            <li class="flex items-center">
+              <ChevronRightIcon class="h-3 w-3 text-slate-300 mx-1" />
               <button
-                class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700"
+                class="text-xs font-medium text-slate-500 hover:text-slate-700 transition-colors duration-200"
                 @click="navigateToApplicationList"
               >
                 Applications
               </button>
-            </div>
-          </li>
-          <li>
-            <div class="flex items-center">
-              <ChevronRightIcon class="flex-shrink-0 h-5 w-5 text-gray-400" />
+            </li>
+            <li class="flex items-center">
+              <ChevronRightIcon class="h-3 w-3 text-slate-300 mx-1" />
               <button
                 @click="navigateToApplicationDetail"
-                class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700"
+                class="text-xs font-medium text-slate-500 hover:text-slate-700 transition-colors duration-200"
               >
                 Application Details
               </button>
-            </div>
-          </li>
-          <li>
-            <div class="flex items-center">
-              <ChevronRightIcon class="flex-shrink-0 h-5 w-5 text-gray-400" />
-              <span class="ml-4 text-sm font-medium text-gray-900">
+            </li>
+            <li class="flex items-center">
+              <ChevronRightIcon class="h-3 w-3 text-slate-300 mx-1" />
+              <span class="text-xs font-medium text-slate-900">
                 Claim Processing
               </span>
-            </div>
-          </li>
-        </ol>
-      </nav>
+            </li>
+          </ol>
+        </nav>
 
-      <!-- Page Header -->
-      <div class="mb-8">
+        <!-- Page Header -->
         <div class="flex items-start justify-between">
           <div>
             <div class="flex items-center gap-3">
-              <h1 class="text-3xl font-bold text-slate-800">
+              <h1 class="text-2xl font-light text-slate-900 tracking-tight">
                 {{ getPageTitle() }}
               </h1>
               <button
                 @click="openCoverageModal"
-                class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-all duration-200"
+                class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50/50 rounded-full transition-all duration-200"
                 title="View Insurance Coverage Information"
               >
-                <QuestionMarkCircleIcon class="h-6 w-6" />
+                <QuestionMarkCircleIcon class="h-5 w-5" />
               </button>
             </div>
-            <p class="text-sm text-slate-500 mt-2">
+            <p class="mt-1 text-sm text-slate-500">
               {{ getPageDescription() }}
             </p>
           </div>
         </div>
       </div>
+    </template>
 
       <!-- Loading State -->
       <div v-if="loading" class="flex justify-center items-center py-20">
@@ -880,8 +877,7 @@
           </div>
         </div>
       </Transition>
-    </div>
-  </div>
+  </AuthenticatedLayout>
 </template>
 
 <script setup>
@@ -890,6 +886,8 @@ import { useRoute, useRouter } from 'vue-router'
 import { useInspectionStore } from '@/stores/inspection'
 import { useClaimStore } from '@/stores/claim'
 import { useToastStore } from '@/stores/toast'
+import { UNDERWRITER_NAVIGATION } from '@/lib/navigation'
+import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
 import {
   HomeIcon,
   ChevronRightIcon,
@@ -906,6 +904,7 @@ const router = useRouter()
 const inspectionStore = useInspectionStore()
 const claimStore = useClaimStore()
 const toastStore = useToastStore()
+const underwriterNavigation = UNDERWRITER_NAVIGATION
 
 // State
 const inspectionData = ref(null)

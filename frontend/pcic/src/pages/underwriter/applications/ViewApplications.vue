@@ -4,75 +4,56 @@
         role-title="Underwriter Portal"
         page-title="All Applications">
         <template #header>
-            <div class="flex items-center justify-between w-full">
-                <!-- Left: Logo + Title -->
-                <div class="flex items-center space-x-3">
-                    <!-- Title -->
-                    <div>
-                        <h1 class="text-2xl font-light text-slate-900 tracking-tight">
-                            All Applications
-                        </h1>
-                        <p class="text-sm text-slate-600">
-                            Review and manage crop insurance applications
-                        </p>
-                    </div>
+            <div class="flex items-start justify-between gap-6">
+                <!-- Left: Title Section -->
+                <div>
+                    <h1 class="text-2xl font-light text-slate-900 tracking-tight">
+                        All Applications
+                    </h1>
+                    <p class="mt-1 text-sm text-slate-500">
+                        Review and manage crop insurance applications
+                    </p>
                 </div>
-            </div>
-        </template>
 
-        <div class="flex flex-col h-full">
-            <!-- Controls Section -->
-            <div class="flex-shrink-0 space-y-4 mb-4">
-                <div class="flex items-center justify-between space-x-4">
-                    <!-- Left: Search -->
-                    <div class="relative w-64">
+                <!-- Right: Search and Filter Controls -->
+                <div class="flex items-center gap-3">
+                    <!-- Search -->
+                    <div class="relative w-80">
                         <Search
                             class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
                         <input
                             v-model="searchQuery"
                             type="text"
                             placeholder="Search by name, crop, location, ID..."
-                            class="w-full pl-9 pr-4 py-2 rounded-lg border-2 border-slate-200 bg-white text-slate-900 text-sm font-medium placeholder:text-slate-400 focus:border-blue-400 focus:bg-blue-50/30 focus:outline-none focus:ring-4 focus:ring-blue-400/10 hover:border-slate-300 transition-all duration-200" />
+                            class="w-full pl-9 pr-4 py-2 rounded-xl border-2 border-slate-200 bg-white text-slate-900 text-sm font-medium placeholder:text-slate-400 focus:border-blue-400 focus:bg-blue-50/30 focus:outline-none focus:ring-4 focus:ring-blue-400/10 hover:border-slate-300 transition-all duration-200" />
                     </div>
 
-                    <!-- Right: Filter Toggle + Refresh -->
-                    <div class="flex items-center space-x-3">
-                        <!-- Filter Toggle Button -->
-                        <button
+                    <!-- Filter Toggle -->
+                    <button
+                        :class="[
+                            'inline-flex items-center px-4 py-2 border-2 rounded-xl text-sm font-medium transition-all duration-200 flex-shrink-0',
+                            showFilters
+                                ? 'border-blue-400 bg-blue-50 text-blue-700'
+                                : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300',
+                        ]"
+                        @click="toggleFilters">
+                        <Filter class="h-4 w-4 mr-2" />
+                        Filters
+                        <ChevronDown
                             :class="[
-                                'inline-flex items-center px-4 py-2 border-2 rounded-xl text-sm font-medium transition-all duration-200',
-                                showFilters
-                                    ? 'border-blue-400 bg-blue-50 text-blue-700'
-                                    : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300',
-                            ]"
-                            @click="toggleFilters">
-                            <Filter class="h-4 w-4 mr-2" />
-                            Filters
-                            <ChevronDown
-                                :class="[
-                                    'h-4 w-4 ml-2 transition-transform duration-200',
-                                    showFilters ? 'rotate-180' : '',
-                                ]" />
-                        </button>
-
-                        <!-- Refresh Button -->
-                        <button
-                            :disabled="loading"
-                            class="inline-flex items-center px-4 py-2 border border-transparent rounded-xl text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 hover:shadow-lg hover:shadow-blue-500/30 disabled:opacity-50 disabled:hover:shadow-none transition-all duration-200"
-                            @click="refreshApplications">
-                            <RefreshCw
-                                :class="[
-                                    'h-4 w-4 mr-2',
-                                    loading ? 'animate-spin' : '',
-                                ]" />
-                            Refresh
-                        </button>
-                    </div>
+                                'h-4 w-4 ml-2 transition-transform duration-200',
+                                showFilters ? 'rotate-180' : '',
+                            ]" />
+                    </button>
                 </div>
+            </div>
+        </template>
 
+        <div class="flex flex-col h-[calc(100vh-12rem)]">
+            <!-- Controls Section -->
+            <div v-if="showFilters" class="flex-shrink-0 mb-4">
                 <!-- Advanced Filters Panel -->
                 <div
-                    v-if="showFilters"
                     class="bg-slate-50/50 border border-slate-200/60 rounded-2xl p-5 backdrop-blur-sm">
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <!-- Status Filter -->
@@ -165,8 +146,8 @@
                 </div>
             </div>
 
-            <!-- Applications List - Takes remaining space -->
-            <div class="bg-white/70 backdrop-blur-sm rounded-2xl border border-slate-200/60 shadow-sm flex flex-col flex-1 min-h-0 overflow-hidden">
+            <!-- Applications List - Takes all remaining space -->
+            <div class="bg-white/70 backdrop-blur-sm rounded-2xl border border-slate-200/60 shadow-sm flex flex-col flex-1 overflow-hidden">
                 <!-- Header -->
                 <div
                     class="flex items-center justify-between px-6 py-4 border-b border-slate-100/80 flex-shrink-0">
@@ -194,11 +175,10 @@
                 </div>
 
                 <!-- Table Container - Scrollable -->
-                <div class="flex-1 min-h-0 overflow-hidden">
-                    <div class="overflow-y-auto h-full">
-                        <table class="min-w-full">
-                            <thead
-                                class="bg-slate-50 border-b border-slate-200 sticky top-0 z-10">
+                <div class="flex-1 overflow-auto">
+                    <table class="min-w-full">
+                        <thead
+                            class="bg-slate-50 border-b border-slate-200 sticky top-0 z-10">
                                 <tr>
                                     <th class="px-6 py-3 text-left">
                                         <input
@@ -359,9 +339,8 @@
                                 </td>
                             </tr>
                         </template>
-                            </tbody>
-                        </table>
-                    </div>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>

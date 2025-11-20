@@ -1,23 +1,33 @@
 <template>
   <div class="flex flex-col h-full w-full bg-green-600">
     <!-- Logo / Header -->
-    <div class="flex flex-col items-center py-4 px-4 bg-green-600 border-b border-green-700 flex-shrink-0">
+    <div class="relative flex flex-col items-center py-4 px-4 bg-green-600 border-b border-green-700 flex-shrink-0">
+      <!-- Toggle Button (Top Right when expanded, Center when collapsed) -->
+      <button
+        @click="$emit('toggle-sidebar')"
+        :class="[
+          'p-2 rounded-lg text-white hover:bg-green-700 transition-all duration-200',
+          isCollapsed
+            ? 'mb-3'
+            : 'absolute top-3 right-3'
+        ]"
+        :title="isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'"
+      >
+        <Menu v-if="isCollapsed" class="h-5 w-5" />
+        <X v-else class="h-5 w-5" />
+      </button>
+
       <!-- Logo -->
-      <img src="@/assets/pcic.svg" alt="PCIC Logo" class="h-12 w-10 mb-2" />
+      <img src="@/assets/pcic.svg" alt="PCIC Logo" :class="[isCollapsed ? 'h-10 w-8 mb-2' : 'h-12 w-10 mb-2']" />
 
-      <!-- Title -->
-      <h1 class="text-2xl font-bold text-white leading-tight">PCIC</h1>
-
-      <!-- Role Badge -->
-      <span class="inline-block bg-yellow-100 text-yellow-800 text-xs font-semibold px-3 py-1 rounded-full mt-2">
-        {{ roleTitle }}
-      </span>
+      <!-- Title (Hidden when collapsed) -->
+      <h1 v-if="!isCollapsed" class="text-2xl font-bold text-white leading-tight">PCIC</h1>
     </div>
 
     <!-- Navigation -->
     <nav
       ref="navMenu"
-      class="flex-1 px-3 py-4 space-y-1 bg-green-600 overflow-y-auto min-h-0"
+      class="flex-1 px-4 py-4 space-y-1 bg-green-600 overflow-y-auto min-h-0"
     >
       <template v-for="item in navigation" :key="item.name || item.title">
         <!-- Single Navigation Item -->
@@ -28,8 +38,10 @@
             isActive(item.to, { exact: item.exact })
               ? 'bg-white text-green-700 font-semibold shadow-sm'
               : 'text-white hover:bg-green-700 hover:text-white',
-            'group flex items-center px-3 py-2.5 text-sm rounded-md transition-colors duration-200'
+            'group flex items-center px-3 py-2.5 text-sm rounded-md transition-colors duration-200',
+            isCollapsed ? 'justify-center' : ''
           ]"
+          :title="isCollapsed ? item.title || item.name : ''"
         >
           <component
             :is="item.icon"
@@ -37,38 +49,55 @@
               isActive(item.to, { exact: item.exact })
                 ? 'text-green-700'
                 : 'text-white group-hover:text-yellow-300',
-              'mr-3 h-5 w-5 transition-colors duration-200'
+              'h-5 w-5 transition-colors duration-200',
+              isCollapsed ? '' : 'mr-3'
             ]"
           />
-          {{ item.title || item.name }}
+          <span v-if="!isCollapsed">{{ item.title || item.name }}</span>
         </router-link>
 
         <!-- Disabled Item -->
         <span
           v-else-if="!item.children && !item.to"
-          class="group flex items-center px-3 py-2.5 text-sm rounded-md transition-colors duration-200 text-green-100 opacity-50 cursor-not-allowed"
+          :class="[
+            'group flex items-center px-3 py-2.5 text-sm rounded-md transition-colors duration-200 text-green-100 opacity-50 cursor-not-allowed',
+            isCollapsed ? 'justify-center' : ''
+          ]"
+          :title="isCollapsed ? item.title || item.name : ''"
         >
-          <component :is="item.icon" class="mr-3 h-5 w-5 text-green-200" />
-          {{ item.title || item.name }}
+          <component
+            :is="item.icon"
+            :class="[
+              'h-5 w-5 text-green-200',
+              isCollapsed ? '' : 'mr-3'
+            ]"
+          />
+          <span v-if="!isCollapsed">{{ item.title || item.name }}</span>
         </span>
 
         <!-- Navigation Group with Children -->
         <div v-else class="relative">
           <button
-            @click.stop="toggleGroup(item.title || item.name)"
+            @click.stop="handleGroupClick(item)"
             :class="[
               'text-white hover:bg-green-700 hover:text-white',
-              'group w-full flex items-center justify-between px-3 py-2.5 text-sm rounded-md transition-colors duration-200'
+              'group w-full flex items-center justify-between px-3 py-2.5 text-sm rounded-md transition-colors duration-200',
+              isCollapsed ? 'justify-center' : ''
             ]"
+            :title="isCollapsed ? item.title || item.name : ''"
           >
-            <div class="flex items-center">
+            <div :class="['flex items-center', isCollapsed ? '' : '']">
               <component
                 :is="item.icon"
-                class="text-white group-hover:text-yellow-300 mr-3 h-5 w-5 transition-colors duration-200"
+                :class="[
+                  'text-white group-hover:text-yellow-300 h-5 w-5 transition-colors duration-200',
+                  isCollapsed ? '' : 'mr-3'
+                ]"
               />
-              {{ item.title || item.name }}
+              <span v-if="!isCollapsed">{{ item.title || item.name }}</span>
             </div>
             <ChevronDown
+              v-if="!isCollapsed"
               :class="[
                 expandedGroups.includes(item.title || item.name)
                   ? 'rotate-180 text-yellow-300'
@@ -78,8 +107,9 @@
             />
           </button>
 
-          <!-- Submenu -->
+          <!-- Submenu (Hidden when collapsed) -->
           <div
+            v-if="!isCollapsed"
             v-show="expandedGroups.includes(item.title || item.name)"
             class="mt-1 pl-3 border-l-2 border-green-700 space-y-1 transition-all duration-300 ease-in-out"
           >
@@ -122,11 +152,14 @@
     <div class="flex-shrink-0 border-t border-green-700 px-4 py-4 bg-green-600">
       <button
         @click="$emit('logout')"
-        class="group flex w-full items-center justify-center px-4 py-2.5 text-sm font-semibold bg-white text-red-600 rounded-lg transition-all duration-200 hover:bg-red-500 hover:text-white hover:shadow-md active:scale-95"
-        title="Logout"
+        :class="[
+          'group flex w-full items-center px-4 py-2.5 text-sm font-semibold bg-white text-red-600 rounded-lg transition-all duration-200 hover:bg-red-500 hover:text-white hover:shadow-md active:scale-95',
+          isCollapsed ? 'justify-center' : 'justify-center'
+        ]"
+        :title="isCollapsed ? 'Logout' : ''"
       >
-        <LogOut class="h-4 w-4 mr-2" />
-        <span>Logout</span>
+        <LogOut :class="['h-4 w-4', isCollapsed ? '' : 'mr-2']" />
+        <span v-if="!isCollapsed">Logout</span>
       </button>
     </div>
   </div>
@@ -134,7 +167,7 @@
 <script setup>
 import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ChevronDown, LogOut } from 'lucide-vue-next'
+import { ChevronDown, LogOut, Menu, X } from 'lucide-vue-next'
 
 const route = useRoute()
 const router = useRouter()
@@ -147,17 +180,22 @@ const props = defineProps({
   roleTitle: {
     type: String,
     default: 'Staff Portal'
+  },
+  isCollapsed: {
+    type: Boolean,
+    default: false
   }
 })
 
-const emit = defineEmits(['logout'])
+const emit = defineEmits(['logout', 'toggle-sidebar'])
 const expandedGroups = ref([])
 const navMenu = ref(null) // sidebar reference
 
 const ensureGroupExpanded = (groupName) => {
   if (!groupName) return
   if (!expandedGroups.value.includes(groupName)) {
-    expandedGroups.value.push(groupName)
+    // Close all other groups and open only this one (accordion behavior)
+    expandedGroups.value = [groupName]
   }
 }
 
@@ -228,6 +266,9 @@ const hasActiveChild = (item) => {
 
 // --- Auto-expand groups that have active children ---
 const expandActiveGroups = () => {
+  // Don't auto-expand when collapsed
+  if (props.isCollapsed) return
+
   props.navigation.forEach(item => {
     if (item.children && hasActiveChild(item)) {
       const groupName = item.title || item.name
@@ -238,20 +279,40 @@ const expandActiveGroups = () => {
 
 // --- Expand active groups initially and on route change ---
 watch(
-  () => [route.path, route.name],
+  () => [route.path, route.name, props.isCollapsed],
   () => {
     expandActiveGroups()
   },
   { immediate: true }
 )
 
-// --- Toggle group open/close ---
+// --- Handle group click (with children) ---
+const handleGroupClick = (item) => {
+  const groupName = item.title || item.name
+
+  // When collapsed, expand the sidebar first
+  if (props.isCollapsed) {
+    emit('toggle-sidebar')
+    // After expanding, ensure this group is expanded
+    nextTick(() => {
+      ensureGroupExpanded(groupName)
+    })
+    return
+  }
+
+  // When expanded, toggle the group normally
+  toggleGroup(groupName)
+}
+
+// --- Toggle group open/close (Accordion style - only one group open at a time) ---
 const toggleGroup = (groupName) => {
   const index = expandedGroups.value.indexOf(groupName)
   if (index > -1) {
+    // Close the group
     expandedGroups.value.splice(index, 1)
   } else {
-    ensureGroupExpanded(groupName)
+    // Close all other groups and open this one (accordion behavior)
+    expandedGroups.value = [groupName]
   }
 }
 

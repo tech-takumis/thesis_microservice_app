@@ -93,11 +93,10 @@
             </header>
 
             <!-- Main content Container -->
-            <main
-                class="flex-1 relative overflow-hidden print:overflow-visible print:bg-white border-none bg-white">
-                <div class="h-full pl-0 pr-2 py-4 max-w-7xl w-full flex flex-col m-0 rounded-full">
+            <main class="flex-1 relative overflow-hidden print:overflow-visible print:bg-white border-none bg-white">
+                <div class="h-full flex flex-col">
                     <!-- Dashboard Content with proper flex layout -->
-                    <div class="h-full w-full p-4 rounded-lg bg-gray-100 flex flex-col min-h-0">
+                    <div class="flex-1 p-4 bg-gray-100 flex flex-col overflow-hidden">
                         <slot />
                     </div>
                 </div>

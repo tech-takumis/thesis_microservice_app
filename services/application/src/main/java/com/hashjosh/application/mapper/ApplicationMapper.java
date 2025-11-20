@@ -32,6 +32,8 @@ public class ApplicationMapper {
         ApplicationResponseDto.ApplicationResponseDtoBuilder builder = ApplicationResponseDto.builder()
                 .id(entity.getId())
                 .applicationTypeId(entity.getType().getId())
+                .applicationTypeName(entity.getType().getName())
+                .coordinates(entity.getCoordinates())
                 .submittedAt(entity.getSubmittedAt())
                 .fileUploads(documentUrls)
                 .jsonDynamicFields(entity.getDynamicFields())

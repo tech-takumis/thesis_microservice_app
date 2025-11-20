@@ -26,6 +26,7 @@
           :user-full-name="store.userData?.fullName"
           :user-email="store.userData?.email"
           :user-initials="userInitials"
+          :is-collapsed="false"
           @logout="handleLogout"
         />
       </div>
@@ -35,7 +36,10 @@
     <div class="flex-1 flex flex-col md:flex-row overflow-hidden px-1 md:px-2 py-2 md:py-3 gap-2 md:gap-3 rounded-lg">
       <!-- Sidebar: Tight spacing, closer to screen edge -->
       <aside
-        class="hidden md:flex md:flex-col md:h-full bg-white rounded-lg md:w-72 overflow-hidden"
+        :class="[
+          'hidden md:flex md:flex-col md:h-full bg-white rounded-lg overflow-hidden transition-all duration-300',
+          isCollapsed ? 'md:w-20' : 'md:w-72'
+        ]"
       >
 
         <SidebarNavigation
@@ -44,7 +48,9 @@
           :user-full-name="store.userData?.fullName"
           :user-email="store.userData?.email"
           :user-initials="userInitials"
+          :is-collapsed="isCollapsed"
           @logout="handleLogout"
+          @toggle-sidebar="toggleSidebar"
         />
       </aside>
 
@@ -89,7 +95,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { Menu, X } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth'
 import SidebarNavigation from '@/components/layouts/SidebarNavigation.vue'
@@ -111,7 +117,22 @@ const props = defineProps({
   }
 })
 
+const SIDEBAR_STORAGE_KEY = 'pcic_sidebar_collapsed'
+
 const sidebarOpen = ref(false)
+
+// Initialize from localStorage
+const getSavedSidebarState = () => {
+  try {
+    const saved = localStorage.getItem(SIDEBAR_STORAGE_KEY)
+    return saved ? JSON.parse(saved) : false
+  } catch (error) {
+    console.error('Error reading sidebar state from localStorage:', error)
+    return false
+  }
+}
+
+const isCollapsed = ref(getSavedSidebarState())
 
 const userInitials = computed(() => {
   const name = store.userData?.fullName
@@ -119,7 +140,20 @@ const userInitials = computed(() => {
   return name.split(' ').map(n => n[0]).join('').toUpperCase()
 })
 
+const toggleSidebar = () => {
+  isCollapsed.value = !isCollapsed.value
+}
+
 const handleLogout = () => {
   store.logout()
 }
+
+// Watch for changes and save to localStorage
+watch(isCollapsed, (newValue) => {
+  try {
+    localStorage.setItem(SIDEBAR_STORAGE_KEY, JSON.stringify(newValue))
+  } catch (error) {
+    console.error('Error saving sidebar state to localStorage:', error)
+  }
+})
 </script>

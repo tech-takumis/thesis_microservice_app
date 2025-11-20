@@ -29,7 +29,6 @@ export const UNDERWRITER_NAVIGATION = [
     icon: Shield,
     children: [
       { title: "Risk Factors", to: { name: "underwriter-risk-factors" } },
-      { title: "Historical Data", to: { name: "underwriter-risk-history" } },
       { title: "Geographic Analysis", to: { name: "underwriter-risk-geo" } },
     ],
   },
@@ -41,12 +40,7 @@ export const UNDERWRITER_NAVIGATION = [
       { title: "Coverage & Premium", to: { name: "underwriter-guidelines-coverage" } },
       { title: "Underwriting Manual", to: { name: "underwriter-guidelines-manual" } },
     ],
-  },
-  {
-    title: "Reports",
-    icon: BarChart3,
-    to: { name: "underwriter-reports" },
-  },
+  }
 ]
 
 // Navigation for admin role

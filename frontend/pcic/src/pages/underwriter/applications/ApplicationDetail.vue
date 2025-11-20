@@ -1,35 +1,39 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100/50">
-    <div class="max-w-7xl mx-auto px-8 py-8 sm:px-12 lg:px-16">
-      <!-- Breadcrumb Navigation -->
-      <nav class="flex mb-8" aria-label="Breadcrumb">
-        <ol class="flex items-center space-x-1.5">
-          <li>
-            <router-link
-              :to="{ name: 'underwriter-dashboard' }"
-              class="text-slate-400 hover:text-slate-700 transition-colors duration-200"
-            >
-              <HomeIcon class="h-4 w-4" />
-            </router-link>
-          </li>
-          <li class="flex items-center">
-            <ChevronRightIcon class="h-3 w-3 text-slate-300 mx-1" />
-            <button
-              class="text-xs font-medium text-slate-500 hover:text-slate-700 transition-colors duration-200"
-              @click="navigateToApplicationList"
-            >
-              Applications
-            </button>
-          </li>
-          <li class="flex items-center">
-            <ChevronRightIcon class="h-3 w-3 text-slate-300 mx-1" />
-            <span class="text-xs font-medium text-slate-900">Details</span>
-          </li>
-        </ol>
-      </nav>
+  <AuthenticatedLayout
+    :navigation="underwriterNavigation"
+    role-title="Underwriter Portal"
+    page-title="Application Details"
+  >
+    <template #header>
+      <div class="space-y-4">
+        <!-- Breadcrumb Navigation -->
+        <nav class="flex" aria-label="Breadcrumb">
+          <ol class="flex items-center space-x-1.5">
+            <li>
+              <router-link
+                :to="{ name: 'underwriter-dashboard' }"
+                class="text-slate-400 hover:text-slate-700 transition-colors duration-200"
+              >
+                <HomeIcon class="h-4 w-4" />
+              </router-link>
+            </li>
+            <li class="flex items-center">
+              <ChevronRightIcon class="h-3 w-3 text-slate-300 mx-1" />
+              <button
+                class="text-xs font-medium text-slate-500 hover:text-slate-700 transition-colors duration-200"
+                @click="navigateToApplicationList"
+              >
+                Applications
+              </button>
+            </li>
+            <li class="flex items-center">
+              <ChevronRightIcon class="h-3 w-3 text-slate-300 mx-1" />
+              <span class="text-xs font-medium text-slate-900">Details</span>
+            </li>
+          </ol>
+        </nav>
 
-      <!-- Page Header -->
-      <div class="mb-8">
+        <!-- Page Header -->
         <div class="flex items-start justify-between">
           <div>
             <h1 class="text-2xl font-light text-slate-900 tracking-tight">{{ getApplicationTitle() }}</h1>
@@ -63,6 +67,7 @@
           </div>
         </div>
       </div>
+    </template>
 
       <!-- Loading State -->
       <div v-if="loading" class="flex justify-center items-center py-20">
@@ -552,8 +557,7 @@
         @close="closeScheduleModal"
         @success="handleScheduleSuccess"
       />
-    </div>
-  </div>
+  </AuthenticatedLayout>
 </template>
 
 <script setup>
@@ -564,6 +568,8 @@ import { useInsuranceStore } from '@/stores/insurance'
 import { usePolicyStore } from '@/stores/policy'
 import { useClaimStore } from '@/stores/claim'
 import { useToastStore } from '@/stores/toast'
+import { UNDERWRITER_NAVIGATION } from '@/lib/navigation'
+import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
 import DetailField from '@/components/tables/DetailField.vue'
 import LoadingSpinner from '@/components/others/LoadingSpinner.vue'
 import ScheduleInspectionModal from '@/components/modals/ScheduleInspectionModal.vue'
@@ -585,6 +591,7 @@ const insuranceStore = useInsuranceStore()
 const policyStore = usePolicyStore()
 const claimStore = useClaimStore()
 const toastStore = useToastStore()
+const underwriterNavigation = UNDERWRITER_NAVIGATION
 
 // State
 const loading = ref(false)

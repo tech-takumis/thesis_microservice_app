@@ -9,7 +9,7 @@
                 <div class="flex items-center space-x-3">
                     <div>
                         <h1 class="text-2xl font-bold text-black">
-                            Underwriter Dashboard
+                            Dashboard
                         </h1>
                         <p class="text-sm text-gray-600">
                             Evaluate risks and manage insurance applications for

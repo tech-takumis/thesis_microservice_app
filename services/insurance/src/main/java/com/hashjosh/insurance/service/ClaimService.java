@@ -58,6 +58,7 @@ public class ClaimService {
                 .filedAt(LocalDateTime.now())
                 .damageAssessment(request.getDamageAssessment())
                 .claimAmount(claimAmount)
+                .isFinalized(request.isFinalized())
                 .supportingFiles(documentIds)
                 .fieldValues(request.getFieldValues())
                 .build();
@@ -67,15 +68,18 @@ public class ClaimService {
         insurance.setCurrentStatus(InsuranceStatus.CLAIMED_ISSUED);
         insuranceRepository.save(insurance);
 
-        ClaimProcessedEvent event = ClaimProcessedEvent.builder()
-                .submissionId(insurance.getSubmissionId())
-                .userId(insurance.getFarmerId())
-                .claimId(claim.getId())
-                .claimAmount(claimAmount)
-                .processedAt(LocalDateTime.now())
-                .build();
+        if(request.isFinalized()){
+            ClaimProcessedEvent event = ClaimProcessedEvent.builder()
+                    .submissionId(insurance.getSubmissionId())
+                    .userId(insurance.getFarmerId())
+                    .claimId(claim.getId())
+                    .claimAmount(claimAmount)
+                    .payoutStatus("FINALIZED")
+                    .processedAt(LocalDateTime.now())
+                    .build();
 
-        kafkaProducer.publishEvent("application-claim",event);
+            kafkaProducer.publishEvent("application-claim",event);
+        }
 
         return claimMapper.toResponse(claim);
     }
@@ -100,6 +104,7 @@ public class ClaimService {
                 .filedAt(LocalDateTime.now())
                 .damageAssessment(aiResult.getPrediction())
                 .claimAmount(claimAmount)
+                .isFinalized(false)
                 .supportingFiles(documentIds)
                 .fieldValues(aiFieldValues)
                 .build();
@@ -109,16 +114,6 @@ public class ClaimService {
 
         insurance.setCurrentStatus(InsuranceStatus.CLAIMED_ISSUED);
         insuranceRepository.save(insurance);
-
-        ClaimProcessedEvent event = ClaimProcessedEvent.builder()
-                .submissionId(insurance.getSubmissionId())
-                .userId(insurance.getFarmerId())
-                .claimId(claim.getId())
-                .claimAmount(claimAmount)
-                .processedAt(LocalDateTime.now())
-                .build();
-
-        kafkaProducer.publishEvent("application-claim",event);
 
         return claimMapper.toResponse(claim);
     }
@@ -187,6 +182,24 @@ public class ClaimService {
 
             log.info("Added {} new supporting files. Total files: {}",
                     newDocumentIds.size(), allDocumentIds.size());
+            hasUpdates = true;
+        }
+
+        if(request.getIsFinalized() != null && !existingClaim.isFinalized()) {
+            existingClaim.setFinalized(request.getIsFinalized());
+            log.info("Updated isFinalized to {}", request.getIsFinalized());
+
+            ClaimProcessedEvent event = ClaimProcessedEvent.builder()
+                    .submissionId(existingClaim.getInsurance().getSubmissionId())
+                    .userId(existingClaim.getInsurance().getFarmerId())
+                    .claimId(existingClaim.getId())
+                    .payoutStatus("FINALIZED")
+                    .claimAmount(request.getClaimAmount() != null ? request.getClaimAmount() : existingClaim.getClaimAmount())
+                    .processedAt(LocalDateTime.now())
+                    .build();
+
+            kafkaProducer.publishEvent("application-claim",event);
+
             hasUpdates = true;
         }
 

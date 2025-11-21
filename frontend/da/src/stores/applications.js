@@ -150,16 +150,21 @@ export const useApplicationTypeStore = defineStore('applicationType', () => {
         }
     }
 
-    const fetchAllApplicationTypes = async (provider,includeApplicationResponse) => {
+    const fetchAllApplicationTypes = async (provider, includeApplicationResponse = false) => {
         try{
             loading.value = true
             error.value = null
             let response;
-            if(provider != null){
-                response = await axios.get(`${basePath.value}?provider=${provider}&application=${includeApplicationResponse}`)
-            }else{
-                response = await axios.get(`${basePath.value}?application=${includeApplicationResponse}`)
+
+            // Build query params
+            const params = new URLSearchParams()
+            if (provider !== null && provider !== undefined) {
+                params.append('provider', provider)
             }
+            params.append('application', includeApplicationResponse)
+
+            response = await axios.get(`${basePath.value}?${params.toString()}`)
+
             if(response.status === 200){
                 applicationTypes.value = response.data
                 loading.value = false
@@ -175,7 +180,7 @@ export const useApplicationTypeStore = defineStore('applicationType', () => {
         }
     }
 
-    const fetchApplicationTypesById = async (applicationTypeId,includeApplicationResponse) => {
+    const fetchApplicationTypesById = async (applicationTypeId, includeApplicationResponse = false) => {
         try{
             loading.value = true
             error.value = null

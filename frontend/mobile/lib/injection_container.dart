@@ -7,12 +7,18 @@ import 'package:mobile/data/services/post_api_service.dart';
 import 'package:mobile/data/services/location_service.dart';
 import 'package:mobile/data/services/psgc_service.dart';
 import 'package:mobile/data/services/storage_service.dart';
+import 'package:mobile/data/services/insurance_api_service.dart';
+import 'package:mobile/data/services/voucher_api_service.dart';
+import 'package:mobile/data/services/qr_service.dart';
 import 'package:mobile/presentation/controllers/application_controller.dart';
 import 'package:mobile/presentation/controllers/auth_controller.dart';
+import 'package:mobile/presentation/controllers/insurance_controller.dart';
+import 'package:mobile/presentation/controllers/voucher_controller.dart';
 import 'data/services/message_service.dart';
 import 'data/services/websocket.dart';
 import 'data/services/notification_api.dart';
 import 'data/services/notification_service.dart';
+import 'data/services/local_notification_service.dart';
 
 final getIt = GetIt.instance;
 
@@ -67,16 +73,41 @@ Future<void> setupDependencies() async {
     NotificationApiService(authDio, baseUrl: 'http://localhost:9001/api/v1'),
   );
 
+  // Register InsuranceApiService with authenticated Dio instance
+  getIt.registerSingleton<InsuranceApiService>(
+    InsuranceApiService(authDio, baseUrl: 'http://localhost:9001/api/v1'),
+  );
+
+  // Register VoucherApiService with authenticated Dio instance
+  getIt.registerSingleton<VoucherApiService>(
+    VoucherApiService(authDio, baseUrl: 'http://localhost:9001/api/v1'),
+  );
+
   // Other services
   getIt.registerSingleton<LocationService>(LocationService());
   getIt.registerSingleton<WebSocketService>(WebSocketService());
   getIt.registerLazySingleton<DocumentService>(() => DocumentService());
   getIt.registerLazySingleton<MessageService>(() => MessageService());
   getIt.registerLazySingleton<NotificationService>(() => NotificationService());
+  getIt.registerSingleton<QRService>(QRService());
+
+  // Local notification service
+  final localNotificationService = LocalNotificationService();
+  await localNotificationService.initialize();
+  await localNotificationService.createNotificationChannel();
+  getIt.registerSingleton<LocalNotificationService>(localNotificationService);
 
   // Controllers
   getIt.registerSingleton<ApplicationController>(
     ApplicationController(),
+  );
+
+  getIt.registerSingleton<InsuranceController>(
+    InsuranceController(),
+  );
+
+  getIt.registerSingleton<VoucherController>(
+    VoucherController(),
   );
 
 }

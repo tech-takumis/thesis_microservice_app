@@ -24,6 +24,10 @@ public class ClaimResponse {
 
     private UUID insuranceId;
 
+    private UUID farmerId;
+
+    private String farmerName;
+
     private LocalDateTime filedAt;
 
     private String damageAssessment;

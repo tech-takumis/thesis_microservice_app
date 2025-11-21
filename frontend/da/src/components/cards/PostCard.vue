@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-gray-50 rounded-2xl border border-none pb-4 space-y-6 relative">
+  <div class="bg-white rounded-2xl border border-none pb-4 space-y-6 relative">
 
       <!-- 🧾 Post Input Card -->
       <div class="bg-gray-100 rounded-xl shadow-md p-4 border border-gray-300 shadow-sm">

@@ -74,8 +74,12 @@ export const MUNICIPAL_AGRICULTURIST_NAVIGATION = [
                 to: { name: 'agriculturist-submit-crop-data' }
             },
             {
-                title: 'Voucher',
-                to: { name: 'agriculturist-voucher-program' }
+                title: 'Voucher Program',
+                to: { name: 'agriculturist-voucher-all' }
+            },
+             {
+                title: 'Voucher Scanner',
+                to: { name: 'agriculturist-voucher-scanner' }
             },
             {
                 title: 'Manage transaction',

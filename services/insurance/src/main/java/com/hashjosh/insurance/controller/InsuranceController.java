@@ -29,6 +29,11 @@ public class InsuranceController {
         return ResponseEntity.ok(insuranceService.findAllVerified());
     }
 
+    @GetMapping("/user/all")
+    public  ResponseEntity<List<InsuranceResponse>> getInsuranceByUser(){
+        return ResponseEntity.ok(insuranceService.findByCurrentUser());
+    }
+
     @GetMapping("/{insurance-Id}")
     public ResponseEntity<InsuranceResponse> getInsuranceById(
                 @PathVariable("insurance-Id") UUID insuranceId

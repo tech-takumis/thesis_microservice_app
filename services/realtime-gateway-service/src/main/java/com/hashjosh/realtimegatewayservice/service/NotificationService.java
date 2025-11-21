@@ -1,5 +1,6 @@
 package com.hashjosh.realtimegatewayservice.service;
 
+import com.hashjosh.realtimegatewayservice.dto.FarmersNotificationRequest;
 import com.hashjosh.realtimegatewayservice.dto.NotificationRequestDTO;
 import com.hashjosh.realtimegatewayservice.dto.NotificationResponseDTO;
 import com.hashjosh.realtimegatewayservice.entity.Notification;
@@ -76,5 +77,26 @@ public class NotificationService {
 
     public void deleteNotification(UUID notificationId) {
         notificationRepository.deleteById(notificationId);
+    }
+
+    public void sendFarmersNotifications(FarmersNotificationRequest request) {
+       request.getFarmersIds().forEach(farmerId -> {
+           try {
+               Notification notification = Notification.builder()
+                       .title(request.getTitle())
+                       .message(request.getMessage())
+                       .createdAt(LocalDateTime.now())
+                       .recipient(farmerId.toString())
+                       .read(false)
+                       .build();
+               notificationRepository.save(notification);
+               messagingTemplate.convertAndSend("/topic/application.notifications",
+                       notification);
+
+           } catch (Exception e) {
+               log.error("Failed to send notification to farmer ID {}: {}", farmerId, e.getMessage());
+               throw ApiException.badRequest("Failed to send notification to farmer");
+           }
+       });
     }
 }

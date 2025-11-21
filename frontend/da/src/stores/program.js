@@ -16,50 +16,46 @@ export const useProgramStore = defineStore('program', () => {
 
     // Helper function to map backend data to frontend format
     const mapProgramData = (backendProgram) => ({
-        id: backendProgram.programId,
-        name: backendProgram.programName,
-        description: backendProgram.description,
-        budget: backendProgram.budget,
-        completedPercentage: backendProgram.completedPercentage,
+        id: backendProgram.id,
+        name: backendProgram.name,
+        type: backendProgram.type,
         status: backendProgram.status,
-        startDate: backendProgram.startDate,
-        endDate: backendProgram.endDate,
-        beneficiaries: backendProgram.beneficiaries || []
+        completion: backendProgram.completion,
+        notes: backendProgram.notes,
+        createdAt: backendProgram.createdAt,
+        updatedAt: backendProgram.updatedAt
     })
 
     // Helper function to map frontend data to backend format
     const mapToBackendFormat = (frontendData) => ({
-        programName: frontendData.name,
-        description: frontendData.description,
-        budget: frontendData.budget,
-        startDate: frontendData.startDate,
-        endDate: frontendData.endDate,
-        status: frontendData.status || 'planned'
+        name: frontendData.name || '',
+        type: frontendData.type || 'TRAINING',
+        status: frontendData.status || 'PENDING',
+        completion: typeof frontendData.completion === 'number' ? frontendData.completion : 0,
+        notes: frontendData.notes || ''
     })
 
     // Filter computed properties
     const activePrograms = computed(() =>
-        programs.value.filter(program => program.status === 'ongoing')
+        programs.value.filter(program => program.status === 'ACTIVE')
     )
     const completedPrograms = computed(() =>
-        programs.value.filter(program => program.status === 'completed')
+        programs.value.filter(program => program.status === 'COMPLETED')
     )
-    const plannedPrograms = computed(() =>
-        programs.value.filter(program => program.status === 'planned')
-    )
-    const highBudgetPrograms = computed(() =>
-        programs.value.filter(program => program.budget >= 2000000)
+    const pendingPrograms = computed(() =>
+        programs.value.filter(program => program.status === 'PENDING')
     )
     const programsStats = computed(() => {
         const total = programs.value.length
-        const active = programs.value.filter(program => program.status === 'ongoing').length
-        const completed = programs.value.filter(program => program.status === 'completed').length
-        const planned = programs.value.filter(program => program.status === 'planned').length
-        const totalBudget = programs.value.reduce((sum, program) => sum + program.budget, 0)
+        const active = programs.value.filter(program => program.status === 'ACTIVE').length
+        const completed = programs.value.filter(program => program.status === 'COMPLETED').length
+        const pending = programs.value.filter(program => program.status === 'PENDING').length
+        const inactive = programs.value.filter(program => program.status === 'INACTIVE').length
+        const cancelled = programs.value.filter(program => program.status === 'CANCELLED').length
         const averageCompletion = total > 0
-            ? programs.value.reduce((sum, program) => sum + program.completedPercentage, 0) / total
+            ? programs.value.reduce((sum, program) => sum + program.completion, 0) / total
             : 0
-        return { total, active, completed, planned, totalBudget, averageCompletion }
+        return { total, active, completed, pending, inactive, cancelled, averageCompletion }
     })
 
     // Actions
@@ -68,7 +64,7 @@ export const useProgramStore = defineStore('program', () => {
             loading.value = true
             error.value = null
 
-            const response = await axios.get('/api/v1/agriculture/programs')
+            const response = await axios.get('/api/v1/programs')
 
             // Handle array response directly
             const rawPrograms = Array.isArray(response.data) ? response.data : []
@@ -101,9 +97,9 @@ export const useProgramStore = defineStore('program', () => {
 
         try {
             const payload = mapToBackendFormat(data)
-            const response = await axios.post('/api/v1/agriculture/programs', payload)
+            const response = await axios.post('/api/v1/programs', payload)
 
-            if (response.data && response.data.programId) {
+            if ((response.status > 200 && response.status < 300) || response.status === 200) {
                 const program = mapProgramData(response.data)
                 programs.value.unshift(program)
 
@@ -138,7 +134,7 @@ export const useProgramStore = defineStore('program', () => {
             error.value = null
 
             const backendData = mapToBackendFormat(data)
-            const response = await axios.put(`/api/v1/agriculture/programs/${id}`, backendData)
+            const response = await axios.put(`/api/v1/programs/${id}`, backendData)
             const mappedProgram = mapProgramData(response.data)
 
             const index = programs.value.findIndex(p => p.id === id)
@@ -156,12 +152,38 @@ export const useProgramStore = defineStore('program', () => {
         }
     }
 
+    const getProgram = async (id) => {
+        try {
+            loading.value = true
+            error.value = null
+
+            const response = await axios.get(`/api/v1/programs/${id}`)
+            const mappedProgram = mapProgramData(response.data)
+
+            return {
+                success: true,
+                message: "Program retrieved successfully",
+                data: mappedProgram
+            }
+        } catch (error) {
+            const errorMessage = error.response?.data?.message || error.message
+            error.value = errorMessage
+            return {
+                success: false,
+                message: errorMessage,
+                data: null
+            }
+        } finally {
+            loading.value = false
+        }
+    }
+
     const deleteProgram = async (id) => {
         try {
             loading.value = true
             error.value = null
 
-            await axios.delete(`/api/v1/agriculture/programs/${id}`)
+            await axios.delete(`/api/v1/programs/${id}`)
             programs.value = programs.value.filter(p => p.id !== id)
 
             return { success: true, message: "Program deleted successfully" }
@@ -187,12 +209,12 @@ export const useProgramStore = defineStore('program', () => {
         errorMessage,
         activePrograms,
         completedPrograms,
-        plannedPrograms,
-        highBudgetPrograms,
+        pendingPrograms,
         programsStats,
 
         // Actions
         getAllPrograms,
+        getProgram,
         createProgram,
         updateProgram,
         deleteProgram

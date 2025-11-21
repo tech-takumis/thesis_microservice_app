@@ -14,6 +14,8 @@ public class ClaimRequest {
 
     private UUID insuranceId;
 
+    private boolean isFinalized;
+
     private String damageAssessment;
 
     private JsonNode fieldValues;

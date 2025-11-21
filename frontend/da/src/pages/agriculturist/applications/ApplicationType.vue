@@ -156,7 +156,7 @@ const applicationTypes = computed(
 
 const fetchApplicationTypes = async () => {
     const result = await applicationTypeStore.fetchAllApplicationTypes(
-        null,
+        undefined,
         true,
     )
     if (!result.success) {

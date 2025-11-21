@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:stomp_dart_client/stomp_dart_client.dart';
 import 'package:mobile/data/services/storage_service.dart';
+import 'package:mobile/data/services/local_notification_service.dart';
 import '../../injection_container.dart';
 
 typedef MessageCallback = void Function(Map<String, dynamic> message);
@@ -75,6 +76,15 @@ class WebSocketService {
             'sentAt': message['sentAt'] ?? message['timestamp'],
             'isRead': message['isRead'] ?? false,
           };
+
+          // Show local notification for new message
+          final localNotificationService = getIt<LocalNotificationService>();
+          localNotificationService.showWebSocketNotification(
+            notificationId: normalized['messageId'].toString(),
+            title: 'New Message',
+            message: normalized['text'] ?? 'You have a new message',
+          );
+
           for (final sub in _subscribers) {
             sub(normalized);
           }
@@ -90,6 +100,16 @@ class WebSocketService {
           try {
             final notification = jsonDecode(frame.body!);
             print('🔔 [WebSocket] Notification: $notification');
+
+            // Show local notification
+            final localNotificationService = getIt<LocalNotificationService>();
+            localNotificationService.showWebSocketNotification(
+              notificationId: notification['id'] ?? DateTime.now().toString(),
+              title: notification['title'] ?? 'New Notification',
+              message: notification['message'] ?? '',
+            );
+
+            // Notify subscribers
             for (final sub in _subscribers) {
               sub(notification);
             }

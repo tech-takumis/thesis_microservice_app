@@ -27,7 +27,6 @@ public class TransactionController {
         return ResponseEntity.ok(transactionService.createTransaction(request));
     }
 
-    // Specific paths MUST come before generic path variables
     @GetMapping("/type/{type}")
     public ResponseEntity<List<TransactionResponse>> getTransactionsByType(
             @PathVariable String type) {

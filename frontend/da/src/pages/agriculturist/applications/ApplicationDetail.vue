@@ -46,9 +46,11 @@
               {{ getApplicationTitle() }}
             </p>
           </div>
-          <div v-if="shouldShowAIAnalysis">
+          <div class="flex items-center gap-3">
+            <!-- View AI Analysis Button -->
             <router-link
-              :to="{ name: 'agriculturist-damage-report', params: { applicationId: applicationData.id, applicationTypeId: route.params.applicationTypeId } }"
+              v-if="shouldShowAIAnalysis && applicationData?.id && (insuranceData?.id || route.params.id)"
+              :to="{ name: 'agriculturist-damage-report', params: { applicationId: route.params.id, applicationTypeId: route.params.applicationTypeId } }"
               class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
             >
               <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -56,6 +58,18 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
               </svg>
               View AI Analysis
+            </router-link>
+
+            <!-- View Location Map Button -->
+            <router-link
+              v-if="applicationData?.id && applicationData?.coordinates"
+              :to="{ name: 'agriculturist-submit-crop-data-map', params: { applicationId: route.params.id } }"
+              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+            >
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
+              </svg>
+              View Location Map
             </router-link>
           </div>
         </div>

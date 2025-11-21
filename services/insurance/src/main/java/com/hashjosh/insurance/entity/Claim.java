@@ -28,6 +28,8 @@ public class Claim {
 
     private String damageAssessment;
 
+    private boolean isFinalized;
+
     private Double claimAmount;
 
     private List<UUID> supportingFiles;

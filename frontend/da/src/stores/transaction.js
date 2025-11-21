@@ -147,6 +147,99 @@ export const useTransactionStore = defineStore('transaction', () => {
         }
     }
 
+    const getTransaction = async (id) => {
+        try {
+            loading.value = true
+            error.value = null
+
+            const response = await axios.get(`/api/v1/agriculture/transactions/${id}`)
+            const mappedTransaction = mapTransactionData(response.data)
+
+            return {
+                success: true,
+                message: "Transaction retrieved successfully",
+                data: mappedTransaction
+            }
+        } catch (error) {
+            const errorMessage = error.response?.data?.message || error.message
+            error.value = errorMessage
+            return {
+                success: false,
+                message: errorMessage,
+                data: null
+            }
+        } finally {
+            loading.value = false
+        }
+    }
+
+    const getTransactionsByType = async (type) => {
+        try {
+            loading.value = true
+            error.value = null
+
+            const response = await axios.get(`/api/v1/agriculture/transactions/type/${type}`)
+            const rawTransactions = Array.isArray(response.data) ? response.data : []
+            const mappedTransactions = rawTransactions.map(mapTransactionData)
+
+            return {
+                success: true,
+                message: "Transactions retrieved successfully",
+                data: mappedTransactions
+            }
+        } catch (error) {
+            const errorMessage = error.response?.data?.message || error.message
+            error.value = errorMessage
+            return {
+                success: false,
+                message: errorMessage,
+                data: []
+            }
+        } finally {
+            loading.value = false
+        }
+    }
+
+    const getTransactionsByDateRange = async (startDate, endDate) => {
+        try {
+            loading.value = true
+            error.value = null
+
+            // Format dates to ISO string if they aren't already
+            const formatDate = (date) => {
+                if (typeof date === 'string' && date.includes('T')) {
+                    return date
+                }
+                return new Date(date).toISOString()
+            }
+
+            const params = new URLSearchParams({
+                startDate: formatDate(startDate),
+                endDate: formatDate(endDate)
+            })
+
+            const response = await axios.get(`/api/v1/agriculture/transactions/date-range?${params}`)
+            const rawTransactions = Array.isArray(response.data) ? response.data : []
+            const mappedTransactions = rawTransactions.map(mapTransactionData)
+
+            return {
+                success: true,
+                message: "Transactions retrieved successfully",
+                data: mappedTransactions
+            }
+        } catch (error) {
+            const errorMessage = error.response?.data?.message || error.message
+            error.value = errorMessage
+            return {
+                success: false,
+                message: errorMessage,
+                data: []
+            }
+        } finally {
+            loading.value = false
+        }
+    }
+
     return {
         // State
         transactions,
@@ -162,6 +255,9 @@ export const useTransactionStore = defineStore('transaction', () => {
         // Actions
         createTransaction,
         getAllTransactions,
+        getTransaction,
+        getTransactionsByType,
+        getTransactionsByDateRange,
         updateTransaction,
         deleteTransaction
     }

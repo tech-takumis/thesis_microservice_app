@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col h-full w-full bg-green-600">
+  <div class="flex flex-col h-screen w-full bg-green-600 border border-gray-300">
     <!-- Logo / Header -->
     <div class="relative flex flex-col items-center py-4 px-4 bg-green-600 border-b border-green-700 flex-shrink-0">
       <!-- Toggle Button (Top Right when expanded, Center when collapsed) -->
@@ -47,7 +47,7 @@
             :is="item.icon"
             :class="[
               isActive(item.to, { exact: item.exact })
-                ? 'text-green-700'
+                ? 'text-yellow-500'
                 : 'text-white group-hover:text-yellow-300',
               'h-5 w-5 transition-colors duration-200',
               isCollapsed ? '' : 'mr-3'
@@ -149,7 +149,7 @@
     </nav>
 
     <!-- Logout Section -->
-    <div class="flex-shrink-0 border-t border-green-700 px-4 py-4 bg-green-600">
+    <div class="flex-shrink-0 px-4 py-4 bg-green-600">
       <button
         @click="$emit('logout')"
         :class="[

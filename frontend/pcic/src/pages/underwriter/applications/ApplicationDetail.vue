@@ -36,7 +36,7 @@
         <!-- Page Header -->
         <div class="flex items-start justify-between">
           <div>
-            <h1 class="text-2xl font-light text-slate-900 tracking-tight">{{ getApplicationTitle() }}</h1>
+            <h1 class="text-xl font-semibold text-gray-800 tracking-tight">{{ getApplicationTitle() }}</h1>
             <div v-if="insuranceData" class="mt-3 flex items-center gap-3">
               <span
                 :class="[
@@ -50,7 +50,7 @@
               >
                 {{ insuranceData.status }}
               </span>
-              <span class="text-xs text-slate-500 font-medium">
+              <span class="text-xs text-green-600 font-medium">
                 ID: {{ insuranceData.insuranceId?.substring(0, 13) }}...
               </span>
             </div>
@@ -62,7 +62,7 @@
               class="inline-flex items-center p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50/50 rounded-full transition-all duration-200"
               title="View Batch Information"
             >
-              <InformationCircleIcon class="size-6" />
+              <InformationCircleIcon class="size-6 text-green-600" />
             </button>
           </div>
         </div>
@@ -91,33 +91,56 @@
         <div class="grid grid-cols-12 gap-6">
           <!-- Left Column: Main Content (7 columns) -->
           <div class="col-span-12 lg:col-span-7 space-y-6">
-            <!-- Application Information -->
-            <div class="bg-white/70 backdrop-blur-sm rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
-              <div class="px-6 py-4 border-b border-slate-100/80 flex items-center justify-between">
-                <h3 class="text-sm font-medium text-slate-700">Application Information</h3>
-                <button
-                  v-if="shouldShowAIAnalysis"
-                  @click="viewAIAnalysis"
-                  class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-lg text-purple-600 bg-purple-50 border border-purple-200 hover:bg-purple-100 hover:border-purple-300 transition-all duration-200"
-                >
-                  <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                  </svg>
-                  AI Analysis
-                </button>
-              </div>
-              <div class="p-6">
-                <dl v-if="filteredDynamicFields.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                  <div v-for="field in filteredDynamicFields" :key="field.key">
-                    <DetailField :label="field.label" :value="field.value" />
-                  </div>
-                </dl>
-                <div v-else class="text-center py-12">
-                  <DocumentIcon class="mx-auto h-12 w-12 text-slate-300" />
-                  <p class="mt-3 text-sm text-slate-500">No application information available</p>
-                </div>
-              </div>
-            </div>
+<!-- Application Information -->
+<div class="bg-gray-100 backdrop-blur-sm rounded-xl border border-gray-300 shadow-sm overflow-hidden">
+  <!-- Header -->
+  <div class="px-6 py-4 border-b border-gray-300 flex items-center justify-between">
+    <h3 class="text-sm font-medium text-slate-700">Application Information</h3>
+
+    <button
+      v-if="shouldShowAIAnalysis"
+      @click="viewAIAnalysis"
+      class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-lg text-purple-600 bg-purple-50 border border-purple-200 hover:bg-purple-100 hover:border-purple-300 transition-all duration-200"
+    >
+      <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      AI Analysis
+    </button>
+  </div>
+
+  <!-- Content -->
+  <div class="p-6">
+    <!-- Profile-style Fields -->
+    <div v-if="filteredDynamicFields.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-5">
+      <div
+        v-for="field in filteredDynamicFields"
+        :key="field.key"
+        class="flex flex-col"
+      >
+          <span class="text-xs font-semibold text-green-600 uppercase tracking-wider mb-1">
+            {{ field.label }}
+          </span>
+
+
+        <!-- Value Box -->
+        <div class="w-full bg-white rounded-md px-3 py-2.5 border border-gray-200 shadow-sm hover:shadow transition-all duration-150">
+          <span class="text-sm text-gray-900 font-medium break-words">
+            {{ field.value }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div v-else class="flex flex-col items-center justify-center py-12">
+      <DocumentIcon class="mx-auto h-12 w-12 text-slate-300" />
+      <p class="mt-3 text-sm text-slate-500 text-center">
+        No application information available
+      </p>
+    </div>
+  </div>
+</div>
 
 
             <!-- Verification Documents -->
@@ -149,34 +172,56 @@
           </div>
 
           <div class="col-span-12 lg:col-span-5 space-y-4">
-            <!-- Verification Card -->
-            <div v-if="shouldShowVerification" class="bg-white/70 backdrop-blur-sm rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
-              <div class="p-5">
-                <div v-if="insuranceData?.verification" class="space-y-3">
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-2">
-                      <CheckCircleIcon class="h-5 w-5 text-emerald-500 flex-shrink-0" />
-                      <h4 class="text-sm font-semibold text-slate-900">Verified</h4>
-                    </div>
-                  </div>
-                  <div class="space-y-2 text-xs ml-7">
-                    <p class="text-slate-600">
-                      <span class="font-semibold">By:</span> {{ insuranceData.verification.verifierName }}
-                    </p>
-                    <p class="text-slate-600">
-                      <span class="font-semibold">Date:</span> {{ formatDate(insuranceData.verification.verifiedAt) }}
-                    </p>
-                    <p v-if="insuranceData.verification.remarks" class="text-slate-600">
-                      <span class="font-semibold">Remarks:</span> {{ insuranceData.verification.remarks }}
-                    </p>
-                  </div>
-                </div>
-                <div v-else class="text-center py-6">
-                  <ExclamationTriangleIcon class="mx-auto h-8 w-8 text-amber-400" />
-                  <p class="mt-2 text-xs font-medium text-slate-700">Pending Verification</p>
-                </div>
-              </div>
-            </div>
+<!-- Advanced Verification Card -->
+<div v-if="shouldShowVerification" 
+     class="bg-green-100 backdrop-blur-lg rounded-xl border border-gray-300 overflow-hidden">
+
+  <div class="p-5 space-y-4">
+
+    <!-- Verified State -->
+    <div v-if="insuranceData?.verification" class="space-y-4">
+      
+      <!-- Header -->
+      <div class="flex items-center gap-3">
+        <div class="flex items-center justify-center h-12 w-12 rounded-full bg-green-400 shrink-0">
+          <CheckCircleIcon class="h-6 w-6 text-white" />
+        </div>
+        <div>
+          <h4 class="text-sm font-semibold text-slate-900">Verified</h4>
+          <p class="text-xs text-slate-500">By {{ insuranceData.verification.verifierName }}</p>
+        </div>
+      </div>
+
+      <!-- Details Box -->
+      <div class="bg-white/70 backdrop-blur-sm rounded-lg border border-gray-100 shadow-sm p-4 space-y-2 max-h-48 overflow-y-auto">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:gap-4">
+          <div class="flex items-start gap-1">
+            <span class="font-medium text-slate-700 text-xs">Date:</span>
+            <span class="text-slate-600 text-xs">{{ formatDate(insuranceData.verification.verifiedAt) }}</span>
+          </div>
+          <div v-if="insuranceData.verification.remarks" class="flex-1 flex items-start gap-1">
+            <span class="font-medium text-slate-700 text-xs">Remarks:</span>
+            <span class="text-slate-600 text-xs break-words whitespace-pre-wrap">{{ insuranceData.verification.remarks }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pending State -->
+    <div v-else class="flex flex-col items-center justify-center py-8 space-y-3">
+      <div class="flex items-center justify-center h-14 w-14 rounded-full bg-amber-100">
+        <ExclamationTriangleIcon class="h-7 w-7 text-amber-500" />
+      </div>
+      <p class="text-sm font-semibold text-amber-700">Pending Verification</p>
+      <p class="text-xs text-slate-500 text-center max-w-xs">
+        This application has not been verified yet. Once verified, details will appear here.
+      </p>
+    </div>
+
+  </div>
+</div>
+
+
 
             <!-- Inspection Card -->
             <div v-if="shouldShowInspection" class="bg-white/70 backdrop-blur-sm rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
@@ -243,7 +288,7 @@
             </div>
 
             <!-- Policy Card -->
-            <div v-if="shouldShowPolicy" class="bg-white/70 backdrop-blur-sm rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
+            <div v-if="shouldShowPolicy" class="bg-gray-100 backdrop-blur-sm rounded-xl border border-gray-300 shadow-sm overflow-hidden">
               <div class="p-5">
                 <div v-if="insuranceData?.policy" class="space-y-3">
                   <div class="flex items-center justify-between">
@@ -265,7 +310,7 @@
                   </div>
                 </div>
                 <div v-else class="text-center py-6">
-                  <DocumentIcon class="mx-auto h-8 w-8 text-slate-300" />
+                  <DocumentIcon class="mx-auto h-8 w-8 text-gray-400" />
                   <p class="mt-2 text-xs font-medium text-slate-700">No Policy</p>
                   <button
                     @click="openPolicyModal"
@@ -389,14 +434,15 @@
         />
       </div>
 
-      <!-- Batch Information Modal -->
-      <Transition name="fade">
-        <div
-          v-if="isBatchModalOpen"
-          @click="closeBatchModal"
-          class="fixed inset-0 bg-black/30 backdrop-blur-sm z-40"
-        ></div>
-      </Transition>
+<!-- Batch Information Modal -->
+<Transition name="fade">
+  <div
+    v-if="isBatchModalOpen"
+    @click="closeBatchModal"
+    class="fixed inset-0 bg-white/20 backdrop-blur-sm z-40"
+  ></div>
+</Transition>
+
 
       <Transition name="slide-right">
         <div
@@ -404,12 +450,16 @@
           class="fixed inset-y-0 right-0 z-50 w-96 bg-white shadow-2xl overflow-y-auto"
         >
           <!-- Modal Header -->
-          <div class="sticky top-0 bg-white border-b border-slate-200 px-6 py-5">
+          <div class="sticky top-0 bg-green-100 border-b border-slate-200 px-6 py-5">
             <div class="flex items-center justify-between">
-              <h3 class="text-lg font-medium text-slate-900">Batch Information</h3>
+              <h3 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                <DocumentIcon class="w-5 h-5 text-green-600" />
+                Batch Information
+              </h3>
+
               <button
                 @click="closeBatchModal"
-                class="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-1.5 rounded-lg transition-all duration-200"
+                class="text-slate-400 hover:text-red-500 hover:bg-red-100 p-1.5 rounded-lg transition-all duration-200"
               >
                 <XMarkIcon class="h-5 w-5" />
               </button>
@@ -419,31 +469,31 @@
           <!-- Modal Body -->
           <div class="p-6 space-y-5">
             <div>
-              <dt class="text-xs font-medium text-slate-500 uppercase tracking-wide">Batch ID</dt>
-              <dd class="mt-1.5 text-sm text-slate-900 break-all">{{ insuranceData.batch.id }}</dd>
+              <dt class="text-xs font-medium text-green-600 uppercase tracking-wide">Batch ID</dt>
+              <dd class="mt-1.5 text-sm text-gray-800 break-all">{{ insuranceData.batch.id }}</dd>
             </div>
             <div>
-              <dt class="text-xs font-medium text-slate-500 uppercase tracking-wide">Batch Name</dt>
-              <dd class="mt-1.5 text-sm text-slate-900">{{ insuranceData.batch.batchName }}</dd>
+              <dt class="text-xs font-medium text-green-600 uppercase tracking-wide">Batch Name</dt>
+              <dd class="mt-1.5 text-sm text-gray-800">{{ insuranceData.batch.batchName }}</dd>
             </div>
             <div>
-              <dt class="text-xs font-medium text-slate-500 uppercase tracking-wide">Description</dt>
-              <dd class="mt-1.5 text-sm text-slate-900">{{ insuranceData.batch.description }}</dd>
+              <dt class="text-xs font-medium text-green-600 uppercase tracking-wide">Description</dt>
+              <dd class="mt-1.5 text-sm text-gray-800">{{ insuranceData.batch.description }}</dd>
             </div>
             <div>
-              <dt class="text-xs font-medium text-slate-500 uppercase tracking-wide">Total Applications</dt>
-              <dd class="mt-1.5 text-sm text-slate-900">{{ insuranceData.batch.totalApplications }} / {{ insuranceData.batch.maxApplications }}</dd>
+              <dt class="text-xs font-medium text-green-600 uppercase tracking-wide">Total Applications</dt>
+              <dd class="mt-1.5 text-sm text-gray-800">{{ insuranceData.batch.totalApplications }} / {{ insuranceData.batch.maxApplications }}</dd>
             </div>
             <div>
-              <dt class="text-xs font-medium text-slate-500 uppercase tracking-wide">Start Date</dt>
-              <dd class="mt-1.5 text-sm text-slate-900">{{ formatDate(insuranceData.batch.startDate) }}</dd>
+              <dt class="text-xs font-medium text-green-600 uppercase tracking-wide">Start Date</dt>
+              <dd class="mt-1.5 text-sm text-gray-800">{{ formatDate(insuranceData.batch.startDate) }}</dd>
             </div>
             <div>
-              <dt class="text-xs font-medium text-slate-500 uppercase tracking-wide">End Date</dt>
+              <dt class="text-xs font-medium text-green-600 uppercase tracking-wide">End Date</dt>
               <dd class="mt-1.5 text-sm text-slate-900">{{ formatDate(insuranceData.batch.endDate) }}</dd>
             </div>
             <div>
-              <dt class="text-xs font-medium text-slate-500 uppercase tracking-wide">Status</dt>
+              <dt class="text-xs font-medium text-green-600 uppercase tracking-wide">Status</dt>
               <dd class="mt-1.5 text-sm">
                 <span :class="[
                   'inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium',
@@ -479,7 +529,7 @@
             <!-- Modal Header -->
             <div class="px-6 py-5 border-b border-slate-200">
               <div class="flex items-center justify-between">
-                <h3 class="text-lg font-semibold text-slate-900">Generate Policy</h3>
+                <h3 class="text-lg font-semibold text-green-600">Generate Policy</h3>
                 <button
                   @click="closePolicyModal"
                   class="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-1.5 rounded-lg transition-all duration-200"
@@ -533,7 +583,7 @@
                 <button
                   @click="generatePolicy"
                   :disabled="isGeneratingPolicy || !policyForm.effectiveDate || !policyForm.expiryDate"
-                  class="px-6 py-2.5 text-sm font-medium text-white bg-purple-500 border border-purple-500 rounded-xl hover:bg-purple-600 hover:shadow-lg hover:shadow-purple-500/30 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none"
+                  class="px-6 py-2.5 text-sm font-medium text-white bg-green-600 border border-green-300 rounded-xl hover:bg-green-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none"
                 >
                   <span v-if="!isGeneratingPolicy">Generate Policy</span>
                   <span v-else class="flex items-center">

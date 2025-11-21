@@ -7,7 +7,7 @@
             <div class="flex items-start justify-between gap-6">
                 <!-- Left: Title Section -->
                 <div>
-                    <h1 class="text-2xl font-light text-slate-900 tracking-tight">
+                    <h1 class="text-2xl font-semibold text-green-600">
                         All Applications
                     </h1>
                     <p class="mt-1 text-sm text-slate-500">
@@ -25,26 +25,29 @@
                             v-model="searchQuery"
                             type="text"
                             placeholder="Search by name, crop, location, ID..."
-                            class="w-full pl-9 pr-4 py-2 rounded-xl border-2 border-slate-200 bg-white text-slate-900 text-sm font-medium placeholder:text-slate-400 focus:border-blue-400 focus:bg-blue-50/30 focus:outline-none focus:ring-4 focus:ring-blue-400/10 hover:border-slate-300 transition-all duration-200" />
+                            class="w-full pl-9 pr-4 py-2 rounded-xl border border-gray-300 rounded-lg shadow-sm text-sm placeholder-gray-400 focus:border-green-400 focus:ring-2 focus:ring-green-400/40 transition duration-200 disabled:opacity-50" />
                     </div>
 
-                    <!-- Filter Toggle -->
-                    <button
-                        :class="[
-                            'inline-flex items-center px-4 py-2 border-2 rounded-xl text-sm font-medium transition-all duration-200 flex-shrink-0',
-                            showFilters
-                                ? 'border-blue-400 bg-blue-50 text-blue-700'
-                                : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300',
-                        ]"
-                        @click="toggleFilters">
-                        <Filter class="h-4 w-4 mr-2" />
-                        Filters
-                        <ChevronDown
-                            :class="[
-                                'h-4 w-4 ml-2 transition-transform duration-200',
-                                showFilters ? 'rotate-180' : '',
-                            ]" />
-                    </button>
+<!-- Filter Toggle -->
+<button
+  :class="[
+    'inline-flex items-center px-4 py-2 border-2 rounded-xl text-sm font-medium transition-all duration-200 flex-shrink-0 focus:border-green-400 focus:ring-2 focus:ring-green-400/40 disabled:opacity-50',
+    showFilters
+      ? 'border-green-400 bg-green-50 text-green-700'
+      : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300',
+  ]"
+  @click="toggleFilters"
+>
+  <Filter class="h-4 w-4 mr-2" />
+  Filters
+  <ChevronDown
+    :class="[
+      'h-4 w-4 ml-2 transition-transform duration-200',
+      showFilters ? 'rotate-180' : '',
+    ]"
+  />
+</button>
+
                 </div>
             </div>
         </template>
@@ -54,8 +57,8 @@
             <div v-if="showFilters" class="flex-shrink-0 mb-4">
                 <!-- Advanced Filters Panel -->
                 <div
-                    class="bg-slate-50/50 border border-slate-200/60 rounded-2xl p-5 backdrop-blur-sm">
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    class="bg-gray-100 border border-gray-300 rounded-xl p-5 backdrop-blur-sm">
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
                         <!-- Status Filter -->
                         <div>
                             <label
@@ -64,7 +67,7 @@
                             >
                             <select
                                 v-model="selectedStatus"
-                                class="w-full px-4 py-2 rounded-lg border-2 border-slate-200 bg-white text-slate-900 text-sm font-medium focus:border-blue-400 focus:bg-blue-50/30 focus:outline-none focus:ring-4 focus:ring-blue-400/10 hover:border-slate-300 transition-all duration-200">
+                                class="w-full px-4 py-2 rounded-lg border border-gray-300 rounded-lg shadow-sm text-sm placeholder-gray-400 focus:border-green-400 focus:ring-2 focus:ring-green-400/40 transition duration-200 disabled:opacity-50">
                                 <option value="">All Status</option>
                                 <option value="PENDING">Pending</option>
                                 <option value="APPROVED">Approved</option>
@@ -80,7 +83,7 @@
                             >
                             <select
                                 v-model="selectedCrop"
-                                class="w-full px-4 py-2 rounded-lg border-2 border-slate-200 bg-white text-slate-900 text-sm font-medium focus:border-blue-400 focus:bg-blue-50/30 focus:outline-none focus:ring-4 focus:ring-blue-400/10 hover:border-slate-300 transition-all duration-200">
+                                class="w-full px-4 py-2 rounded-lg border border-gray-300 rounded-lg shadow-sm text-sm placeholder-gray-400 focus:border-green-400 focus:ring-2 focus:ring-green-400/40 transition duration-200 disabled:opacity-50">
                                 <option value="">All Crops</option>
                                 <option
                                     v-for="crop in availableCrops"
@@ -99,7 +102,7 @@
                             >
                             <select
                                 v-model="selectedLocation"
-                                class="w-full px-4 py-2 rounded-lg border-2 border-slate-200 bg-white text-slate-900 text-sm font-medium focus:border-blue-400 focus:bg-blue-50/30 focus:outline-none focus:ring-4 focus:ring-blue-400/10 hover:border-slate-300 transition-all duration-200">
+                                class="w-full px-4 py-2 rounded-lg border border-gray-300 rounded-lg shadow-sm text-sm placeholder-gray-400 focus:border-green-400 focus:ring-2 focus:ring-green-400/40 transition duration-200 disabled:opacity-50">
                                 <option value="">All Locations</option>
                                 <option
                                     v-for="location in availableLocations"
@@ -119,7 +122,7 @@
                             <input
                                 v-model="dateFrom"
                                 type="date"
-                                class="w-full px-4 py-2 rounded-lg border-2 border-slate-200 bg-white text-slate-900 text-sm font-medium focus:border-blue-400 focus:bg-blue-50/30 focus:outline-none focus:ring-4 focus:ring-blue-400/10 hover:border-slate-300 transition-all duration-200" />
+                                class="w-full px-4 py-2 rounded-lg border border-gray-300 rounded-lg shadow-sm text-sm placeholder-gray-400 focus:border-green-400 focus:ring-2 focus:ring-green-400/40 transition duration-200 disabled:opacity-50" />
                         </div>
 
                         <!-- Date To Filter -->
@@ -131,26 +134,17 @@
                             <input
                                 v-model="dateTo"
                                 type="date"
-                                class="w-full px-4 py-2 rounded-lg border-2 border-slate-200 bg-white text-slate-900 text-sm font-medium focus:border-blue-400 focus:bg-blue-50/30 focus:outline-none focus:ring-4 focus:ring-blue-400/10 hover:border-slate-300 transition-all duration-200" />
-                        </div>
-
-                        <!-- Clear Filters Button -->
-                        <div class="flex items-end">
-                            <button
-                                class="w-full px-4 py-2 border-2 border-slate-200 rounded-lg text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 hover:border-slate-300 transition-all duration-200"
-                                @click="clearAllFilters">
-                                Clear All
-                            </button>
+                                class="w-full px-4 py-2 rounded-lg border border-gray-300 rounded-lg shadow-sm text-sm placeholder-gray-400 focus:border-green-400 focus:ring-2 focus:ring-green-400/40 transition duration-200 disabled:opacity-50" />
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Applications List - Takes all remaining space -->
-            <div class="bg-white/70 backdrop-blur-sm rounded-2xl border border-slate-200/60 shadow-sm flex flex-col flex-1 overflow-hidden">
+            <div class="bg-gray-100 backdrop-blur-sm rounded-xl border border-gray-300 shadow-sm flex flex-col flex-1 overflow-hidden">
                 <!-- Header -->
                 <div
-                    class="flex items-center justify-between px-6 py-4 border-b border-slate-100/80 flex-shrink-0">
+                    class="flex items-center justify-between px-6 py-4 border-b border-gray-300 flex-shrink-0">
                     <div class="flex items-center space-x-3">
                         <h2
                             class="text-sm font-medium text-slate-700">
@@ -178,7 +172,7 @@
                 <div class="flex-1 overflow-auto">
                     <table class="min-w-full">
                         <thead
-                            class="bg-slate-50 border-b border-slate-200 sticky top-0 z-10">
+                            class="bg-slate-50 border-b border-gray-300 sticky top-0 z-10">
                                 <tr>
                                     <th class="px-6 py-3 text-left">
                                         <input
@@ -213,7 +207,7 @@
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white/50 divide-y divide-slate-100">
+                            <tbody class="bg-gray-100 divide-y divide-slate-300 border-b border-t border-gray-300">
                         <tr v-if="loading">
                             <td
                                 colspan="7"
@@ -236,7 +230,7 @@
                                 v-for="insurance in filteredApplications"
                                 :key="insurance.insuranceId"
                                 :class="[
-                                    'hover:bg-blue-50/50 transition-all duration-200',
+                                    'hover:bg-green-50 transition-all duration-200',
                                     selectedInsuranceIds.includes(
                                         insurance.insuranceId,
                                     )

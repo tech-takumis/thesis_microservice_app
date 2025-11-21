@@ -8,7 +8,7 @@
                 <!-- Left: Logo + Title -->
                 <div class="flex items-center space-x-3">
                     <div>
-                        <h1 class="text-2xl font-bold text-black">
+                        <h1 class="text-2xl font-semibold text-green-600">
                             Dashboard
                         </h1>
                         <p class="text-sm text-gray-600">
@@ -100,7 +100,7 @@
                     class="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3">
                     <!-- Applications Pending -->
                     <div
-                        class="bg-yellow-100 rounded-xl border border-gray-200 p-4 shadow-sm flex flex-col justify-between">
+                        class="bg-yellow-100 rounded-xl border border-gray-300 p-4 shadow-sm flex flex-col justify-between">
                         <!-- Top: Icon + Title -->
                         <div
                             class="flex items-center gap-2 text-black-200 text-sm font-semibold mb-2">
@@ -140,7 +140,7 @@
 
                     <!-- Applications Approved -->
                     <div
-                        class="bg-green-100 rounded-xl border border-gray-200 p-4 shadow-sm flex flex-col justify-between">
+                        class="bg-green-100 rounded-xl border border-gray-300 p-4 shadow-sm flex flex-col justify-between">
                         <div
                             class="flex items-center gap-2 text-black-200 text-sm font-semibold mb-2">
                             <CheckCircle class="w-5 h-5 text-green-600" />
@@ -177,7 +177,7 @@
 
                     <!-- Applications Rejected -->
                     <div
-                        class="bg-red-100 rounded-xl border border-gray-200 p-4 shadow-sm flex flex-col justify-between">
+                        class="bg-red-100 rounded-xl border border-gray-300 p-4 shadow-sm flex flex-col justify-between">
                         <div
                             class="flex items-center gap-2 text-black-200 text-sm font-semibold mb-2">
                             <XCircle class="w-5 h-5 text-red-600" />
@@ -216,9 +216,9 @@
 
             <!-- Recent Applications for Review - Takes remaining space -->
             <div
-                class="bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col min-h-[600px] h-[600px]">
+                class="bg-gray-100 rounded-lg shadow-sm border border-gray-300 flex flex-col min-h-[600px] h-[600px]">
                 <!-- Header -->
-                <div class="px-6 py-4 border-b border-gray-200 flex-shrink-0">
+                <div class="px-6 py-4 border-b border-gray-300 flex-shrink-0">
                     <div class="flex items-center justify-between">
                         <!-- Left: Title with Icon -->
                         <div class="flex items-center gap-2">
@@ -244,7 +244,7 @@
                                 <!-- View box button (blue eye icon only) -->
                                 <button
                                     @click="viewSelected"
-                                    class="flex items-center justify-center w-9 h-9 rounded-md bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100 transition"
+                                    class="flex items-center justify-center w-9 h-9 rounded-md bg-green-100 text-green-600 border border-green-300 hover:bg-green-200 transition"
                                     title="View selected">
                                     <Eye class="w-5 h-5" />
                                 </button>
@@ -304,8 +304,8 @@
                 <!-- Table Container - Scrollable -->
                 <div class="flex-1 min-h-0 overflow-hidden">
                     <div class="overflow-y-auto h-full scrollbar-hide">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-white sticky top-0 z-10">
+                        <table class="min-w-full divide-y divide-gray-300">
+                            <thead class="bg-gray-50 sticky top-0 z-10">
                                 <tr>
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -333,7 +333,7 @@
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-200 mb-20">
+                            <tbody class="bg-gray-100 divide-y divide-gray-300 mb-20">
                                 <tr
                                     v-for="app in filteredApplications"
                                     :key="app.id"
@@ -348,7 +348,7 @@
                                         class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                         <input
                                             type="checkbox"
-                                            class="mr-2 rounded border-gray-300 accent-green-600 transition-colors duration-200 ease-in-out"
+                                            class="mr-2 rounded border-gray-300 accent-accent-600 transition-colors duration-200 ease-in-out"
                                             v-model="selectedApps"
                                             :value="app.id" />
                                         {{ app.id }}
@@ -386,8 +386,8 @@
                                 </tr>
                                 
                                 <!-- Information footer row -->
-                                <tr class="bg-gray-50 border-t-2 border-gray-200">
-                                    <td class="px-6 py-4 text-sm text-gray-600 font-medium" colspan="6">
+                                <tr class="bg-gray-100 border-t-2 border-gray-300">
+                                    <td class="px-6 py-4 text-sm text-green-600 font-medium" colspan="6">
                                         <div class="flex justify-between items-center">
                                             <span>
                                                 Showing {{ filteredApplications.length }} of {{ recentApplications.length }} applications

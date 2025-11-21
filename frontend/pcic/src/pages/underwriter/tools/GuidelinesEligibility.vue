@@ -8,7 +8,7 @@
     <template #header>
       <div class="flex items-center justify-between">
         <div>
-          <h2 class="text-2xl font-bold text-gray-900">Eligibility Guidelines</h2>
+          <h2 class="text-2xl font-semibold text-green-600">Eligibility Guidelines</h2>
           <p class="mt-1 text-sm text-gray-600">
             Comprehensive eligibility criteria for rice crop insurance coverage
           </p>
@@ -17,7 +17,7 @@
           <!-- Eligibility Checker -->
           <button
             @click="showEligibilityChecker = true"
-            class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition"
+            class="inline-flex items-center px-4 py-2 bg-green-600 text-sm font-medium text-white rounded-md hover:bg-green-700 transition"
           >
             <CheckSquare class="w-4 h-4 mr-2" />
             Eligibility Checker
@@ -27,19 +27,19 @@
     </template>
 
     <!-- Main Content -->
-    <div class="space-y-8">
+    <div class="space-y-5">
       
       <!-- Quick Eligibility Overview -->
-      <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <div v-for="stat in eligibilityStats" :key="stat.title" class="bg-white rounded-lg shadow p-6">
+      <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+        <div v-for="stat in eligibilityStats" :key="stat.title" class="bg-gray-100 rounded-xl p-6 border border-gray-300">
           <div class="flex items-center">
             <div :class="stat.iconBg" class="rounded-md p-3">
               <component :is="stat.icon" :class="stat.iconColor" class="w-6 h-6" />
             </div>
             <div class="ml-5 w-0 flex-1">
               <dl>
-                <dt class="text-sm font-medium text-gray-500 truncate">{{ stat.title }}</dt>
-                <dd class="text-lg font-medium text-gray-900">{{ stat.value }}</dd>
+                <dt class="text-sm font-medium text-gray-800 truncate">{{ stat.title }}</dt>
+                <dd class="text-lg font-medium text-gray-700">{{ stat.value }}</dd>
               </dl>
             </div>
           </div>
@@ -47,12 +47,12 @@
       </div>
 
       <!-- Main Eligibility Sections -->
-      <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+      <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
         
         <!-- Farmer Eligibility -->
-        <div class="bg-white rounded-lg shadow">
-          <div class="px-6 py-4 border-b border-gray-200">
-            <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+        <div class="bg-gray-100 rounded-xl border border-gray-300">
+          <div class="px-6 py-4 border-b border-gray-300">
+            <h3 class="text-lg font-semibold text-gray-800 flex items-center">
               <User class="w-5 h-5 mr-2 text-green-600" />
               Farmer Eligibility Requirements
             </h3>
@@ -66,10 +66,10 @@
                   </div>
                 </div>
                 <div class="ml-3">
-                  <p class="text-sm font-medium text-gray-900">{{ requirement.title }}</p>
-                  <p class="text-sm text-gray-600">{{ requirement.description }}</p>
+                  <p class="text-sm font-medium text-gray-800">{{ requirement.title }}</p>
+                  <p class="text-sm text-green-600">{{ requirement.description }}</p>
                   <div v-if="requirement.details" class="mt-2">
-                    <ul class="text-xs text-gray-500 space-y-1">
+                    <ul class="text-xs text-gray-800 space-y-1">
                       <li v-for="detail in requirement.details" :key="detail" class="flex items-center">
                         <div class="w-1 h-1 bg-gray-400 rounded-full mr-2"></div>
                         {{ detail }}
@@ -83,9 +83,9 @@
         </div>
 
         <!-- Land/Crop Eligibility -->
-        <div class="bg-white rounded-lg shadow">
-          <div class="px-6 py-4 border-b border-gray-200">
-            <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+        <div class="bg-gray-100 rounded-xl border border-gray-300">
+          <div class="px-6 py-4 border-b border-gray-300">
+            <h3 class="text-lg font-semibold text-gray-800 flex items-center">
               <Sprout class="w-5 h-5 mr-2 text-green-600" />
               Land & Crop Requirements
             </h3>
@@ -100,9 +100,9 @@
                 </div>
                 <div class="ml-3">
                   <p class="text-sm font-medium text-gray-900">{{ requirement.title }}</p>
-                  <p class="text-sm text-gray-600">{{ requirement.description }}</p>
+                  <p class="text-sm text-yellow-600">{{ requirement.description }}</p>
                   <div v-if="requirement.details" class="mt-2">
-                    <ul class="text-xs text-gray-500 space-y-1">
+                    <ul class="text-xs text-gray-800 space-y-1">
                       <li v-for="detail in requirement.details" :key="detail" class="flex items-center">
                         <div class="w-1 h-1 bg-gray-400 rounded-full mr-2"></div>
                         {{ detail }}
@@ -117,8 +117,8 @@
       </div>
 
       <!-- Coverage Limits & Exclusions -->
-      <div class="bg-white rounded-lg shadow">
-        <div class="px-6 py-4 border-b border-gray-200">
+      <div class="bg-gray-100 rounded-xl border border-gray-300">
+        <div class="px-6 py-4 border-b border-gray-300">
           <h3 class="text-lg font-semibold text-gray-900 flex items-center">
             <Shield class="w-5 h-5 mr-2 text-green-600" />
             Coverage Limits & Exclusions
@@ -130,16 +130,16 @@
             <div>
               <h4 class="text-md font-semibold text-gray-800 mb-4">Coverage Limits</h4>
               <div class="space-y-4">
-                <div v-for="limit in coverageLimits" :key="limit.type" class="border rounded-lg p-4">
+                <div v-for="limit in coverageLimits" :key="limit.type" class="border border-gray-300 rounded-xl p-4">
                   <div class="flex justify-between items-center mb-2">
-                    <span class="text-sm font-medium text-gray-900">{{ limit.type }}</span>
+                    <span class="text-sm font-medium text-gray-800">{{ limit.type }}</span>
                     <span class="text-lg font-bold text-green-600">{{ limit.amount }}</span>
                   </div>
-                  <p class="text-xs text-gray-600">{{ limit.description }}</p>
+                  <p class="text-xs text-gray-700">{{ limit.description }}</p>
                   <div v-if="limit.conditions" class="mt-2">
                     <p class="text-xs font-medium text-gray-700">Conditions:</p>
                     <ul class="text-xs text-gray-500 mt-1 space-y-1">
-                      <li v-for="condition in limit.conditions" :key="condition" class="flex items-center">
+                      <li v-for="condition in limit.conditions" :key="condition" class="flex items-center text-gray-600">
                         <div class="w-1 h-1 bg-gray-400 rounded-full mr-2"></div>
                         {{ condition }}
                       </li>
@@ -153,7 +153,7 @@
             <div>
               <h4 class="text-md font-semibold text-gray-800 mb-4">Coverage Exclusions</h4>
               <div class="space-y-3">
-                <div v-for="exclusion in coverageExclusions" :key="exclusion.id" class="flex items-start p-3 bg-red-50 border border-red-200 rounded-md">
+                <div v-for="exclusion in coverageExclusions" :key="exclusion.id" class="flex items-start p-3 bg-red-50 border border-red-300 rounded-xl">
                   <AlertTriangle class="w-4 h-4 text-red-500 mt-0.5 mr-3 flex-shrink-0" />
                   <div>
                     <p class="text-sm font-medium text-red-800">{{ exclusion.title }}</p>
@@ -167,8 +167,8 @@
       </div>
 
       <!-- Regional Eligibility Map -->
-      <div class="bg-white rounded-lg shadow">
-        <div class="px-6 py-4 border-b border-gray-200">
+      <div class="bg-gray-100 rounded-xl border border-gray-300">
+        <div class="px-6 py-4 border-b border-gray-300">
           <h3 class="text-lg font-semibold text-gray-900 flex items-center">
             <MapPin class="w-5 h-5 mr-2 text-green-600" />
             Regional Eligibility Coverage
@@ -176,19 +176,19 @@
         </div>
         <div class="p-6">
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div v-for="region in eligibleRegions" :key="region.name" class="border rounded-lg p-4">
+            <div v-for="region in eligibleRegions" :key="region.name" class="border border-gray-300 rounded-xl p-4">
               <div class="flex items-center justify-between mb-3">
                 <h4 class="font-semibold text-gray-800">{{ region.name }}</h4>
                 <span :class="region.statusColor" class="px-2 py-1 text-xs font-medium rounded-full">
                   {{ region.status }}
                 </span>
               </div>
-              <p class="text-sm text-gray-600 mb-3">{{ region.description }}</p>
+              <p class="text-sm text-gray-700 mb-3">{{ region.description }}</p>
               <div class="space-y-2">
-                <div class="text-xs text-gray-500">
+                <div class="text-xs text-gray-600">
                   <strong>Provinces:</strong> {{ region.provinces.join(', ') }}
                 </div>
-                <div class="text-xs text-gray-500">
+                <div class="text-xs text-gray-600">
                   <strong>Risk Level:</strong> {{ region.riskLevel }}
                 </div>
               </div>
@@ -198,49 +198,69 @@
       </div>
     </div>
 
-    <!-- Eligibility Checker Modal -->
-    <div v-if="showEligibilityChecker" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" @click="closeModal">
-      <div class="relative top-20 mx-auto p-5 border w-11/12 max-w-lg shadow-lg rounded-md bg-white" @click.stop>
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-lg font-semibold text-gray-900">Quick Eligibility Checker</h3>
-          <button @click="closeModal" class="text-gray-400 hover:text-gray-600">
-            <X class="w-6 h-6" />
-          </button>
-        </div>
-        
-        <div class="space-y-4">
-          <div v-for="(question, index) in eligibilityQuestions" :key="index">
-            <label class="block text-sm font-medium text-gray-700 mb-2">{{ question.question }}</label>
-            <div class="space-y-2">
-              <label v-for="option in question.options" :key="option.value" class="flex items-center">
-                <input
-                  v-model="checkerAnswers[index]"
-                  :value="option.value"
-                  type="radio"
-                  class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300"
-                />
-                <span class="ml-2 text-sm text-gray-900">{{ option.label }}</span>
-              </label>
-            </div>
-          </div>
-          
-          <div class="flex justify-end space-x-3 pt-4 border-t">
-            <button
-              @click="closeModal"
-              class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
-            >
-              Cancel
-            </button>
-            <button
-              @click="checkEligibility"
-              class="px-4 py-2 bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700"
-            >
-              Check Eligibility
-            </button>
-          </div>
+<!-- Eligibility Checker Modal -->
+<div 
+  v-if="showEligibilityChecker" 
+  class="fixed inset-0 bg-white/20 backdrop-blur-sm flex items-center justify-center z-50 overflow-hidden"
+  @click="closeModal"
+>
+  <div 
+    class="relative w-11/12 max-w-lg bg-white/90 backdrop-blur-md rounded-2xl shadow-lg border border-gray-300 p-5 transition-transform" 
+    @click.stop
+  >
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-semibold text-green-600 flex items-center gap-2">
+        <CheckSquare class="w-5 h-5" />
+        Quick Eligibility Checker
+      </h3>
+      <button @click="closeModal" class="text-gray-400 hover:text-gray-600 transition-colors">
+        <XMarkIcon class="w-6 h-6" />
+      </button>
+    </div>
+
+    <!-- Questions -->
+    <div class="space-y-4">
+      <div 
+        v-for="(question, index) in eligibilityQuestions" 
+        :key="index" 
+        class="bg-white/80 p-3 rounded-lg border border-gray-300 shadow-sm"
+      >
+        <label class="block text-sm font-medium text-gray-700 mb-2">{{ question.question }}</label>
+        <div class="space-y-1">
+          <label v-for="option in question.options" :key="option.value" class="flex items-center cursor-pointer">
+            <input
+              v-model="checkerAnswers[index]"
+              :value="option.value"
+              type="radio"
+              class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300"
+            />
+            <span class="ml-2 text-sm text-gray-900">{{ option.label }}</span>
+          </label>
         </div>
       </div>
     </div>
+
+    <!-- Action Buttons -->
+    <div class="flex justify-end gap-3 mt-4 pt-3 border-t border-gray-200">
+      <button
+        @click="closeModal"
+        class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
+      >
+        Cancel
+      </button>
+      <button
+        @click="checkEligibility"
+        class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition"
+      >
+        Check Eligibility
+      </button>
+    </div>
+  </div>
+</div>
+
+
+
   </AuthenticatedLayout>
 </template>
 
@@ -250,14 +270,11 @@ import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
 import { UNDERWRITER_NAVIGATION } from '@/lib/navigation'
 import { 
   CheckSquare,
-  Download,
   User,
   Sprout,
   Shield,
   MapPin,
   AlertTriangle,
-  X,
-  Info,
   Users,
   FileText,
   Calendar,
@@ -284,8 +301,8 @@ const eligibilityStats = ref([
     title: 'Required Documents',
     value: '8',
     icon: FileText,
-    iconBg: 'bg-blue-100',
-    iconColor: 'text-blue-600'
+    iconBg: 'bg-red-100',
+    iconColor: 'text-red-600'
   },
   {
     title: 'Processing Days',
@@ -298,8 +315,8 @@ const eligibilityStats = ref([
     title: 'Success Rate',
     value: '87%',
     icon: TrendingUp,
-    iconBg: 'bg-purple-100',
-    iconColor: 'text-purple-600'
+    iconBg: 'bg-green-100',
+    iconColor: 'text-green-600'
   }
 ])
 

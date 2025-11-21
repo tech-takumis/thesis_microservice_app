@@ -8,7 +8,7 @@
     <template #header>
       <div class="flex items-center justify-between">
         <div>
-          <h2 class="text-2xl font-bold text-gray-900">Geographic Analysis</h2>
+          <h2 class="text-2xl font-semibold text-green-600">Geographic Analysis</h2>
           <p class="mt-1 text-sm text-gray-600">
             Risk assessment and geographic analysis of agricultural insurance applications across the Philippines
           </p>
@@ -18,7 +18,7 @@
           <button
             @click="fetchApplications"
             :disabled="loading"
-            class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+            class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-700 disabled:opacity-50"
           >
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -33,7 +33,7 @@
     <div class="h-full flex flex-col space-y-6">
 
       <!-- Map and Legend Container -->
-      <div class="flex-1 bg-white rounded-lg shadow overflow-hidden">
+      <div class="flex-1 bg-gray-100 overflow-hidden">
         <div class="h-full flex">
           <!-- Map -->
           <div class="flex-1 relative">
@@ -102,7 +102,7 @@
           </div>
 
           <!-- Applications List Panel -->
-          <div class="w-80 bg-gray-50 border-l border-gray-200 overflow-y-auto">
+          <div class="w-80 bg-gray-50 border-gray-200 overflow-y-auto">
             <div class="p-6">
               <h3 class="font-semibold text-gray-900 mb-4">
                 Applications ({{ filteredApplications.length }})
@@ -111,15 +111,15 @@
               <!-- Application Type Legend -->
               <div class="space-y-2 mb-6">
                 <div class="flex items-center">
-                  <div class="w-4 h-4 rounded-full bg-green-500 mr-3"></div>
+                  <div class="w-4 h-4 rounded-full bg-green-600 mr-3"></div>
                   <span class="text-sm text-gray-700">Insurance Applications</span>
                 </div>
                 <div class="flex items-center">
-                  <div class="w-4 h-4 rounded-full bg-red-500 mr-3"></div>
+                  <div class="w-4 h-4 rounded-full bg-red-600 mr-3"></div>
                   <span class="text-sm text-gray-700">Claims for Indemnity</span>
                 </div>
                 <div class="flex items-center">
-                  <div class="w-4 h-4 rounded-full bg-yellow-500 mr-3"></div>
+                  <div class="w-4 h-4 rounded-full bg-yellow-400 mr-3"></div>
                   <span class="text-sm text-gray-700">Inspection Requests</span>
                 </div>
               </div>
@@ -135,7 +135,7 @@
                 <div 
                   v-for="app in filteredApplications.slice(0, 20)" 
                   :key="app.id"
-                  class="bg-white rounded-lg p-3 shadow-sm border border-gray-200 hover:shadow-md transition-shadow cursor-pointer"
+                  class="bg-gray-100 rounded-xl p-3 border border-gray-300 hover:bg-green-50 cursor-pointer"
                   @click="focusOnApplication(app)"
                 >
                   <div class="flex items-start">

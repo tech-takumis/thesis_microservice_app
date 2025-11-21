@@ -8,7 +8,7 @@
     <template #header>
       <div class="flex items-center justify-between">
         <div>
-          <h2 class="text-2xl font-bold text-gray-900">Coverage Guidelines</h2>
+          <h2 class="text-2xl font-semibold text-green-600">Coverage Guidelines</h2>
           <p class="mt-1 text-sm text-gray-600">
             Comprehensive coverage details and benefit calculations for rice crop insurance
           </p>
@@ -35,11 +35,11 @@
     </template>
 
     <!-- Main Content -->
-    <div class="space-y-8">
+    <div class="space-y-4">
       
       <!-- Coverage Overview Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div v-for="overview in coverageOverview" :key="overview.title" class="bg-white rounded-lg shadow-md p-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div v-for="overview in coverageOverview" :key="overview.title" class="bg-gray-100 rounded-xl p-6 border border-gray-300">
           <div class="flex items-center">
             <div :class="overview.iconBg" class="rounded-lg p-3">
               <component :is="overview.icon" :class="overview.iconColor" class="w-6 h-6" />
@@ -54,19 +54,19 @@
       </div>
 
       <!-- Main Coverage Sections -->
-      <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+      <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
         
         <!-- Coverage Types -->
-        <div class="bg-white rounded-lg shadow">
-          <div class="px-6 py-4 border-b border-gray-200">
+        <div class="bg-gray-100 rounded-xl border border-gray-300">
+          <div class="px-6 py-4 border-b border-gray-300">
             <h3 class="text-lg font-semibold text-gray-900 flex items-center">
               <Shield class="w-5 h-5 mr-2 text-green-600" />
               Types of Coverage Available
             </h3>
           </div>
-          <div class="p-6">
-            <div class="space-y-6">
-              <div v-for="coverage in coverageTypes" :key="coverage.id" class="border rounded-lg p-4">
+          <div class="p-4">
+            <div class="space-y-4">
+              <div v-for="coverage in coverageTypes" :key="coverage.id" class="border border-gray-300 rounded-xl p-4">
                 <div class="flex items-start justify-between mb-3">
                   <div class="flex items-center">
                     <div :class="coverage.colorClass" class="w-4 h-4 rounded-full mr-3"></div>
@@ -93,8 +93,8 @@
         </div>
 
         <!-- Premium Calculation -->
-        <div class="bg-white rounded-lg shadow">
-          <div class="px-6 py-4 border-b border-gray-200">
+        <div class="bg-gray-100 rounded-xl border border-gray-300">
+          <div class="px-6 py-4 border-b border-gray-300">
             <h3 class="text-lg font-semibold text-gray-900 flex items-center">
               <Banknote class="w-5 h-5 mr-2 text-green-600" />
               Premium Calculation Structure
@@ -103,16 +103,16 @@
           <div class="p-6">
             <div class="space-y-6">
               <!-- Base Premium -->
-              <div class="border-l-4 border-blue-500 pl-4">
+              <div class="border-l-4 border-green-600 pl-4">
                 <h4 class="font-semibold text-gray-800 mb-2">Base Premium Rate</h4>
                 <div class="grid grid-cols-2 gap-4">
-                  <div class="text-center p-3 bg-blue-50 rounded">
-                    <div class="text-2xl font-bold text-blue-600">2.5%</div>
-                    <div class="text-sm text-blue-700">Standard Rate</div>
+                  <div class="text-center p-3 bg-green-100 rounded">
+                    <div class="text-2xl font-bold text-green-600">2.5%</div>
+                    <div class="text-sm text-green-600">Standard Rate</div>
                   </div>
-                  <div class="text-center p-3 bg-blue-50 rounded">
-                    <div class="text-2xl font-bold text-blue-600">85%</div>
-                    <div class="text-sm text-blue-700">Cost Coverage</div>
+                  <div class="text-center p-3 bg-green-100 rounded">
+                    <div class="text-2xl font-bold text-green-600">85%</div>
+                    <div class="text-sm text-green-600">Cost Coverage</div>
                   </div>
                 </div>
               </div>
@@ -120,7 +120,7 @@
               <!-- Risk Adjustments -->
               <div class="space-y-3">
                 <h4 class="font-semibold text-gray-800">Risk-Based Adjustments</h4>
-                <div v-for="adjustment in premiumAdjustments" :key="adjustment.factor" class="flex justify-between items-center p-3 border rounded">
+                <div v-for="adjustment in premiumAdjustments" :key="adjustment.factor" class="flex justify-between items-center p-3 border border-gray-300 rounded-xl">
                   <div>
                     <span class="text-sm font-medium text-gray-900">{{ adjustment.factor }}</span>
                     <p class="text-xs text-gray-600">{{ adjustment.description }}</p>
@@ -136,7 +136,7 @@
       </div>
 
       <!-- Coverage Benefits Breakdown -->
-      <div class="bg-white rounded-lg shadow">
+      <div class="bg-gray-100 rounded-xl border border-gray-300">
         <div class="px-6 py-4 border-b border-gray-200">
           <h3 class="text-lg font-semibold text-gray-900 flex items-center">
             <TrendingUp class="w-5 h-5 mr-2 text-green-600" />
@@ -155,7 +155,7 @@
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-for="benefit in detailedBenefits" :key="benefit.category" class="hover:bg-gray-50">
+              <tr v-for="benefit in detailedBenefits" :key="benefit.category" class="hover:bg-green-50">
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex items-center">
                     <component :is="benefit.icon" class="w-5 h-5 text-gray-400 mr-3" />
@@ -191,8 +191,8 @@
       </div>
 
       <!-- Regional Coverage Map -->
-      <div class="bg-white rounded-lg shadow">
-        <div class="px-6 py-4 border-b border-gray-200">
+      <div class="bg-gray-100 rounded-xl border border-gray-300">
+        <div class="px-6 py-4 border-b border-gray-300">
           <h3 class="text-lg font-semibold text-gray-900 flex items-center">
             <MapPin class="w-5 h-5 mr-2 text-green-600" />
             Regional Coverage Variations
@@ -200,7 +200,7 @@
         </div>
         <div class="p-6">
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div v-for="region in regionalCoverage" :key="region.name" class="border rounded-lg p-4">
+            <div v-for="region in regionalCoverage" :key="region.name" class="border border-gray-300 rounded-xl p-4">
               <div class="flex items-center justify-between mb-3">
                 <h4 class="font-semibold text-gray-800">{{ region.name }}</h4>
                 <span :class="region.statusColor" class="px-3 py-1 text-xs font-medium rounded-full">
@@ -220,7 +220,7 @@
                   <span class="text-gray-600">Risk Level:</span>
                   <span class="font-semibold text-gray-900">{{ region.riskLevel }}</span>
                 </div>
-                <div class="pt-2 border-t">
+                <div class="pt-2 border-t border-green-500">
                   <p class="text-xs text-gray-500">{{ region.notes }}</p>
                 </div>
               </div>
@@ -230,105 +230,117 @@
       </div>
     </div>
 
-    <!-- Coverage Calculator Modal -->
-    <div v-if="showCalculator" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" @click="closeCalculator">
-      <div class="relative top-10 mx-auto p-5 border w-11/12 max-w-2xl shadow-lg rounded-md bg-white" @click.stop>
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-lg font-semibold text-gray-900">Coverage Calculator</h3>
-          <button @click="closeCalculator" class="text-gray-400 hover:text-gray-600">
-            <X class="w-6 h-6" />
-          </button>
+<!-- Coverage Calculator Modal -->
+<div 
+  v-if="showCalculator" 
+  class="fixed inset-0 bg-white/20 backdrop-blur-sm flex items-center justify-center z-50 overflow-hidden border border-gray-300"
+  @click="closeCalculator"
+>
+  <div 
+    class="relative w-11/12 max-w-lg bg-white/90 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200 p-5 transition-transform" 
+    @click.stop
+  >
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-semibold text-green-600 flex items-center gap-2">
+        <Calculator class="w-5 h-5" />
+        Farm Coverage Calculator
+      </h3>
+      <button @click="closeCalculator" class="text-gray-400 hover:text-gray-600 transition-colors">
+        <XMarkIcon class="w-6 h-6" />
+      </button>
+    </div>
+
+    <!-- Calculator Inputs -->
+    <div class="space-y-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Farm Size (ha)</label>
+          <input
+            v-model.number="calculator.farmSize"
+            type="number"
+            step="0.1"
+            min="0.5"
+            max="5"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
+            placeholder="Enter farm size"
+          />
         </div>
-        
-        <div class="space-y-6">
-          <!-- Calculator Inputs -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Farm Size (hectares)</label>
-              <input
-                v-model.number="calculator.farmSize"
-                type="number"
-                step="0.1"
-                min="0.5"
-                max="5"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
-                placeholder="Enter farm size"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Production Cost per Ha</label>
-              <input
-                v-model.number="calculator.productionCost"
-                type="number"
-                min="50000"
-                max="100000"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
-                placeholder="Enter production cost"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Risk Level</label>
-              <select 
-                v-model="calculator.riskLevel"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
-              >
-                <option value="low">Low Risk (2.5%)</option>
-                <option value="medium">Medium Risk (4.0%)</option>
-                <option value="high">High Risk (6.5%)</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Coverage Type</label>
-              <select 
-                v-model="calculator.coverageType"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
-              >
-                <option value="standard">Standard (85%)</option>
-                <option value="enhanced">Enhanced (90%)</option>
-                <option value="premium">Premium (95%)</option>
-              </select>
-            </div>
-          </div>
-          
-          <!-- Calculation Results -->
-          <div v-if="calculatedResults" class="bg-gray-50 rounded-lg p-6">
-            <h4 class="font-semibold text-gray-800 mb-4">Calculation Results</h4>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div class="text-center">
-                <div class="text-2xl font-bold text-green-600">₱{{ calculatedResults.totalCoverage.toLocaleString() }}</div>
-                <div class="text-sm text-gray-600">Total Coverage</div>
-              </div>
-              <div class="text-center">
-                <div class="text-2xl font-bold text-blue-600">₱{{ calculatedResults.annualPremium.toLocaleString() }}</div>
-                <div class="text-sm text-gray-600">Annual Premium</div>
-              </div>
-              <div class="text-center">
-                <div class="text-2xl font-bold text-purple-600">{{ calculatedResults.premiumRate }}%</div>
-                <div class="text-sm text-gray-600">Premium Rate</div>
-              </div>
-            </div>
-            <div class="mt-4 text-xs text-gray-500">
-              * Calculations are estimates. Final rates may vary based on detailed assessment.
-            </div>
-          </div>
-          
-          <div class="flex justify-end space-x-3 pt-4 border-t">
-            <button
-              @click="closeCalculator"
-              class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
-            >
-              Close
-            </button>
-            <button
-              @click="calculateCoverage"
-              class="px-4 py-2 bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700"
-            >
-              Calculate
-            </button>
-          </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Production Cost per Ha</label>
+          <input
+            v-model.number="calculator.productionCost"
+            type="number"
+            min="50000"
+            max="100000"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
+            placeholder="Enter production cost"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Risk Level</label>
+          <select 
+            v-model="calculator.riskLevel"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
+          >
+            <option value="low">Low Risk (2.5%)</option>
+            <option value="medium">Medium Risk (4.0%)</option>
+            <option value="high">High Risk (6.5%)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Coverage Type</label>
+          <select 
+            v-model="calculator.coverageType"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
+          >
+            <option value="standard">Standard (85%)</option>
+            <option value="enhanced">Enhanced (90%)</option>
+            <option value="premium">Premium (95%)</option>
+          </select>
         </div>
       </div>
+
+      <!-- Calculation Results -->
+      <div v-if="calculatedResults" class="bg-white/80 rounded-lg p-4 border border-gray-300">
+        <h4 class="font-semibold text-gray-800 mb-3">Calculation Results</h4>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-center">
+          <div>
+            <div class="text-2xl font-bold text-green-600">₱{{ calculatedResults.totalCoverage.toLocaleString() }}</div>
+            <div class="text-sm text-gray-600">Total Coverage</div>
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-yellow-500">₱{{ calculatedResults.annualPremium.toLocaleString() }}</div>
+            <div class="text-sm text-gray-600">Annual Premium</div>
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-red-600">{{ calculatedResults.premiumRate }}%</div>
+            <div class="text-sm text-gray-600">Premium Rate</div>
+          </div>
+        </div>
+        <div class="mt-3 text-xs text-gray-500">
+          * Calculations are estimates. Final rates may vary based on detailed assessment.
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex justify-end gap-3 mt-4 pt-3 border-t border-gray-200">
+        <button
+          @click="closeCalculator"
+          class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
+        >
+          Close
+        </button>
+        <button
+          @click="calculateCoverage"
+          class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition"
+        >
+          Calculate
+        </button>
+      </div>
     </div>
+  </div>
+</div>
   </AuthenticatedLayout>
 </template>
 
@@ -343,14 +355,10 @@ import {
   Banknote,
   TrendingUp,
   MapPin,
-  X,
   Sprout,
-  Cloud,
   Droplets,
   Bug,
-  Zap,
   Wind,
-  Sun
 } from 'lucide-vue-next'
 
 // Navigation
@@ -377,32 +385,32 @@ const coverageOverview = ref([
     value: '₱75,000',
     subtitle: 'per hectare',
     icon: Shield,
-    iconBg: 'bg-green-100',
-    iconColor: 'text-green-600'
+    iconBg: 'bg-red-100',
+    iconColor: 'text-red-600'
   },
   {
     title: 'Base Premium',
     value: '2.5%',
     subtitle: 'of insured amount',
     icon: Banknote,
-    iconBg: 'bg-blue-100',
-    iconColor: 'text-blue-600'
+    iconBg: 'bg-green-100',
+    iconColor: 'text-green-600'
   },
   {
     title: 'Coverage Ratio',
     value: '85%',
     subtitle: 'of production cost',
     icon: TrendingUp,
-    iconBg: 'bg-purple-100',
-    iconColor: 'text-purple-600'
+    iconBg: 'bg-yellow-100',
+    iconColor: 'text-yellow-600'
   },
   {
     title: 'Claim Period',
     value: '30',
     subtitle: 'days processing',
     icon: Calculator,
-    iconBg: 'bg-yellow-100',
-    iconColor: 'text-yellow-600'
+    iconBg: 'bg-green-100',
+    iconColor: 'text-green-600'
   }
 ])
 
@@ -424,7 +432,7 @@ const coverageTypes = ref([
     percentage: 90,
     amount: '₱67,500 per hectare',
     description: 'Extended coverage including additional input costs and equipment',
-    colorClass: 'bg-blue-500',
+    colorClass: 'bg-yellow-400',
     includes: ['All standard items', 'Pesticides', 'Irrigation costs', 'Equipment rental'],
     conditions: ['Minimum 1 hectare', 'Certified organic practices', 'Technology adoption']
   },
@@ -434,7 +442,7 @@ const coverageTypes = ref([
     percentage: 95,
     amount: '₱71,250 per hectare',
     description: 'Comprehensive coverage with maximum protection and benefits',
-    colorClass: 'bg-purple-500',
+    colorClass: 'bg-red-500',
     includes: ['All enhanced items', 'Post-harvest losses', 'Quality premiums', 'Market support'],
     conditions: ['Minimum 2 hectares', 'Contract farming', 'Premium variety cultivation']
   }

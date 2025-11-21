@@ -128,8 +128,8 @@ public class AuthController {
         // Get agriculture entity with roles
         Agriculture agriculture = authService.getAgricultureWithRoles(userDetails.getUserId());
 
-        Set<RoleResponse> roles = agriculture.getRoles().stream()
-                .map(roleService::getRole)
+        Set<AuthenticatedRoles> roles = agriculture.getRoles().stream()
+                .map(roleService::getAuthenticateRoles)
                 .collect(Collectors.toSet());
 
         AuthUser response = AuthUser.builder()

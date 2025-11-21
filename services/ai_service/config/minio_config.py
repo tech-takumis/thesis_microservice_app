@@ -2,6 +2,7 @@ import os
 from minio import Minio
 from minio.error import S3Error
 from typing import Optional
+from datetime import timedelta
 import logging
 
 # MinIO Configuration
@@ -80,7 +81,7 @@ class MinIOConfig:
             if not self.client:
                 return None
 
-            url = self.client.presigned_get_object(bucket_name, object_name, expires=expires)
+            url = self.client.presigned_get_object(bucket_name, object_name, expires=timedelta(seconds=expires))
             return url
         except Exception as e:
             logger.error(f"Error getting presigned URL: {e}")

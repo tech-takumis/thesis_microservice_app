@@ -2,6 +2,7 @@ package com.example.agriculture.mapper;
 
 import com.example.agriculture.dto.auth.AuthUser;
 import com.example.agriculture.dto.auth.AuthenticatedResponse;
+import com.example.agriculture.dto.auth.AuthenticatedRoles;
 import com.example.agriculture.dto.auth.LoginResponse;
 import com.example.agriculture.dto.rbac.RoleResponse;
 import com.example.agriculture.entity.Agriculture;
@@ -29,9 +30,10 @@ public class AuthMapper {
     }
 
     public AuthUser toAuthUser(Agriculture agriculture) {
-        Set<RoleResponse> roles = agriculture.getRoles().stream()
-                .map(roleMapper::toRoleResponse)
+        Set<AuthenticatedRoles> roles = agriculture.getRoles().stream()
+                .map(roleMapper::toAuthenticatedRole)
                 .collect(Collectors.toSet());
+
         return AuthUser.builder()
                 .id(agriculture.getId())
                 .username(agriculture.getUsername())

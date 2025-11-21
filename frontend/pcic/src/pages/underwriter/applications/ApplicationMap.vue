@@ -48,7 +48,7 @@
           <div>
             <h1 class="text-3xl font-bold text-green-600">Application Location Map</h1>
             <p v-if="applicationData" class="mt-1 text-sm text-gray-600">
-              {{ applicationData.dynamicFields?.farmer_name || 'Unknown Farmer' }} -
+              {{ applicationData.dynamicFields?.farmer_name || applicationData.dynamicFields?.first_name + applicationData.dynamicFields?.last_name || 'Unknown Farmer' }} -
               {{ applicationData.applicationTypeName || 'Application' }}
             </p>
           </div>
@@ -102,7 +102,7 @@
           <div class="mb-4 pb-4 border-b border-gray-200">
             <h3 class="text-sm font-medium text-gray-500 mb-2">Farmer Details</h3>
             <p class="text-sm text-gray-900 font-medium">
-              {{ applicationData.dynamicFields?.farmer_name || 'N/A' }}
+              {{ applicationData.dynamicFields?.farmer_name || applicationData.dynamicFields?.first_name + applicationData.dynamicFields?.last_name || 'N/A' }}
             </p>
             <p class="text-sm text-gray-600 mt-1">
               {{ applicationData.dynamicFields?.cell_phone_number || 'No phone' }}
@@ -328,7 +328,7 @@ const initializeMap = () => {
   // Create custom popup content
   const popupContent = `
     <div class="p-2">
-      <h3 class="font-semibold text-sm mb-2">${applicationData.value.dynamicFields?.farmer_name || 'Unknown Farmer'}</h3>
+      <h3 class="font-semibold text-sm mb-2">${applicationData.dynamicFields?.farmer_name || applicationData.dynamicFields?.first_name + applicationData.dynamicFields?.last_name || 'Unknown Farmer'}</h3>
       <div class="text-xs space-y-1">
         <p><strong>Type:</strong> ${applicationData.value.applicationTypeName}</p>
         ${applicationData.value.dynamicFields?.farm_location ? `<p><strong>Location:</strong> ${applicationData.value.dynamicFields.farm_location}</p>` : ''}

@@ -13,118 +13,17 @@
                 <!-- Right Side: Notifications + Profile -->
                 <div class="flex items-center space-x-6">
                     <!-- Notifications -->
-                    <div class="relative notifications-dropdown">
+                    <!-- <div class="relative notifications-dropdown">
                         <button
                             class="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
                             @click="toggleNotificationsDropdown">
                             <Bell class="h-5 w-5" />
-                            <!-- Notification Badge -->
                             <span
                                 class="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
                                 {{ notificationCount }}
                             </span>
                         </button>
-
-                        <!-- Notifications Dropdown with Smooth Transition -->
-                        <transition
-                            enter-active-class="transition ease-out duration-300"
-                            enter-from-class="opacity-0 -translate-y-2"
-                            enter-to-class="opacity-100 translate-y-0"
-                            leave-active-class="transition ease-in duration-200"
-                            leave-from-class="opacity-100 translate-y-0"
-                            leave-to-class="opacity-0 -translate-y-2">
-                            <div
-                                v-show="showNotificationsDropdown"
-                                class="absolute right-0 top-10 w-[26rem] bg-white rounded-2xl shadow-xl border border-gray-200 z-50">
-                                <!-- Header -->
-                                <div
-                                    class="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50 rounded-t-2xl">
-                                    <h3
-                                        class="text-lg font-semibold text-gray-900 flex items-center space-x-2">
-                                        <Bell class="h-5 w-5 text-green-600" />
-                                        <span>Notifications</span>
-                                    </h3>
-                                    <button
-                                        class="text-sm text-green-600 hover:text-green-700 font-medium transition-colors"
-                                        @click="markAllAsRead">
-                                        Mark all as read
-                                    </button>
-                                </div>
-
-                                <!-- Notification List -->
-                                <div class="max-h-[26rem] overflow-y-auto">
-                                    <div
-                                        v-for="notification in notifications"
-                                        :key="notification.id"
-                                        class="p-4 border-b border-gray-100 hover:bg-green-50 transition cursor-pointer flex space-x-4">
-                                        <!-- Icon / Status -->
-                                        <div class="flex-shrink-0">
-                                            <div
-                                                class="h-9 w-9 flex items-center justify-center rounded-full"
-                                                :class="
-                                                    notification.read
-                                                        ? 'bg-gray-100'
-                                                        : 'bg-green-100'
-                                                ">
-                                                <Bell
-                                                    class="h-4 w-4 text-green-600" />
-                                            </div>
-                                        </div>
-
-                                        <!-- Message -->
-                                        <div class="flex-1">
-                                            <div
-                                                class="flex justify-between items-center">
-                                                <p
-                                                    class="font-medium text-gray-900 text-sm">
-                                                    {{ notification.title }}
-                                                </p>
-                                                <span
-                                                    class="text-xs text-gray-400"
-                                                    >{{
-                                                        notification.time
-                                                    }}</span
-                                                >
-                                            </div>
-                                            <p
-                                                class="text-sm text-gray-600 mt-1">
-                                                {{ notification.message }}
-                                            </p>
-                                            <div
-                                                v-if="!notification.read"
-                                                class="mt-1 inline-block bg-green-600 text-white text-[10px] px-2 py-0.5 rounded-full">
-                                                New
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Empty State -->
-                                    <div
-                                        v-if="notifications.length === 0"
-                                        class="p-8 text-center text-gray-500">
-                                        <Bell
-                                            class="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                                        <p class="text-base font-medium">
-                                            No new notifications
-                                        </p>
-                                        <p class="text-sm text-gray-400">
-                                            You're all caught up!
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <!-- Footer -->
-                                <div
-                                    class="p-3 border-t border-gray-200 bg-gray-50 rounded-b-2xl">
-                                    <button
-                                        class="w-full text-center text-sm text-green-700 hover:text-green-800 font-medium transition"
-                                        @click="viewAllNotifications">
-                                        View all notifications
-                                    </button>
-                                </div>
-                            </div>
-                        </transition>
-                    </div>
+                    </div> -->
 
                     <!-- Profile Dropdown -->
                     <div class="relative select-none">
@@ -199,14 +98,6 @@
                                     <div
                                         class="border-t border-gray-100 my-1"></div>
 
-                                    <!-- Logout -->
-                                    <button
-                                        class="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition"
-                                        @click="handleLogoutClick">
-                                        <Briefcase
-                                            class="h-4 w-4 mr-3 text-red-500" />
-                                        Logout
-                                    </button>
                                 </div>
                             </div>
                         </transition>
@@ -233,7 +124,108 @@
                         </div>
 
                         <!-- Financial & Program Cards - 4 columns with unified scroll container -->
-                        <div class="lg:col-span-4 flex flex-col min-h-0">
+                        <div class="lg:col-span-4 flex flex-col min-h-0 relative">
+                            <!-- Notifications Modal Overlay -->
+                            <transition
+                                enter-active-class="transition ease-out duration-300"
+                                enter-from-class="opacity-0 scale-95"
+                                enter-to-class="opacity-100 scale-100"
+                                leave-active-class="transition ease-in duration-200"
+                                leave-from-class="opacity-100 scale-100"
+                                leave-to-class="opacity-0 scale-95">
+                                <div
+                                    v-show="showNotificationsDropdown"
+                                    class="absolute inset-0 bg-white rounded-2xl shadow-xl border border-gray-200 z-50 flex flex-col">
+                                    <!-- Header -->
+                                    <div
+                                        class="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50 rounded-t-2xl flex-shrink-0">
+                                        <h3
+                                            class="text-lg font-semibold text-gray-900 flex items-center space-x-2">
+                                            <Bell class="h-5 w-5 text-green-600" />
+                                            <span>Notifications</span>
+                                        </h3>
+                                        <button
+                                            class="text-sm text-green-600 hover:text-green-700 font-medium transition-colors"
+                                            @click="markAllAsRead">
+                                            Mark all as read
+                                        </button>
+                                    </div>
+
+                                    <!-- Notification List -->
+                                    <div class="flex-1 overflow-y-auto">
+                                        <div
+                                            v-for="notification in notifications"
+                                            :key="notification.id"
+                                            class="p-4 border-b border-gray-100 hover:bg-green-50 transition cursor-pointer flex space-x-4">
+                                            <!-- Icon / Status -->
+                                            <div class="flex-shrink-0">
+                                                <div
+                                                    class="h-9 w-9 flex items-center justify-center rounded-full"
+                                                    :class="
+                                                        notification.read
+                                                            ? 'bg-gray-100'
+                                                            : 'bg-green-100'
+                                                    ">
+                                                    <Bell
+                                                        class="h-4 w-4 text-green-600" />
+                                                </div>
+                                            </div>
+
+                                            <!-- Message -->
+                                            <div class="flex-1">
+                                                <div
+                                                    class="flex justify-between items-center">
+                                                    <p
+                                                        class="font-medium text-gray-900 text-sm">
+                                                        {{ notification.title }}
+                                                    </p>
+                                                    <span
+                                                        class="text-xs text-gray-400"
+                                                        >{{
+                                                            notification.time
+                                                        }}</span
+                                                    >
+                                                </div>
+                                                <p
+                                                    class="text-sm text-gray-600 mt-1">
+                                                    {{ notification.message }}
+                                                </p>
+                                                <div
+                                                    v-if="!notification.read"
+                                                    class="mt-1 inline-block bg-green-600 text-white text-[10px] px-2 py-0.5 rounded-full">
+                                                    New
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Empty State -->
+                                        <div
+                                            v-if="notifications.length === 0"
+                                            class="p-8 text-center text-gray-500">
+                                            <Bell
+                                                class="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                                            <p class="text-base font-medium">
+                                                No new notifications
+                                            </p>
+                                            <p class="text-sm text-gray-400">
+                                                You're all caught up!
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Footer -->
+                                    <div
+                                        class="p-3 border-t border-gray-200 bg-gray-50 rounded-b-2xl flex-shrink-0">
+                                        <button
+                                            class="w-full text-center text-sm text-green-700 hover:text-green-800 font-medium transition"
+                                            @click="viewAllNotifications">
+                                            View all notifications
+                                        </button>
+                                    </div>
+                                </div>
+                            </transition>
+
+                            <!-- Original content -->
                             <div
                                 class="h-full overflow-y-auto overflow-x-hidden pr-2 custom-scrollbar">
                                 <div class="space-y-4">
@@ -417,11 +409,6 @@ const handlePreferencesClick = () => {
     console.log('Navigate to preferences page')
 }
 
-const handleLogoutClick = () => {
-    showProfileDropdown.value = false
-    // Handle logout
-    authStore.logout()
-}
 
 // Click outside handler for dropdowns
 const handleClickOutside = event => {

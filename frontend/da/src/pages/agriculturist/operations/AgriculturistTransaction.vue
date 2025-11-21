@@ -9,10 +9,12 @@ import { MUNICIPAL_AGRICULTURIST_NAVIGATION } from '@/lib/navigation'
 import { useTransactionStore } from '@/stores/transaction.js'
 import { useNotificationStore } from '@/stores/notification.js'
 import { ref, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
 
 const navigation = MUNICIPAL_AGRICULTURIST_NAVIGATION
 const transactionStore = useTransactionStore()
 const notificationStore = useNotificationStore()
+const router = useRouter()
 
 // State
 const showCreateModal = ref(false)
@@ -217,6 +219,13 @@ const formatDate = (dateString) => {
     }
 }
 
+const navigateToTransactionDetail = (transactionId) => {
+    router.push({
+        name: 'agriculturist-transaction-detail',
+        params: { id: transactionId }
+    })
+}
+
 // Lifecycle
 onMounted(async () => {
     await fetchTransactions()
@@ -415,8 +424,8 @@ onMounted(async () => {
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
-                                <tr v-for="transaction in filteredTransactions" :key="transaction.id" class="hover:bg-gray-50">
-                                    <td class="px-4 py-4 whitespace-nowrap">
+                                <tr v-for="transaction in filteredTransactions" :key="transaction.id" class="hover:bg-gray-50 cursor-pointer transition-colors" @click="navigateToTransactionDetail(transaction.id)">
+                                    <td class="px-4 py-4 whitespace-nowrap" @click.stop>
                                         <input
                                             type="checkbox"
                                             :checked="selectedTransactions.has(transaction.id)"
@@ -468,14 +477,16 @@ onMounted(async () => {
                 <div class="md:hidden flex flex-col flex-1 min-h-0">
                     <div class="flex-1 overflow-y-auto">
                         <div class="divide-y divide-gray-200">
-                            <div v-for="transaction in filteredTransactions" :key="transaction.id" class="p-4">
+                            <div v-for="transaction in filteredTransactions" :key="transaction.id" class="p-4 cursor-pointer hover:bg-gray-50 transition-colors" @click="navigateToTransactionDetail(transaction.id)">
                                 <div class="flex items-start justify-between mb-2">
                                     <div class="flex items-start gap-3 flex-1 min-w-0">
-                                        <input
-                                            type="checkbox"
-                                            :checked="selectedTransactions.has(transaction.id)"
-                                            class="mt-1 rounded border-gray-300 text-green-600 focus:ring-green-500 flex-shrink-0"
-                                            @change="toggleTransactionSelection(transaction.id)" />
+                                        <div @click.stop>
+                                            <input
+                                                type="checkbox"
+                                                :checked="selectedTransactions.has(transaction.id)"
+                                                class="mt-1 rounded border-gray-300 text-green-600 focus:ring-green-500 flex-shrink-0"
+                                                @change="toggleTransactionSelection(transaction.id)" />
+                                        </div>
                                         <div class="flex-1 min-w-0">
                                             <p class="text-sm font-medium text-gray-900">{{ formatDate(transaction.date) }}</p>
                                             <p class="text-sm text-gray-600 mt-1 break-words">{{ transaction.description }}</p>

@@ -1,4 +1,5 @@
 package com.hashjosh.realtimegatewayservice.controller;
+import com.hashjosh.realtimegatewayservice.dto.FarmersNotificationRequest;
 import com.hashjosh.realtimegatewayservice.dto.NotificationRequestDTO;
 import com.hashjosh.realtimegatewayservice.dto.NotificationResponseDTO;
 import com.hashjosh.realtimegatewayservice.service.NotificationService;
@@ -24,6 +25,18 @@ public class NotificationController {
     ) {
         NotificationResponseDTO response = notificationService.createNotification(requestDTO);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/farmers")
+    public ResponseEntity<String> createFarmersNotification(
+            @RequestBody FarmersNotificationRequest request
+    ){
+        notificationService.sendFarmersNotifications(
+               request
+        );
+
+        return ResponseEntity.ok("Farmers notifications sent successfully");
+
     }
 
 

@@ -9,11 +9,8 @@ import com.hashjosh.constant.application.ApplicationTypeResponseDto;
 import com.hashjosh.constant.workflow.ApplicationWorkflowResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-
 import java.util.ArrayList;
 import java.util.List;
-
-import static java.util.stream.Collectors.toList;
 
 @Component
 @RequiredArgsConstructor
@@ -55,11 +52,11 @@ public class ApplicationTypeMapper {
                 .workflow(mapToApplicationWorkflowResponse(applicationType.getApplicationWorkflow()))
                 .build();
 
-        if(includeApplicationResponse != null && includeApplicationResponse) {
+        if((includeApplicationResponse != null && includeApplicationResponse) && !applications.isEmpty()) {
             responseDto.setApplications(applications);
         }
 
-        if(includeSections != null && includeSections) {
+        if((includeSections != null && includeSections) && applicationType.getSections() != null) {
             responseDto.setSections(applicationType.getSections().stream()
                     .map(applicationSectionMapper::toApplicationSectionResponseDto)
                     .toList());

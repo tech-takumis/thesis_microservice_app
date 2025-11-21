@@ -8,10 +8,12 @@ import { MUNICIPAL_AGRICULTURIST_NAVIGATION } from '@/lib/navigation'
 import { useProgramStore } from '@/stores/program.js'
 import { useNotificationStore } from '@/stores/notification.js'
 import { ref, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
 
 const navigation = MUNICIPAL_AGRICULTURIST_NAVIGATION
 const programStore = useProgramStore()
 const notificationStore = useNotificationStore()
+const router = useRouter()
 
 // State
 const showFilters = ref(false)
@@ -22,21 +24,18 @@ const searchQuery = ref('')
 // Filter states
 const filters = ref({
     name: '',
+    type: '',
     status: '',
-    budget: { min: '', max: '' },
-    completion: { min: '', max: '' },
-    date: { start: '', end: '' }
+    completion: { min: '', max: '' }
 })
 
 // New program form
 const newProgram = ref({
     name: '',
-    description: '',
-    budget: '',
-    completedPercentage: 0,
-    status: 'planned',
-    startDate: new Date().toISOString().split('T')[0],
-    endDate: ''
+    type: 'TRAINING',
+    status: 'PENDING',
+    completion: 0,
+    notes: ''
 })
 
 // Computed
@@ -48,9 +47,9 @@ const filteredPrograms = computed(() => {
         const query = searchQuery.value.toLowerCase()
         filtered = filtered.filter(program =>
             program.name.toLowerCase().includes(query) ||
-            program.description.toLowerCase().includes(query) ||
+            (program.notes && program.notes.toLowerCase().includes(query)) ||
             program.status.toLowerCase().includes(query) ||
-            program.budget.toString().includes(query)
+            (program.type && program.type.toLowerCase().includes(query))
         )
     }
 
@@ -61,32 +60,20 @@ const filteredPrograms = computed(() => {
         )
     }
 
+    if (filters.value.type) {
+        filtered = filtered.filter(p => p.type === filters.value.type)
+    }
+
     if (filters.value.status) {
         filtered = filtered.filter(p => p.status === filters.value.status)
     }
 
-    if (filters.value.budget.min) {
-        filtered = filtered.filter(p => p.budget >= parseFloat(filters.value.budget.min))
-    }
-
-    if (filters.value.budget.max) {
-        filtered = filtered.filter(p => p.budget <= parseFloat(filters.value.budget.max))
-    }
-
     if (filters.value.completion.min) {
-        filtered = filtered.filter(p => p.completedPercentage >= parseFloat(filters.value.completion.min))
+        filtered = filtered.filter(p => p.completion >= parseFloat(filters.value.completion.min))
     }
 
     if (filters.value.completion.max) {
-        filtered = filtered.filter(p => p.completedPercentage <= parseFloat(filters.value.completion.max))
-    }
-
-    if (filters.value.date.start) {
-        filtered = filtered.filter(p => new Date(p.startDate) >= new Date(filters.value.date.start))
-    }
-
-    if (filters.value.date.end) {
-        filtered = filtered.filter(p => new Date(p.endDate) <= new Date(filters.value.date.end))
+        filtered = filtered.filter(p => p.completion <= parseFloat(filters.value.completion.max))
     }
 
     return filtered
@@ -94,13 +81,10 @@ const filteredPrograms = computed(() => {
 
 const hasActiveFilters = computed(() => {
     return filters.value.name ||
+           filters.value.type ||
            filters.value.status ||
-           filters.value.budget.min ||
-           filters.value.budget.max ||
            filters.value.completion.min ||
-           filters.value.completion.max ||
-           filters.value.date.start ||
-           filters.value.date.end
+           filters.value.completion.max
 })
 
 const selectedProgramsCount = computed(() => selectedPrograms.value.size)
@@ -111,32 +95,28 @@ const fetchPrograms = async () => {
     await programStore.getAllPrograms()
 }
 
+const closeModal = () => {
+    showCreateModal.value = false
+    resetForm()
+}
+
 const handleCreateProgram = async () => {
     try {
-        if (!newProgram.value.name || !newProgram.value.description || !newProgram.value.budget || !newProgram.value.startDate || !newProgram.value.endDate) {
+        if (!newProgram.value.name || !newProgram.value.type || !newProgram.value.status) {
             notificationStore.showError('Please fill in all required fields before creating the program.')
-            return
-        }
-
-        if (new Date(newProgram.value.endDate) <= new Date(newProgram.value.startDate)) {
-            notificationStore.showError('End date must be after start date.')
             return
         }
 
         const programData = {
             ...newProgram.value,
-            budget: parseFloat(newProgram.value.budget),
-            completedPercentage: parseInt(newProgram.value.completedPercentage),
-            startDate: newProgram.value.startDate + 'T00:00:00',
-            endDate: newProgram.value.endDate + 'T00:00:00'
+            completion: parseInt(newProgram.value.completion)
         }
 
         const result = await programStore.createProgram(programData)
 
         if (result.success) {
-            showCreateModal.value = false
-            resetForm()
-            notificationStore.showSuccess('Program created successfully! 🎉')
+            closeModal()
+            notificationStore.showSuccess('Program created successfully!')
         } else {
             notificationStore.showError(`Failed to create program: ${result.message}`)
         }
@@ -149,10 +129,9 @@ const handleCreateProgram = async () => {
 const clearFilters = () => {
     filters.value = {
         name: '',
+        type: '',
         status: '',
-        budget: { min: '', max: '' },
-        completion: { min: '', max: '' },
-        date: { start: '', end: '' }
+        completion: { min: '', max: '' }
     }
 }
 
@@ -174,21 +153,15 @@ const toggleProgramSelection = (programId) => {
     selectedPrograms.value = newSelectedSet
 }
 
-const formatCurrency = (amount) => {
-    if (!amount && amount !== 0) return '₱0.00'
-    return new Intl.NumberFormat('en-PH', {
-        style: 'currency',
-        currency: 'PHP'
-    }).format(amount)
-}
-
 const formatDate = (dateString) => {
     if (!dateString) return 'N/A'
     try {
         return new Date(dateString).toLocaleDateString('en-PH', {
             year: 'numeric',
             month: 'short',
-            day: 'numeric'
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
         })
     } catch (error) {
         return 'Invalid Date'
@@ -196,13 +169,32 @@ const formatDate = (dateString) => {
 }
 
 const getStatusColor = (status) => {
-    switch (status?.toLowerCase()) {
-        case 'ongoing':
+    switch (status?.toUpperCase()) {
+        case 'ACTIVE':
             return 'bg-blue-100 text-blue-800'
-        case 'completed':
+        case 'COMPLETED':
             return 'bg-green-100 text-green-800'
-        case 'planned':
+        case 'PENDING':
             return 'bg-yellow-100 text-yellow-800'
+        case 'INACTIVE':
+            return 'bg-gray-100 text-gray-800'
+        case 'CANCELLED':
+            return 'bg-red-100 text-red-800'
+        default:
+            return 'bg-gray-100 text-gray-800'
+    }
+}
+
+const getTypeColor = (type) => {
+    switch (type?.toUpperCase()) {
+        case 'TRAINING':
+            return 'bg-purple-100 text-purple-800'
+        case 'DISTRIBUTION':
+            return 'bg-green-100 text-green-800'
+        case 'MONITORING':
+            return 'bg-blue-100 text-blue-800'
+        case 'CONSULTATION':
+            return 'bg-orange-100 text-orange-800'
         default:
             return 'bg-gray-100 text-gray-800'
     }
@@ -217,13 +209,18 @@ const getCompletionColor = (percentage) => {
 const resetForm = () => {
     newProgram.value = {
         name: '',
-        description: '',
-        budget: '',
-        completedPercentage: 0,
-        status: 'planned',
-        startDate: new Date().toISOString().split('T')[0],
-        endDate: ''
+        type: 'TRAINING',
+        status: 'PENDING',
+        completion: 0,
+        notes: ''
     }
+}
+
+const navigateToProgramDetail = (programId) => {
+    router.push({
+        name: 'agriculturist-monitor-programs-detail',
+        params: { id: programId }
+    })
 }
 
 // Lifecycle
@@ -243,10 +240,6 @@ onMounted(async () => {
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <h1 class="text-2xl font-bold text-gray-900">Program Monitoring</h1>
-                    <p class="text-sm text-gray-600">
-                        {{ filteredPrograms.length }} program{{ filteredPrograms.length !== 1 ? 's' : '' }}
-                        {{ searchQuery || hasActiveFilters ? '(filtered)' : '' }}
-                    </p>
                 </div>
                 <BaseButton
                     class="bg-green-600 hover:bg-green-700"
@@ -315,7 +308,7 @@ onMounted(async () => {
 
                     <!-- Filter Panel -->
                     <div v-if="showFilters" class="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                             <div>
                                 <label class="block text-xs font-medium text-gray-700 mb-1">Program Name</label>
                                 <input
@@ -326,29 +319,28 @@ onMounted(async () => {
                             </div>
 
                             <div>
-                                <label class="block text-xs font-medium text-gray-700 mb-1">Status</label>
-                                <select v-model="filters.status" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-green-500 focus:border-transparent">
-                                    <option value="">All Status</option>
-                                    <option value="planned">Planned</option>
-                                    <option value="ongoing">Ongoing</option>
-                                    <option value="completed">Completed</option>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Type</label>
+                                <select v-model="filters.type" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-green-500 focus:border-transparent">
+                                    <option value="">All Types</option>
+                                    <option value="TRAINING">Training</option>
+                                    <option value="WORKSHOP">Workshop</option>
+                                    <option value="RESEARCH">Research</option>
+                                    <option value="DISTRIBUTION">Distribution</option>
+                                    <option value="MONITORING">Monitoring</option>
+                                    <option value="CONSULTATION">Consultation</option>
                                 </select>
                             </div>
 
                             <div>
-                                <label class="block text-xs font-medium text-gray-700 mb-1">Budget Range</label>
-                                <div class="flex gap-2">
-                                    <input
-                                        v-model="filters.budget.min"
-                                        type="number"
-                                        placeholder="Min"
-                                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-green-500 focus:border-transparent" />
-                                    <input
-                                        v-model="filters.budget.max"
-                                        type="number"
-                                        placeholder="Max"
-                                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-green-500 focus:border-transparent" />
-                                </div>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Status</label>
+                                <select v-model="filters.status" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-green-500 focus:border-transparent">
+                                    <option value="">All Status</option>
+                                    <option value="PENDING">Pending</option>
+                                    <option value="ACTIVE">Active</option>
+                                    <option value="COMPLETED">Completed</option>
+                                    <option value="INACTIVE">Inactive</option>
+                                    <option value="CANCELLED">Cancelled</option>
+                                </select>
                             </div>
 
                             <div>
@@ -367,20 +359,6 @@ onMounted(async () => {
                                         placeholder="Max %"
                                         min="0"
                                         max="100"
-                                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-green-500 focus:border-transparent" />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label class="block text-xs font-medium text-gray-700 mb-1">Date Range</label>
-                                <div class="flex gap-2">
-                                    <input
-                                        v-model="filters.date.start"
-                                        type="date"
-                                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-green-500 focus:border-transparent" />
-                                    <input
-                                        v-model="filters.date.end"
-                                        type="date"
                                         class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-green-500 focus:border-transparent" />
                                 </div>
                             </div>
@@ -407,17 +385,15 @@ onMounted(async () => {
                                             @change="toggleSelectAll" />
                                     </th>
                                     <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Program Name</th>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                                     <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Budget</th>
                                     <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Completion</th>
-                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start Date</th>
-                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">End Date</th>
-                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Beneficiaries</th>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
-                                <tr v-for="program in filteredPrograms" :key="program.id" class="hover:bg-gray-50">
-                                    <td class="px-4 py-4 whitespace-nowrap">
+                                <tr v-for="program in filteredPrograms" :key="program.id" class="hover:bg-gray-50 cursor-pointer transition-colors" @click="navigateToProgramDetail(program.id)">
+                                    <td class="px-4 py-4 whitespace-nowrap" @click.stop>
                                         <input
                                             type="checkbox"
                                             :checked="selectedPrograms.has(program.id)"
@@ -426,36 +402,32 @@ onMounted(async () => {
                                     </td>
                                     <td class="px-4 py-4 text-sm text-gray-900 max-w-xs">
                                         <div class="font-medium truncate" :title="program.name">{{ program.name }}</div>
-                                        <div class="text-xs text-gray-500 truncate" :title="program.description">{{ program.description }}</div>
+                                        <div class="text-xs text-gray-500 truncate" :title="program.notes">{{ program.notes || 'No notes' }}</div>
+                                    </td>
+                                    <td class="px-4 py-4 whitespace-nowrap">
+                                        <span :class="getTypeColor(program.type)" class="px-2 py-1 text-xs font-medium rounded-full capitalize">
+                                            {{ program.type }}
+                                        </span>
                                     </td>
                                     <td class="px-4 py-4 whitespace-nowrap">
                                         <span :class="getStatusColor(program.status)" class="px-2 py-1 text-xs font-medium rounded-full capitalize">
                                             {{ program.status }}
                                         </span>
                                     </td>
-                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                        {{ formatCurrency(program.budget) }}
-                                    </td>
                                     <td class="px-4 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
                                             <div class="w-16 bg-gray-200 rounded-full h-2 mr-2">
-                                                <div class="bg-green-600 h-2 rounded-full" :style="{ width: `${program.completedPercentage}%` }"></div>
+                                                <div class="bg-green-600 h-2 rounded-full" :style="{ width: `${program.completion}%` }"></div>
                                             </div>
-                                            <span :class="getCompletionColor(program.completedPercentage)" class="text-sm font-medium">
-                                                {{ program.completedPercentage }}%
+                                            <span :class="getCompletionColor(program.completion)" class="text-sm font-medium">
+                                                {{ program.completion }}%
                                             </span>
                                         </div>
                                     </td>
-                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatDate(program.startDate) }}</td>
-                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatDate(program.endDate) }}</td>
-                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                            {{ program.beneficiaries.length }}
-                                        </span>
-                                    </td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatDate(program.createdAt) }}</td>
                                 </tr>
                                 <tr v-if="filteredPrograms.length === 0">
-                                    <td colspan="8" class="px-4 py-8 text-center text-gray-500">
+                                    <td colspan="7" class="px-4 py-8 text-center text-gray-500">
                                         No programs found
                                     </td>
                                 </tr>
@@ -468,23 +440,25 @@ onMounted(async () => {
                 <div class="md:hidden flex flex-col flex-1 min-h-0">
                     <div class="flex-1 overflow-y-auto">
                         <div class="divide-y divide-gray-200">
-                            <div v-for="program in filteredPrograms" :key="program.id" class="p-4">
+                            <div v-for="program in filteredPrograms" :key="program.id" class="p-4 cursor-pointer hover:bg-gray-50 transition-colors" @click="navigateToProgramDetail(program.id)">
                                 <div class="flex items-start justify-between mb-3">
                                     <div class="flex items-start gap-3 flex-1 min-w-0">
-                                        <input
-                                            type="checkbox"
-                                            :checked="selectedPrograms.has(program.id)"
-                                            class="mt-1 rounded border-gray-300 text-green-600 focus:ring-green-500 flex-shrink-0"
-                                            @change="toggleProgramSelection(program.id)" />
+                                        <div @click.stop>
+                                            <input
+                                                type="checkbox"
+                                                :checked="selectedPrograms.has(program.id)"
+                                                class="mt-1 rounded border-gray-300 text-green-600 focus:ring-green-500 flex-shrink-0"
+                                                @change="toggleProgramSelection(program.id)" />
+                                        </div>
                                         <div class="flex-1 min-w-0">
                                             <p class="text-sm font-medium text-gray-900 break-words">{{ program.name }}</p>
-                                            <p class="text-xs text-gray-600 mt-1 break-words">{{ program.description }}</p>
-                                            <div class="flex items-center mt-2 gap-2">
+                                            <p class="text-xs text-gray-600 mt-1 break-words">{{ program.notes || 'No notes' }}</p>
+                                            <div class="flex items-center mt-2 gap-2 flex-wrap">
+                                                <span :class="getTypeColor(program.type)" class="px-2 py-1 text-xs font-medium rounded-full capitalize">
+                                                    {{ program.type }}
+                                                </span>
                                                 <span :class="getStatusColor(program.status)" class="px-2 py-1 text-xs font-medium rounded-full capitalize">
                                                     {{ program.status }}
-                                                </span>
-                                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                                    {{ program.beneficiaries.length }} beneficiaries
                                                 </span>
                                             </div>
                                         </div>
@@ -492,23 +466,23 @@ onMounted(async () => {
                                 </div>
                                 <div class="ml-8 space-y-2">
                                     <div class="flex justify-between text-sm">
-                                        <span class="text-gray-600">Budget:</span>
-                                        <span class="font-medium">{{ formatCurrency(program.budget) }}</span>
-                                    </div>
-                                    <div class="flex justify-between text-sm">
                                         <span class="text-gray-600">Completion:</span>
                                         <div class="flex items-center">
                                             <div class="w-12 bg-gray-200 rounded-full h-2 mr-2">
-                                                <div class="bg-green-600 h-2 rounded-full" :style="{ width: `${program.completedPercentage}%` }"></div>
+                                                <div class="bg-green-600 h-2 rounded-full" :style="{ width: `${program.completion}%` }"></div>
                                             </div>
-                                            <span :class="getCompletionColor(program.completedPercentage)" class="font-medium">
-                                                {{ program.completedPercentage }}%
+                                            <span :class="getCompletionColor(program.completion)" class="font-medium">
+                                                {{ program.completion }}%
                                             </span>
                                         </div>
                                     </div>
                                     <div class="flex justify-between text-sm">
-                                        <span class="text-gray-600">Duration:</span>
-                                        <span class="font-medium">{{ formatDate(program.startDate) }} - {{ formatDate(program.endDate) }}</span>
+                                        <span class="text-gray-600">Created:</span>
+                                        <span class="font-medium">{{ formatDate(program.createdAt) }}</span>
+                                    </div>
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-gray-600">Updated:</span>
+                                        <span class="font-medium">{{ formatDate(program.updatedAt) }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -522,149 +496,140 @@ onMounted(async () => {
         </div>
 
         <!-- Create Program Modal -->
-        <div v-if="showCreateModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 p-4">
-            <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-                <!-- Modal Header -->
-                <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-                    <h3 class="text-lg font-medium text-gray-900">Create New Program</h3>
-                    <button
-                        @click="showCreateModal = false"
-                        class="text-gray-400 hover:text-gray-600 transition-colors">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
-                </div>
+        <Transition name="modal">
+            <div v-if="showCreateModal" class="fixed inset-0 z-50">
+                <!-- Backdrop -->
+                <Transition name="backdrop">
+                    <div
+                        v-if="showCreateModal"
+                        class="absolute inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+                        @click="closeModal">
+                    </div>
+                </Transition>
 
-                <!-- Modal Body -->
-                <div class="px-6 py-6">
-                    <form @submit.prevent="handleCreateProgram" class="space-y-6">
-                        <!-- Row 1: Program Name and Status -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label for="programName" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Program Name <span class="text-red-500">*</span>
-                                </label>
-                                <input
-                                    id="programName"
-                                    v-model="newProgram.name"
-                                    type="text"
-                                    required
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                                    placeholder="Enter program name" />
-                            </div>
-
-                            <div>
-                                <label for="status" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Status <span class="text-red-500">*</span>
-                                </label>
-                                <select
-                                    id="status"
-                                    v-model="newProgram.status"
-                                    required
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent">
-                                    <option value="planned">Planned</option>
-                                    <option value="ongoing">Ongoing</option>
-                                    <option value="completed">Completed</option>
-                                </select>
-                            </div>
+                <!-- Slide Panel -->
+                <Transition name="slide">
+                    <div
+                        v-if="showCreateModal"
+                        class="absolute right-0 top-0 h-full w-5/12 bg-white shadow-2xl flex flex-col">
+                        <!-- Modal Header -->
+                        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center flex-shrink-0">
+                            <h3 class="text-lg font-medium text-gray-900">Create New Program</h3>
+                            <button
+                                @click="closeModal"
+                                class="text-gray-400 hover:text-gray-600 transition-colors">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
                         </div>
 
-                        <!-- Row 2: Budget and Completion Percentage -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label for="budget" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Budget (₱) <span class="text-red-500">*</span>
-                                </label>
-                                <input
-                                    id="budget"
-                                    v-model="newProgram.budget"
-                                    type="number"
-                                    step="0.01"
-                                    min="0"
-                                    required
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                                    placeholder="Enter budget amount" />
-                            </div>
+                        <!-- Modal Body -->
+                        <div class="flex-1 overflow-y-auto px-6 py-6">
+                            <form @submit.prevent="handleCreateProgram" class="space-y-6">
+                                <!-- Program Name -->
+                                <div>
+                                    <label for="programName" class="block text-sm font-medium text-gray-700 mb-2">
+                                        Program Name <span class="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        id="programName"
+                                        v-model="newProgram.name"
+                                        type="text"
+                                        required
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                        placeholder="Enter program name" />
+                                </div>
 
-                            <div>
-                                <label for="completedPercentage" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Completion Percentage
-                                </label>
-                                <input
-                                    id="completedPercentage"
-                                    v-model="newProgram.completedPercentage"
-                                    type="number"
-                                    min="0"
-                                    max="100"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                                    placeholder="0" />
-                            </div>
+                                <!-- Program Type -->
+                                <div>
+                                    <label for="type" class="block text-sm font-medium text-gray-700 mb-2">
+                                        Program Type <span class="text-red-500">*</span>
+                                    </label>
+                                    <select
+                                        id="type"
+                                        v-model="newProgram.type"
+                                        required
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                                        <option value="TRAINING">Training</option>
+                                        <option value="WORKSHOP">Workshop</option>
+                                        <option value="RESEARCH">Research</option>
+                                        <option value="DISTRIBUTION">Distribution</option>
+                                        <option value="MONITORING">Monitoring</option>
+                                        <option value="CONSULTATION">Consultation</option>
+                                    </select>
+                                </div>
+
+                                <!-- Status -->
+                                <div>
+                                    <label for="status" class="block text-sm font-medium text-gray-700 mb-2">
+                                        Status <span class="text-red-500">*</span>
+                                    </label>
+                                    <select
+                                        id="status"
+                                        v-model="newProgram.status"
+                                        required
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                                        <option value="PENDING">Pending</option>
+                                        <option value="ACTIVE">Active</option>
+                                        <option value="COMPLETED">Completed</option>
+                                        <option value="INACTIVE">Inactive</option>
+                                        <option value="CANCELLED">Cancelled</option>
+                                    </select>
+                                </div>
+
+                                <!-- Completion Percentage -->
+                                <div>
+                                    <label for="completion" class="block text-sm font-medium text-gray-700 mb-2">
+                                        Completion Percentage
+                                    </label>
+                                    <input
+                                        id="completion"
+                                        v-model="newProgram.completion"
+                                        type="number"
+                                        min="0"
+                                        max="100"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                        placeholder="0" />
+                                </div>
+
+                                <!-- Notes -->
+                                <div>
+                                    <label for="notes" class="block text-sm font-medium text-gray-700 mb-2">
+                                        Notes
+                                    </label>
+                                    <textarea
+                                        id="notes"
+                                        v-model="newProgram.notes"
+                                        rows="4"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                        placeholder="Enter program notes (optional)"></textarea>
+                                </div>
+                            </form>
                         </div>
 
-                        <!-- Row 3: Start Date and End Date -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label for="startDate" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Start Date <span class="text-red-500">*</span>
-                                </label>
-                                <input
-                                    id="startDate"
-                                    v-model="newProgram.startDate"
-                                    type="date"
-                                    required
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent" />
-                            </div>
-
-                            <div>
-                                <label for="endDate" class="block text-sm font-medium text-gray-700 mb-2">
-                                    End Date <span class="text-red-500">*</span>
-                                </label>
-                                <input
-                                    id="endDate"
-                                    v-model="newProgram.endDate"
-                                    type="date"
-                                    required
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent" />
-                            </div>
+                        <!-- Modal Footer -->
+                        <div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3 flex-shrink-0">
+                            <BaseButton
+                                variant="secondary"
+                                @click="closeModal">
+                                Cancel
+                            </BaseButton>
+                            <BaseButton
+                                class="bg-green-600 hover:bg-green-700"
+                                @click="handleCreateProgram"
+                                :disabled="programStore.isLoading">
+                                <svg v-if="programStore.isLoading" class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                {{ programStore.isLoading ? 'Creating...' : 'Create Program' }}
+                            </BaseButton>
                         </div>
-
-                        <!-- Row 4: Description -->
-                        <div>
-                            <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
-                                Description <span class="text-red-500">*</span>
-                            </label>
-                            <textarea
-                                id="description"
-                                v-model="newProgram.description"
-                                rows="4"
-                                required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                                placeholder="Enter program description"></textarea>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- Modal Footer -->
-                <div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
-                    <BaseButton
-                        variant="secondary"
-                        @click="showCreateModal = false">
-                        Cancel
-                    </BaseButton>
-                    <BaseButton
-                        class="bg-green-600 hover:bg-green-700"
-                        @click="handleCreateProgram"
-                        :disabled="programStore.isLoading">
-                        <svg v-if="programStore.isLoading" class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        {{ programStore.isLoading ? 'Creating...' : 'Create Program' }}
-                    </BaseButton>
-                </div>
+                    </div>
+                </Transition>
             </div>
-        </div>
+        </Transition>
 
         <!-- Notification Toast -->
         <NotificationToast />
@@ -707,5 +672,33 @@ onMounted(async () => {
 /* Ensure minimum width for mobile layout */
 .min-w-0 {
     min-width: 0;
+}
+
+/* Modal Backdrop Animation */
+.backdrop-enter-active,
+.backdrop-leave-active {
+    transition: opacity 0.3s ease;
+}
+
+.backdrop-enter-from,
+.backdrop-leave-to {
+    opacity: 0;
+}
+
+/* Slide Panel Animation */
+.slide-enter-active {
+    transition: transform 0.3s ease-out;
+}
+
+.slide-leave-active {
+    transition: transform 0.3s ease-in;
+}
+
+.slide-enter-from {
+    transform: translateX(100%);
+}
+
+.slide-leave-to {
+    transform: translateX(100%);
 }
 </style>

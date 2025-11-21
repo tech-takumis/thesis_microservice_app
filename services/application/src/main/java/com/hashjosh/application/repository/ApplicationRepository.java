@@ -34,4 +34,6 @@ public interface ApplicationRepository extends JpaRepository<Application, UUID> 
         WHERE a.id = :applicationId
  """)
     ApplicationType findApplicationTypeByApplicationId(@Param("applicationId") UUID applicationId);
+
+    List<Application> findAllByUserId(UUID uuid);
 }

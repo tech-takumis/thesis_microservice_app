@@ -6,6 +6,7 @@ import '../../../presentation/controllers/auth_controller.dart';
 import '../../../presentation/pages/login_page.dart';
 import  'package:mobile/presentation/pages/profile_page.dart';
 import 'package:mobile/presentation/pages/multi_step_register_page.dart';
+import 'package:mobile/presentation/pages/my_voucher_page.dart';
 
 final goRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
@@ -35,6 +36,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/profile',
          builder: (context, state) => const ProfilePage()
+      ),
+      GoRoute(
+        path: '/my-vouchers',
+        builder: (context, state) => const MyVoucherPage(),
       ),
       GoRoute(
         path: '/register',

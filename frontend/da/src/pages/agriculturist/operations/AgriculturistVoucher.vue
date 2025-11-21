@@ -4,25 +4,51 @@ import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
 import { MUNICIPAL_AGRICULTURIST_NAVIGATION } from '@/lib/navigation'
 import { useRouter } from 'vue-router'
 import { useFarmerStore } from '@/stores/farmer'
-import { Search, Printer, RotateCcw, Check } from 'lucide-vue-next'
+import { useVoucherStore } from '@/stores/voucher'
+import { Search, RotateCcw, Check, FileText, User } from 'lucide-vue-next'
+import { ChevronRightIcon, TicketIcon } from '@heroicons/vue/24/outline'
 
 const navigation = MUNICIPAL_AGRICULTURIST_NAVIGATION
 const router = useRouter()
 const farmerStore = useFarmerStore()
+const voucherStore = useVoucherStore()
 
 // State
 const selectedFarmers = ref([])
 const searchQuery = ref('')
-const showPrintPreview = ref(false)
+const isSubmitting = ref(false)
+const notification = ref(null)
 
-// Voucher Information
+// Voucher Information (matches CreateVoucherRequestDto)
 const voucherInfo = ref({
   title: '',
-  voucherType: 'Seeds',
-  totalBags: '',
+  voucherType: 'SEEDS',
+  unit: 'bags',
+  quantity: '',
   issueDate: new Date().toISOString().split('T')[0],
   expiryDate: '',
   referenceNumber: ''
+})
+
+// Voucher type options
+const voucherTypes = [
+  'SEEDS',
+  'FERTILIZER',
+  'EQUIPMENT',
+  'CASH',
+  'OTHER'
+]
+
+// Unit options based on voucher type
+const unitOptions = computed(() => {
+  const units = {
+    SEEDS: ['bags', 'kg', 'sacks'],
+    FERTILIZER: ['bags', 'kg', 'liters'],
+    EQUIPMENT: ['pieces', 'units', 'sets'],
+    CASH: ['PHP', 'USD'],
+    OTHER: ['items', 'units']
+  }
+  return units[voucherInfo.value.voucherType] || ['units']
 })
 
 // Computed
@@ -39,15 +65,10 @@ const filteredFarmers = computed(() => {
 const isFormValid = computed(() => {
   return voucherInfo.value.title && 
          voucherInfo.value.voucherType && 
-         voucherInfo.value.totalBags && 
+         voucherInfo.value.unit &&
+         voucherInfo.value.quantity &&
          selectedFarmers.value.length > 0
 })
-
-const voucherTypes = [
-  'Seeds',
-  'Fertilizer',
-  'Equipment'
-]
 
 // Custom dropdown state for voucher type
 const isVoucherDropdownOpen = ref(false)
@@ -65,6 +86,7 @@ const closeVoucherDropdown = () => {
 
 const selectVoucherType = (type) => {
   voucherInfo.value.voucherType = type
+  voucherInfo.value.unit = unitOptions.value[0]
   closeVoucherDropdown()
 }
 
@@ -133,28 +155,25 @@ const clearSelection = () => {
   selectedFarmers.value = []
 }
 
-const handlePrint = () => {
-  showPrintPreview.value = true
-  setTimeout(() => {
-    window.print()
-  }, 100)
-}
-
 const handleBack = () => {
   router.push({'name': "agriculturist-dashboard"})
+}
+
+const navigateToVoucherList = () => {
+  router.push({ name: 'agriculturist-voucher-all' })
 }
 
 const resetForm = () => {
   voucherInfo.value = {
     title: '',
-    voucherType: 'Seeds',
-    totalBags: '',
+    voucherType: 'SEEDS',
+    unit: 'bags',
+    quantity: '',
     issueDate: new Date().toISOString().split('T')[0],
     expiryDate: '',
     referenceNumber: ''
   }
   selectedFarmers.value = []
-  showPrintPreview.value = false
 }
 
 // Generate reference number
@@ -164,6 +183,41 @@ const generateReferenceNumber = () => {
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0')
   voucherInfo.value.referenceNumber = `VCH-${year}${month}-${random}`
+}
+
+// Bulk voucher creation
+const createVouchers = async () => {
+  if (!isFormValid.value) return
+  isSubmitting.value = true
+  notification.value = null
+  let successCount = 0
+  let failCount = 0
+  for (const farmer of selectedFarmers.value) {
+    const dto = {
+      ownerUserId: farmer.id,
+      title: voucherInfo.value.title,
+      voucherType: voucherInfo.value.voucherType,
+      unit: voucherInfo.value.unit,
+      quantity: Number(voucherInfo.value.quantity),
+      issueDate: voucherInfo.value.issueDate,
+      expiryDate: voucherInfo.value.expiryDate,
+      referenceNumber: voucherInfo.value.referenceNumber
+    }
+    const result = await voucherStore.createVoucher(dto)
+    if (result.success) {
+      successCount++
+    } else {
+      failCount++
+    }
+  }
+  isSubmitting.value = false
+  if (successCount > 0) {
+    notification.value = `${successCount} voucher(s) created successfully.`
+    resetForm()
+  }
+  if (failCount > 0) {
+    notification.value = `${failCount} voucher(s) failed to create.`
+  }
 }
 
 onMounted(async () => {
@@ -177,8 +231,31 @@ onMounted(async () => {
     role-title="Municipal Agriculturist"
     page-title="Create Voucher"
   >
-    <!-- ===== MAIN CONTENT (Visible on screen, hidden when printing) ===== -->
-    <div class="p-4 sm:p-6 min-h-screen flex flex-col space-y-6 print:hidden">
+    <div class="p-4 sm:p-6 h-full flex flex-col space-y-6">
+      <!-- Breadcrumb Navigation -->
+      <nav class="flex mb-2" aria-label="Breadcrumb">
+        <ol class="flex items-center space-x-4">
+          <li>
+            <div>
+              <button
+                @click="navigateToVoucherList"
+                class="text-gray-400 hover:text-gray-500 flex items-center gap-1"
+              >
+                <TicketIcon class="flex-shrink-0 h-5 w-5" />
+                <span class="text-sm font-medium">Voucher List</span>
+              </button>
+            </div>
+          </li>
+          <li>
+            <div class="flex items-center">
+              <ChevronRightIcon class="flex-shrink-0 h-5 w-5 text-gray-400" />
+              <span class="ml-4 text-sm font-medium text-green-600">
+                Voucher Generator
+              </span>
+            </div>
+          </li>
+        </ol>
+      </nav>
 
       <!-- Header Section -->
       <div class="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center border-b border-gray-300 pb-3">
@@ -188,7 +265,6 @@ onMounted(async () => {
             Create Voucher
           </h1>
         </div>
-
         <div class="flex items-center gap-3 mt-3 sm:mt-0">
           <button
             @click="resetForm"
@@ -197,22 +273,23 @@ onMounted(async () => {
             <RotateCcw class="w-4 h-4 text-gray-500" />
             <span>Reset</span>
           </button>
-
           <button
-            @click="handlePrint"
-            :disabled="!isFormValid"
+            @click="createVouchers"
+            :disabled="!isFormValid || isSubmitting"
             class="flex items-center gap-2 px-5 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed shadow-sm"
           >
-            <Printer class="w-4 h-4" />
-            <span>Print Vouchers</span>
+            <span v-if="isSubmitting" class="animate-spin mr-2 w-4 h-4 border-2 border-white border-t-green-600 rounded-full"></span>
+            <span>Create Vouchers</span>
           </button>
         </div>
       </div>
-
-      <!-- ===== Two-Column Layout ===== -->
-      <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 flex-grow">
-        <!-- === Farmer Selection === -->
-        <div class="bg-gray-100 border border-gray-300 rounded-2xl shadow-sm p-6 flex flex-col h-[550px]">
+      <div v-if="notification" class="mb-4 p-3 rounded-lg bg-green-50 text-green-800 border border-green-200">
+        {{ notification }}
+      </div>
+      <!-- Two-Column Layout -->
+      <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 flex-1 h-0">
+        <!-- Farmer Selection: 1/3 width -->
+        <div class="bg-gray-100 border border-gray-300 rounded-2xl shadow-sm p-6 flex flex-col h-full xl:col-span-1 min-h-0">
           <div class="flex items-center justify-between mb-4">
             <h2 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
               <User class="w-5 h-5 text-green-600" />
@@ -220,7 +297,6 @@ onMounted(async () => {
             </h2>
             <span class="text-sm text-gray-600">{{ selectedFarmers.length }} selected</span>
           </div>
-
           <div class="relative mb-4">
             <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
@@ -230,7 +306,6 @@ onMounted(async () => {
               class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:border-green-400 focus:ring-2 focus:ring-green-300 transition duration-200"
             />
           </div>
-
           <div class="flex gap-3 mb-4">
             <button
               @click="selectAllFiltered"
@@ -245,8 +320,7 @@ onMounted(async () => {
               Clear
             </button>
           </div>
-
-          <div class="border border-gray-200 rounded-xl flex-1 overflow-y-auto divide-y divide-gray-100">
+          <div class="border-none flex-1 overflow-y-auto divide-y min-h-0">
             <div
               v-for="farmer in filteredFarmers"
               :key="farmer.id"
@@ -263,225 +337,140 @@ onMounted(async () => {
                 <p class="font-medium text-gray-900">{{ farmer.name }}</p>
               </div>
             </div>
-
             <div v-if="filteredFarmers.length === 0" class="p-6 text-center text-gray-500 text-sm">
               No farmers found
             </div>
           </div>
         </div>
-
-<!-- === Voucher Information === -->
-<div class="bg-gray-100 border border-gray-300 rounded-2xl shadow-sm p-6 flex flex-col h-[550px]">
-  <!-- Header -->
-  <div class="flex items-center gap-2 mb-5">
-    <FileText class="w-5 h-5 text-green-600" />
-    <h2 class="text-lg font-semibold text-gray-900">Voucher Information</h2>
-  </div>
-
-  <!-- Scrollable Form -->
-  <div class="flex-1 space-y-5 pr-1"> <!-- Removed overflow-y-auto -->
-    <!-- Voucher Title -->
-    <div>
-      <label class="block text-sm font-medium text-gray-700 mb-1">
-        Voucher Title <span class="text-red-500">*</span>
-      </label>
-      <input
-        v-model="voucherInfo.title"
-        type="text"
-        placeholder="e.g., Rice Seeds Distribution 2024"
-        class="w-full px-3 py-2.5 border border-gray-300 rounded-xl 
-               focus:outline-none focus:border-green-400 
-               focus:ring-2 focus:ring-green-300 
-               transition duration-200"
-      />
-    </div>
-
-    <!-- Voucher Type (Custom Styled Dropdown) -->
-    <div>
-      <label class="block text-sm font-medium text-gray-700 mb-1">
-        Voucher Type <span class="text-red-500">*</span>
-      </label>
-
-      <div id="voucher-type-dropdown" class="relative">
-        <button
-          type="button"
-          @click="toggleVoucherDropdown"
-          @keydown.stop.prevent="onVoucherKeyDown"
-          :aria-expanded="isVoucherDropdownOpen"
-          aria-haspopup="listbox"
-          class="w-full flex items-center justify-between px-3 py-2.5 border border-gray-300 rounded-xl bg-white
-                 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-300
-                 focus:border-green-400"
-        >
-          <span class="text-gray-900">{{ voucherInfo.voucherType }}</span>
-          <svg
-            class="w-4 h-4 text-green-600 transform transition-transform duration-200"
-            :class="isVoucherDropdownOpen ? 'rotate-180' : ''"
-            viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"
-            aria-hidden="true"
-          >
-            <path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
-
-        <ul
-          v-show="isVoucherDropdownOpen"
-          role="listbox"
-          tabindex="-1"
-          class="origin-top-right absolute right-0 left-0 mt-2 bg-white rounded-xl shadow-lg ring-1 ring-black ring-opacity-5 overflow-auto max-h-56 py-1 focus:outline-none z-50
-                 transition-transform duration-150"
-        >
-          <li
-            v-for="(type, idx) in voucherTypes"
-            :key="type"
-            role="option"
-            :aria-selected="type === voucherInfo.voucherType"
-            @mouseenter="highlightedIndex = idx"
-            @mouseleave="highlightedIndex = -1"
-            @click="selectVoucherType(type)"
-            :class="[
-              'px-3 py-2 cursor-pointer flex items-center justify-between',
-              highlightedIndex === idx ? 'bg-green-50' : 'hover:bg-green-50',
-              type === voucherInfo.voucherType ? 'font-semibold text-green-700' : 'text-gray-700'
-            ]"
-          >
-            <span>{{ type }}</span>
-            <svg v-if="type === voucherInfo.voucherType" class="w-4 h-4 text-green-600" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- Total Bags -->
-    <div>
-      <label class="block text-sm font-medium text-gray-700 mb-1">
-        Total Bags <span class="text-red-500">*</span>
-      </label>
-      <input
-        v-model="voucherInfo.totalBags"
-        type="number"
-        min="1"
-        placeholder="e.g., 5"
-        class="w-full px-3 py-2.5 border border-gray-300 rounded-xl 
-               focus:outline-none focus:border-green-400 
-               focus:ring-2 focus:ring-green-300 
-               transition duration-200"
-      />
-    </div>
-
-    <!-- Reference Number -->
-    <div>
-      <label class="block text-sm font-medium text-gray-700 mb-1">
-        Reference Number
-      </label>
-      <div class="flex gap-2">
-        <input
-          v-model="voucherInfo.referenceNumber"
-          type="text"
-          readonly
-          class="flex-1 px-3 py-2.5 border border-gray-300 rounded-xl 
-                 bg-gray-50 text-gray-700 cursor-not-allowed"
-        />
-        <button
-          @click="generateReferenceNumber"
-          class="px-3 py-2.5 text-sm font-medium text-white bg-green-600 
-                 border border-green-200 rounded-xl hover:bg-green-700 
-                 transition-colors"
-        >
-          Generate
-        </button>
-      </div>
-    </div>
-
-    <!-- Issue & Expiry Dates -->
-    <div class="grid grid-cols-2 gap-4">
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">
-          Issue Date
-        </label>
-        <input
-          v-model="voucherInfo.issueDate"
-          type="date"
-          class="w-full px-3 py-2.5 border border-gray-300 rounded-xl 
-                 focus:outline-none focus:border-green-400 
-                 focus:ring-2 focus:ring-green-300 
-                 transition duration-200"
-        />
-      </div>
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">
-          Expiry Date
-        </label>
-        <input
-          v-model="voucherInfo.expiryDate"
-          type="date"
-          class="w-full px-3 py-2.5 border border-gray-300 rounded-xl 
-                 focus:outline-none focus:border-green-400 
-                 focus:ring-2 focus:ring-green-300 
-                 transition duration-200"
-        />
-      </div>
-    </div>
-  </div>
-</div>
-
-
-      </div>
-    </div>
-
-    <!-- ===== PRINT PREVIEW (Visible only on print) ===== -->
-    <div v-if="showPrintPreview" class="print:block hidden">
-      <div class="grid grid-cols-2 gap-6 p-6 print:p-4">
-        <div
-          v-for="(farmer, index) in selectedFarmers"
-          :key="farmer.id"
-          class="border-4 border-green-700 rounded-2xl p-6 bg-white break-inside-avoid shadow-md"
-        >
-          <div class="border-b-4 border-green-600 pb-3 mb-4 text-center">
-            <div class="inline-block bg-green-700 text-white px-5 py-1.5 rounded-full mb-2">
-              <h2 class="text-sm font-bold tracking-wide">BAYUGAN CITY</h2>
-            </div>
-            <h3 class="text-lg font-bold text-green-800">AGRICULTURE OFFICE</h3>
-            <p class="text-xs font-semibold text-gray-700 mt-1 uppercase tracking-wide">
-              {{ voucherInfo.voucherType }} Distribution Voucher
-            </p>
+        <!-- Voucher Information: 2/3 width -->
+        <div class="bg-gray-100 border border-gray-300 rounded-2xl shadow-sm p-6 flex flex-col h-full xl:col-span-2 min-h-0">
+          <div class="flex items-center gap-2 mb-5">
+            <FileText class="w-5 h-5 text-green-600" />
+            <h2 class="text-lg font-semibold text-gray-900">Voucher Information</h2>
           </div>
-
-          <div class="space-y-3">
-            <div class="border-2 border-green-200 rounded-lg p-3">
-              <p class="text-xs text-gray-600 font-medium">Reference No.</p>
-              <p class="text-sm font-bold text-green-800">
-                {{ voucherInfo.referenceNumber }}-{{ String(index + 1).padStart(3, '0') }}
-              </p>
-            </div>
-
-            <div class="bg-green-100 border-2 border-green-300 rounded-lg p-3">
-              <p class="text-xs text-gray-600 font-medium">Program</p>
-              <p class="text-base font-bold text-green-900">{{ voucherInfo.title }}</p>
-            </div>
-
-            <div class="border-2 border-green-200 rounded-lg p-3">
-              <p class="text-xs text-gray-600 font-medium">Beneficiary</p>
-              <p class="text-lg font-bold text-gray-900">{{ farmer.name }}</p>
-            </div>
-
-            <div class="bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg p-4 text-center">
-              <p class="text-xs opacity-90">Total Bags</p>
-              <p class="text-3xl font-bold">{{ voucherInfo.totalBags }}</p>
-              <p class="text-xs opacity-90">{{ voucherInfo.voucherType }}</p>
-            </div>
-          </div>
-
-          <div class="mt-5 pt-4 border-t-2 border-green-600 grid grid-cols-2 gap-4 text-center">
+          <div class="flex-1 space-y-5 pr-1 min-h-0 overflow-y-auto">
             <div>
-              <div class="border-b-2 border-gray-800 mb-2 pb-10"></div>
-              <p class="text-xs font-bold text-gray-900">Beneficiary Signature</p>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                Voucher Title <span class="text-red-500">*</span>
+              </label>
+              <input
+                v-model="voucherInfo.title"
+                type="text"
+                placeholder="e.g., Rice Seeds Distribution 2024"
+                class="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:border-green-400 focus:ring-2 focus:ring-green-300 transition duration-200"
+              />
             </div>
             <div>
-              <div class="border-b-2 border-gray-800 mb-2 pb-10"></div>
-              <p class="text-xs font-bold text-gray-900">Authorized Signature</p>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                Voucher Type <span class="text-red-500">*</span>
+              </label>
+              <div id="voucher-type-dropdown" class="relative">
+                <button
+                  type="button"
+                  @click="toggleVoucherDropdown"
+                  @keydown.stop.prevent="onVoucherKeyDown"
+                  :aria-expanded="isVoucherDropdownOpen"
+                  aria-haspopup="listbox"
+                  class="w-full flex items-center justify-between px-3 py-2.5 border border-gray-300 rounded-xl bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-green-300 focus:border-green-400"
+                >
+                  <span class="text-gray-900">{{ voucherInfo.voucherType }}</span>
+                  <svg
+                    class="w-4 h-4 text-green-600 transform transition-transform duration-200"
+                    :class="isVoucherDropdownOpen ? 'rotate-180' : ''"
+                    viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                  >
+                    <path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+                <ul
+                  v-show="isVoucherDropdownOpen"
+                  role="listbox"
+                  tabindex="-1"
+                  class="origin-top-right absolute right-0 left-0 mt-2 bg-white rounded-xl shadow-lg ring-1 ring-black ring-opacity-5 overflow-auto max-h-56 py-1 focus:outline-none z-50 transition-transform duration-150"
+                >
+                  <li
+                    v-for="(type, idx) in voucherTypes"
+                    :key="type"
+                    role="option"
+                    :aria-selected="type === voucherInfo.voucherType"
+                    @mouseenter="highlightedIndex = idx"
+                    @mouseleave="highlightedIndex = -1"
+                    @click="selectVoucherType(type)"
+                    :class=" [
+                      'px-3 py-2 cursor-pointer flex items-center justify-between',
+                      highlightedIndex === idx ? 'bg-green-50' : 'hover:bg-green-50',
+                      type === voucherInfo.voucherType ? 'font-semibold text-green-700' : 'text-gray-700'
+                    ]"
+                  >
+                    <span>{{ type }}</span>
+                    <svg v-if="type === voucherInfo.voucherType" class="w-4 h-4 text-green-600" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                Unit <span class="text-red-500">*</span>
+              </label>
+              <select v-model="voucherInfo.unit" class="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:border-green-400 focus:ring-2 focus:ring-green-300 transition duration-200">
+                <option v-for="unit in unitOptions" :key="unit" :value="unit">{{ unit }}</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                Quantity <span class="text-red-500">*</span>
+              </label>
+              <input
+                v-model="voucherInfo.quantity"
+                type="number"
+                min="1"
+                placeholder="e.g., 5"
+                class="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:border-green-400 focus:ring-2 focus:ring-green-300 transition duration-200"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                Reference Number
+              </label>
+              <div class="flex gap-2">
+                <input
+                  v-model="voucherInfo.referenceNumber"
+                  type="text"
+                  readonly
+                  class="flex-1 px-3 py-2.5 border border-gray-300 rounded-xl bg-gray-50 text-gray-700 cursor-not-allowed"
+                />
+                <button
+                  @click="generateReferenceNumber"
+                  class="px-3 py-2.5 text-sm font-medium text-white bg-green-600 border border-green-200 rounded-xl hover:bg-green-700 transition-colors"
+                >
+                  Generate
+                </button>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  Issue Date
+                </label>
+                <input
+                  v-model="voucherInfo.issueDate"
+                  type="date"
+                  class="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:border-green-400 focus:ring-2 focus:ring-green-300 transition duration-200"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  Expiry Date
+                </label>
+                <input
+                  v-model="voucherInfo.expiryDate"
+                  type="date"
+                  class="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:border-green-400 focus:ring-2 focus:ring-green-300 transition duration-200"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -490,23 +479,7 @@ onMounted(async () => {
   </AuthenticatedLayout>
 </template>
 
-
 <style scoped>
-@media print {
-  @page {
-    size: 8.5in 13in; /* Bond paper size */
-    margin: 0.5in;
-  }
-  
-  .page-break-before {
-    page-break-before: always;
-  }
-  
-  .break-inside-avoid {
-    break-inside: avoid;
-  }
-}
-
 /* Custom dropdown & UI polish */
 ::selection {
   background-color: rgba(16, 185, 129, 0.12); /* soft green selection */

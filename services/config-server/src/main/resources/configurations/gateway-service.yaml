@@ -62,7 +62,7 @@ spring:
             - id: program-service
               uri: lb://program-service
               predicates:
-                - Path=/api/v1/programs/**,/api/v1/schedules/**
+                - Path=/api/v1/programs/**,/api/v1/schedules/**,/api/v1/vouchers/**
 
             - id: rsbsa-service
               uri: lb://rsbsa-service

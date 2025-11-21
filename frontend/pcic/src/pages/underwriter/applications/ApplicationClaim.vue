@@ -395,12 +395,6 @@
                   <DocumentIcon class="mx-auto h-12 w-12 text-slate-300" />
                   <p class="mt-3 text-sm text-slate-500">No claim data available</p>
                 </div>
-                <button
-                  @click="navigateToApplicationDetail"
-                  class="w-full mt-6 bg-slate-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-slate-700 transition"
-                >
-                  Back to Application Details
-                </button>
               </div>
             </div>
           </div>

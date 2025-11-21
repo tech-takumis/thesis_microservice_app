@@ -138,6 +138,15 @@ export const MUNICIPALITY_ROUTES = [
             guard: 'auth'
         }
     },
+     {
+        path: '/agriculturist/submit-crop-data/application/:applicationId/map',
+        name: 'agriculturist-submit-crop-data-map',
+        component: () => import('@/pages/agriculturist/applications/ApplicationMap.vue'),
+        meta: {
+            title: 'Application Location Map',
+            guard: 'auth'
+        }
+    },
     {
         path: '/agriculturist/ai/damage-result/:applicationId/:applicationTypeId',
         name: 'agriculturist-damage-report',
@@ -155,13 +164,40 @@ export const MUNICIPALITY_ROUTES = [
             title: 'Application Verification',
             guard: 'auth'
         }
+    }, 
+    {
+        path: '/agriculturist/voucher/all',
+        name: 'agriculturist-voucher-all',
+        component: () => import('@/pages/agriculturist/operations/VoucherList.vue'),
+        meta: {
+            title: 'All Vouchers',
+            guard: 'auth'
+        }
     },
     {
-        path: '/agriculturist/voucher',
-        name: 'agriculturist-voucher-program',
+        path: '/agriculturist/voucher/generate',
+        name: 'agriculturist-voucher-generate',
         component: () => import('@/pages/agriculturist/operations/AgriculturistVoucher.vue'),
         meta: {
-            title: 'Develop Plans',
+            title: 'Voucher Generation',
+            guard: 'auth'
+        }
+    },
+     {
+        path: '/agriculturist/voucher/scanner',
+        name: 'agriculturist-voucher-scanner',
+        component: () => import('@/pages/agriculturist/operations/VoucherScanner.vue'),
+        meta: {
+            title: 'Voucher Scanner',
+            guard: 'auth'
+        }
+    },
+     {
+        path: '/agriculturist/voucher/:id/detail',
+        name: 'agriculturist-voucher-detail',
+        component: () => import('@/pages/agriculturist/operations/VoucherDetails.vue'),
+        meta: {
+            title: 'Voucher Detail',
             guard: 'auth'
         }
     },
@@ -170,7 +206,16 @@ export const MUNICIPALITY_ROUTES = [
         name: 'agriculturist-transaction',
         component: () => import('@/pages/agriculturist/operations/AgriculturistTransaction.vue'),
         meta: {
-            title: 'Coordinate Agencies',
+            title: 'Transactions',
+            guard: 'auth'
+        }
+    },
+    {
+        path: '/agriculturist/transactions/:id/detail',
+        name: 'agriculturist-transaction-detail',
+        component: () => import('@/pages/agriculturist/operations/TransactionDetail.vue'),
+        meta: {
+            title: 'Transaction Detail',
             guard: 'auth'
         }
     },
@@ -183,12 +228,30 @@ export const MUNICIPALITY_ROUTES = [
             guard: 'auth'
         }
     },
+     {
+        path: '/agriculturist/monitor-programs/:id/detail',
+        name: 'agriculturist-monitor-programs-detail',
+        component: () => import('@/pages/agriculturist/operations/ProgramDetail.vue'),
+        meta: {
+            title: 'Program Detail',
+            guard: 'auth'
+        }
+    },
     {
         path: '/agriculturist/process-claims',
         name: 'agriculturist-process-claims',
         component: () => import('@/pages/agriculturist/claims/AgriculturistProcessClaims.vue'),
         meta: {
             title: 'Process Claims',
+            guard: 'auth'
+        }
+    },
+    {
+        path: '/agriculturist/process-claims/:id/detail',
+        name: 'agriculturist-claim-detail',
+        component: () => import('@/pages/agriculturist/claims/ClaimDetails.vue'),
+        meta: {
+            title: 'Claim Detail',
             guard: 'auth'
         }
     },

@@ -1,5 +1,6 @@
 package com.hashjosh.insurance.service;
 
+import com.hashjosh.insurance.config.CustomUserDetails;
 import com.hashjosh.insurance.dto.InsuranceFilter;
 import com.hashjosh.insurance.dto.insurance.InsuranceRequestDTO;
 import com.hashjosh.insurance.dto.insurance.InsuranceResponse;
@@ -9,6 +10,7 @@ import com.hashjosh.insurance.mapper.InsuranceMapper;
 import com.hashjosh.insurance.repository.InsuranceRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -78,4 +80,13 @@ public class InsuranceService {
         insuranceRepository.delete(insurance);
     }
 
+    public List<InsuranceResponse> findByCurrentUser() {
+        CustomUserDetails currentUser = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        List<Insurance> insurances = insuranceRepository.findByFarmerId(currentUser.getUserId());
+
+        return insurances.stream()
+                .map(insuranceMapper::toInsuranceResponse)
+                .toList();
+    }
 }

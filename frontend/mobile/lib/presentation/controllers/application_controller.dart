@@ -8,6 +8,7 @@ import 'package:mobile/injection_container.dart';
 // Add a provider reference to check authentication state
 class ApplicationController extends GetxController {
   var applications = <ApplicationContent>[].obs;
+  var userApplications = <Map<String, dynamic>>[].obs;
   var isLoading = true.obs;
   var errorMessage = ''.obs;
   var isRetrying = false.obs;
@@ -34,6 +35,31 @@ class ApplicationController extends GetxController {
     } catch (e, stack) {
       print('❌ Error fetching applications: \\${e}');
       print('❌ Stack: \\${stack}');
+      errorMessage.value = e.toString().replaceFirst('Exception: ', '');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  /// Fetch applications submitted by the current user
+  Future<void> fetchUserApplications(AuthState authState) async {
+    if (!(authState.isLoggedIn && authState.token != null && authState.token!.isNotEmpty)) {
+      print('User not logged in, skipping fetchUserApplications');
+      return;
+    }
+
+    try {
+      isLoading.value = true;
+      errorMessage.value = '';
+
+      print('🔄 Starting to fetch user applications...');
+      final response = await getIt<ApplicationApiService>().getUserApplications(authState);
+
+      userApplications.value = response;
+      print('✅ Successfully loaded ${response.length} user applications');
+    } catch (e, stack) {
+      print('❌ Error fetching user applications: $e');
+      print('❌ Stack: $stack');
       errorMessage.value = e.toString().replaceFirst('Exception: ', '');
     } finally {
       isLoading.value = false;

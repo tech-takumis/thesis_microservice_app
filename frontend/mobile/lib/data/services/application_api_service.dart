@@ -60,32 +60,7 @@ class ApplicationApiService {
     );
   }
 
-  // Method to fetch application data - updated to handle direct array response
-  Future<ApplicationContent?> fetchApplicationById(String id,AuthState authState) async {
-    if (!(authState.isLoggedIn && authState.token != null && authState.token!.isNotEmpty)) {
-      print('User not logged in, skipping fetchApplications');
-      return null;
-    }
-    try {
-      print('🚀 Fetching application type: $id');
-      final response = await _dio.get(
-        '/application/types/$id?sections=true',
-        options: Options(
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        ),
-      );
-      print('✅ Application type fetched successfully: ${response.statusCode}');
-      return ApplicationContent.fromJson(response.data);
-    } on DioException catch (e) {
-      print('❌ Fetch application type failed: ${e.message}');
-      return null;
-    } catch (e) {
-      print('❌ Unexpected error: $e');
-      return null;
-    }
-  }
+
 
   Future<ApplicationResponse?> fetchApplications(AuthState authState) async {
     try {
@@ -114,6 +89,330 @@ class ApplicationApiService {
     } catch (e) {
       print('❌ Fetch applications failed: $e');
       throw Exception('Failed to fetch applications');
+    }
+  }
+
+  /// GET /applications/user/all
+  /// Fetches all applications submitted by the current user
+  Future<List<Map<String, dynamic>>> getUserApplications(AuthState authState) async {
+    try {
+      if (!(authState.isLoggedIn && authState.token != null && authState.token!.isNotEmpty)) {
+        print('User not logged in, skipping getUserApplications');
+        return [];
+      }
+
+      print('🔍 Fetching applications for current user');
+      final response = await _dio.get(
+        '/applications/user/all',
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        ),
+      );
+
+      print('✅ User applications fetched successfully: ${response.statusCode}');
+
+      if (response.data is List) {
+        return (response.data as List)
+            .map((e) => e as Map<String, dynamic>)
+            .toList();
+      } else {
+        print('⚠️ Unexpected response format: ${response.data.runtimeType}');
+        return [];
+      }
+    } on DioException catch (e) {
+      print('❌ Fetch user applications failed: ${e.message}');
+      print('❌ Response status: ${e.response?.statusCode}');
+      print('❌ Response data: ${e.response?.data}');
+
+      final apiError = ApiErrorHandler.parseApiErrorResponse(e.response?.data);
+      if (apiError != null) {
+        print('🔍 Parsed API error: ${apiError.message} (Status: ${apiError.status})');
+      }
+
+      return [];
+    } catch (e) {
+      print('❌ Unexpected error: $e');
+      return [];
+    }
+  }
+
+  Future<bool> deleteApplication(String applicationId, AuthState authState) async {
+    try {
+      if (!(authState.isLoggedIn && authState.token != null && authState.token!.isNotEmpty)) {
+        print('User not logged in, skipping deleteApplication');
+        return false;
+      }
+
+      print('🗑️ Deleting application: $applicationId');
+      final response = await _dio.delete(
+        '/applications/$applicationId',
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        ),
+      );
+
+      print('✅ Application deleted successfully: ${response.statusCode}');
+      return response.statusCode == 200 || response.statusCode == 204;
+    } on DioException catch (e) {
+      print('❌ Delete application failed: ${e.message}');
+      print('❌ Response status: ${e.response?.statusCode}');
+      print('❌ Response data: ${e.response?.data}');
+
+      // Use ApiErrorHandler for consistent error handling
+      final apiError = ApiErrorHandler.parseApiErrorResponse(e.response?.data);
+
+      if (apiError != null) {
+        print('🔍 Parsed API error: ${apiError.message} (Status: ${apiError.status})');
+      }
+
+      return false;
+    } catch (e) {
+      print('❌ Unexpected error during delete: $e');
+      return false;
+    }
+  }
+
+  Future<Map<String, dynamic>?> getApplicationById(String applicationId, AuthState authState) async {
+    try {
+      if (!(authState.isLoggedIn && authState.token != null && authState.token!.isNotEmpty)) {
+        print('User not logged in, skipping getApplicationById');
+        return null;
+      }
+
+      print('🔍 Fetching application by ID: $applicationId');
+      final response = await _dio.get(
+        '/applications/$applicationId',
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        ),
+      );
+
+      print('✅ Application fetched successfully: ${response.statusCode}');
+      return response.data as Map<String, dynamic>;
+    } on DioException catch (e) {
+      print('❌ Fetch application by ID failed: ${e.message}');
+      print('❌ Response status: ${e.response?.statusCode}');
+      print('❌ Response data: ${e.response?.data}');
+
+      final apiError = ApiErrorHandler.parseApiErrorResponse(e.response?.data);
+      if (apiError != null) {
+        print('🔍 Parsed API error: ${apiError.message} (Status: ${apiError.status})');
+      }
+
+      return null;
+    } catch (e) {
+      print('❌ Unexpected error: $e');
+      return null;
+    }
+  }
+
+  Future<ApplicationSubmissionResponse> updateApplication(
+    String applicationId,
+    AuthState authState,
+    Map<String, dynamic> updateData,
+    Map<String, PlatformFile> files,
+  ) async {
+    try {
+      if (!(authState.isLoggedIn && authState.token != null && authState.token!.isNotEmpty)) {
+        print('User not logged in, skipping updateApplication');
+        return ApplicationSubmissionResponse(success: false, message: 'User not logged in', applicationId: '');
+      }
+
+      print('🔄 Updating application: $applicationId');
+      print('📋 Update data: $updateData');
+      print('📁 Files to update: ${files.length}');
+
+      // Prepare update JSON
+      final updateJson = jsonEncode(updateData);
+
+      // Allowed mime types mapping
+      const allowedMimeTypes = {
+        'pdf': 'application/pdf',
+        'jpg': 'image/jpeg',
+        'jpeg': 'image/jpeg',
+        'png': 'image/png',
+        'gif': 'image/gif',
+        'bmp': 'image/bmp',
+        'tiff': 'image/tiff',
+        'tif': 'image/tiff',
+        'webp': 'image/webp',
+        'doc': 'application/msword',
+        'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'xls': 'application/vnd.ms-excel',
+        'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'ppt': 'application/vnd.ms-powerpoint',
+        'pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        'txt': 'text/plain',
+        'rtf': 'application/rtf',
+      };
+
+      // Build FormData
+      final Map<String, dynamic> formDataMap = {
+        'update': MultipartFile.fromString(
+          updateJson,
+          contentType: MediaType('application', 'json'),
+        ),
+      };
+
+      // Add files
+      for (final entry in files.entries) {
+        final fieldName = entry.key;
+        final file = entry.value;
+
+        if (file.bytes == null && file.path == null) {
+          print('⚠️ Skipping file ${file.name} for field "$fieldName" - no content available');
+          continue;
+        }
+
+        if (file.bytes != null && file.bytes!.isEmpty) {
+          print('⚠️ Skipping file ${file.name} for field "$fieldName" - empty file');
+          continue;
+        }
+
+        String? extension = file.extension?.toLowerCase();
+        if (extension == null || extension.isEmpty) {
+          final parts = file.name.split('.');
+          if (parts.length > 1) {
+            extension = parts.last.toLowerCase();
+          }
+        }
+
+        String? mimeType = allowedMimeTypes[extension ?? ''];
+        if (mimeType == null) {
+          final detectedMimeType = lookupMimeType(file.name, headerBytes: file.bytes);
+          if (detectedMimeType != null &&
+              detectedMimeType != 'application/octet-stream' &&
+              allowedMimeTypes.containsValue(detectedMimeType)) {
+            mimeType = detectedMimeType;
+          }
+        }
+
+        if (mimeType == null && extension != null) {
+          switch (extension) {
+            case 'jpg':
+            case 'jpeg':
+              mimeType = 'image/jpeg';
+              break;
+            case 'png':
+              mimeType = 'image/png';
+              break;
+            case 'pdf':
+              mimeType = 'application/pdf';
+              break;
+            default:
+              break;
+          }
+        }
+
+        if (mimeType == null) {
+          throw Exception(
+            "File '${file.name}' with extension '$extension' is not supported. Allowed types: ${allowedMimeTypes.keys.join(', ')}."
+          );
+        }
+
+        if (mimeType == 'application/octet-stream') {
+          throw Exception(
+            "File '${file.name}' could not be properly identified. Please ensure the file has a proper extension and is not corrupted."
+          );
+        }
+
+        final mediaTypeParts = mimeType.split('/');
+        final mediaType = MediaType(mediaTypeParts[0], mediaTypeParts[1]);
+
+        if (file.bytes != null) {
+          formDataMap[fieldName] = MultipartFile.fromBytes(
+            file.bytes!,
+            filename: file.name,
+            contentType: mediaType,
+          );
+        } else if (file.path != null) {
+          formDataMap[fieldName] = await MultipartFile.fromFile(
+            file.path!,
+            filename: file.name,
+            contentType: mediaType,
+          );
+        }
+
+        print('📎 Added file "${fieldName}": ${file.name} (${mimeType})');
+      }
+
+      final formData = FormData.fromMap(formDataMap);
+
+      final response = await _dio.put(
+        '/applications/$applicationId',
+        data: formData,
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer ${authState.token}',
+            'Accept': 'application/json',
+          },
+          sendTimeout: const Duration(minutes: 5),
+          receiveTimeout: const Duration(minutes: 5),
+          contentType: null,
+        ),
+      );
+
+      print('✅ Application updated successfully: ${response.statusCode}');
+      if (response.data is Map<String, dynamic> || response.data is Map) {
+        return ApplicationSubmissionResponse.fromJson(response.data);
+      } else if (response.data is String) {
+        try {
+          final Map<String, dynamic> json = jsonDecode(response.data);
+          return ApplicationSubmissionResponse.fromJson(json);
+        } catch (_) {
+          return ApplicationSubmissionResponse(success: false, message: response.data.toString(), applicationId: '');
+        }
+      } else {
+        return ApplicationSubmissionResponse(success: false, message: 'Unknown response format', applicationId: '');
+      }
+    } on DioException catch (e) {
+      print('❌ Application update failed: ${e.message}');
+      print('❌ Response status: ${e.response?.statusCode}');
+      print('❌ Response data: ${e.response?.data}');
+
+      final apiError = ApiErrorHandler.parseApiErrorResponse(e.response?.data);
+
+      if (apiError != null) {
+        print('🔍 Parsed API error: ${apiError.message} (Status: ${apiError.status})');
+        final userMessage = ApiErrorHandler.getUserFriendlyMessage(apiError);
+
+        return ApplicationSubmissionResponse(
+          success: false,
+          message: userMessage,
+          applicationId: ''
+        );
+      } else if (e.response?.data != null) {
+        try {
+          if (e.response!.data is Map<String, dynamic>) {
+            return ApplicationSubmissionResponse.fromJson(e.response!.data);
+          } else if (e.response!.data is String) {
+            final Map<String, dynamic> json = jsonDecode(e.response!.data);
+            return ApplicationSubmissionResponse.fromJson(json);
+          }
+        } catch (_) {
+          // Parsing failed
+        }
+      }
+
+      final errorMessage = ApiErrorHandler.handleDioException(e);
+      return ApplicationSubmissionResponse(
+        success: false,
+        message: errorMessage,
+        applicationId: ''
+      );
+    } catch (e) {
+      print('❌ Unexpected error: ${e.toString()}');
+      return ApplicationSubmissionResponse(
+        success: false,
+        message: 'An unexpected error occurred. Please try again.',
+        applicationId: ''
+      );
     }
   }
 
@@ -610,7 +909,7 @@ class ApplicationApiService {
 
       tempDio.interceptors.add(
         LogInterceptor(
-          requestBody: false, // Don't log binary data
+          requestBody: false, 
           responseBody: true,
           requestHeader: true,
           responseHeader: true,

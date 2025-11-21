@@ -14,6 +14,8 @@ public class ClaimUpdateRequest {
     @DecimalMin(value = "0.01", message = "Claim amount must be greater than 0")
     private Double claimAmount;
 
+    private Boolean isFinalized;
+
     @Size(max = 2000, message = "Damage assessment cannot exceed 2000 characters")
     private String damageAssessment;
 }

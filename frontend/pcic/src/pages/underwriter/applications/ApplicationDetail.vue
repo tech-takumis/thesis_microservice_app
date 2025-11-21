@@ -56,6 +56,16 @@
             </div>
           </div>
           <div class="flex items-center gap-2">
+             <router-link
+              v-if="applicationData?.coordinates"
+              :to="{ name: 'agriculturist-submit-crop-data-map', params: { applicationId: route.params.submissionId } }"
+              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+            >
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
+              </svg>
+              View Location Map
+            </router-link>
             <button
               v-if="insuranceData?.batch"
               @click="openBatchModal"
@@ -657,9 +667,10 @@ async function fetchApplicationDetails() {
 
     console.log('ApplicationDetail: Starting parallel fetch for insuranceId:', route.params.insuranceId, 'and submissionId:', route.params.submissionId)
 
-    // Fetch insurance data and workflow in parallel
-    const [insuranceResult, workflowResult] = await Promise.allSettled([
+    // Fetch insurance data, application data, and workflow in parallel
+    const [insuranceResult, applicationResult, workflowResult] = await Promise.allSettled([
       insuranceStore.fetchInsuranceById(route.params.insuranceId),
+      applicationStore.fetchApplicationById(route.params.submissionId),
       applicationStore.fetchApplicationWorkflow(route.params.submissionId)
     ])
 
@@ -670,16 +681,6 @@ async function fetchApplicationDetails() {
     if (insuranceResult.status === 'fulfilled' && insuranceResult.value.success) {
       insuranceData.value = insuranceResult.value.data
       console.log('Insurance data fetched:', insuranceData.value)
-
-      // Extract verification field values as applicationData
-      if (insuranceData.value?.verification?.fieldValues) {
-        applicationData.value = {
-          dynamicFields: insuranceData.value.verification.fieldValues,
-          id: route.params.submissionId,
-          submittedAt: insuranceData.value.verification.verifiedAt,
-          updatedAt: insuranceData.value.verification.verifiedAt
-        }
-      }
     } else {
       const errorMsg = insuranceResult.status === 'rejected'
         ? insuranceResult.reason.message
@@ -687,6 +688,19 @@ async function fetchApplicationDetails() {
       console.error('Failed to fetch insurance:', errorMsg)
       error.value = errorMsg || 'Failed to load insurance details'
       return // Don't continue if insurance fetch failed
+    }
+
+    // Process application result
+    if (applicationResult.status === 'fulfilled' && applicationResult.value.success) {
+      applicationData.value = applicationResult.value.data
+      console.log('Application data fetched:', applicationData.value)
+      console.log('Coordinates found:', applicationData.value?.coordinates)
+    } else {
+      const errorMsg = applicationResult.status === 'rejected'
+        ? applicationResult.reason.message
+        : applicationResult.value.message
+      console.error('Failed to fetch application:', errorMsg)
+      // Don't set as error since we can still display the insurance
     }
 
     // Process workflow result
@@ -717,6 +731,8 @@ async function fetchApplicationDetails() {
     loading.value = false
     console.log('ApplicationDetail: Fetch completed. Final state:', {
       hasApplicationData: !!applicationData.value,
+      hasCoordinates: !!applicationData.value?.coordinates,
+      coordinates: applicationData.value?.coordinates,
       hasApplicationTypeData: !!applicationTypeData.value,
       hasInsuranceData: !!insuranceData.value,
       hasWorkflowData: !!workflowData.value,
@@ -1069,16 +1085,12 @@ const processClaim = () => {
 }
 
 const viewAIAnalysis = () => {
-  // Navigate to AI analysis page (ApplicationClaim)
   if (insuranceData.value?.insuranceId && route.params.submissionId) {
     router.push({
-      name: 'underwriter-applications-claim',
+      name: 'damage-claim-review',
       params: {
         insuranceId: insuranceData.value.insuranceId,
         submissionId: route.params.submissionId
-      },
-      query: {
-        action: 'ai-analysis'
       }
     })
   } else {

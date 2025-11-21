@@ -532,4 +532,14 @@ public class ApplicationService {
             );
         }
     }
+
+    public List<ApplicationResponseDto> findByCurrentUser() {
+           CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder
+                    .getContext().getAuthentication().getPrincipal();
+        List<Application> applications = applicationRepository.findAllByUserId(UUID.fromString(userDetails.getUserId()));
+
+        return applications.stream()
+                .map(applicationMapper::toApplicationResponseDto)
+                .collect(Collectors.toList());
+    }
 }

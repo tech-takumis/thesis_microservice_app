@@ -11,8 +11,8 @@
       <span v-if="!collapsed" class="mt-2 text-xs font-semibold bg-green-100 text-gray-700 px-4 py-1.5 rounded-full transition duration-300 hover:bg-green-100">{{ roleTitle }}</span>
 
             <button @click="collapsed = !collapsed" :aria-expanded="!collapsed" class="absolute top-2 right-1 rounded bg-green-600 text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-300">
-                <ChevronLeft v-if="!collapsed" class="h-4 w-4 text-white" />
-                <ChevronRight v-else class="h-4 w-4 text-white" />
+                <ChevronLeft v-if="!collapsed" class="size-6 text-white" />
+                <ChevronRight v-else class="size-4 text-white" />
             </button>
     </div>
 
@@ -78,13 +78,27 @@ const { disconnect } = wsStore
 const expandedGroups = ref([])
 const collapsed = ref(false)
 
-/* Toggle sidebar group open/close */
+// LocalStorage key for sidebar state
+const SIDEBAR_COLLAPSED_KEY = 'sidebar-collapsed'
+
+/* Toggle sidebar group open/close - Accordion behavior */
 const toggleGroup = groupTitle => {
+    // If sidebar is collapsed, expand it and show only the clicked group
+    if (collapsed.value) {
+        collapsed.value = false
+        // Close all groups and open only the clicked one
+        expandedGroups.value = [groupTitle]
+        return
+    }
+
+    // Accordion behavior when sidebar is already expanded
     const index = expandedGroups.value.indexOf(groupTitle)
     if (index === -1) {
-        expandedGroups.value.push(groupTitle)
+        // Close all other groups and open only the clicked one
+        expandedGroups.value = [groupTitle]
     } else {
-        expandedGroups.value.splice(index, 1)
+        // If clicking the already-open group, close it
+        expandedGroups.value = []
     }
 }
 
@@ -149,9 +163,24 @@ watch(
     { deep: true },
 )
 
+/* Persist sidebar collapsed state */
+watch(
+    collapsed,
+    newVal => {
+        localStorage.setItem(SIDEBAR_COLLAPSED_KEY, JSON.stringify(newVal))
+    },
+)
+
 onMounted(() => {
-    const saved = localStorage.getItem('expandedGroups')
-    if (saved) expandedGroups.value = JSON.parse(saved)
+    // Restore expanded groups
+    const savedGroups = localStorage.getItem('expandedGroups')
+    if (savedGroups) expandedGroups.value = JSON.parse(savedGroups)
+
+    // Restore sidebar collapsed state
+    const savedCollapsed = localStorage.getItem(SIDEBAR_COLLAPSED_KEY)
+    if (savedCollapsed !== null) {
+        collapsed.value = JSON.parse(savedCollapsed)
+    }
 })
 
 let shouldSkipNextAutoExpand = true

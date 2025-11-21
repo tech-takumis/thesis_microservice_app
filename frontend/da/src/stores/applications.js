@@ -150,7 +150,7 @@ export const useApplicationTypeStore = defineStore('applicationType', () => {
         }
     }
 
-    const fetchAllApplicationTypes = async (provider, includeApplicationResponse = false) => {
+    const fetchAllApplicationTypes = async (provider, includeApplicationResponse = false, includeSections = true) => {
         try{
             loading.value = true
             error.value = null
@@ -162,6 +162,7 @@ export const useApplicationTypeStore = defineStore('applicationType', () => {
                 params.append('provider', provider)
             }
             params.append('application', includeApplicationResponse)
+            params.append('sections', includeSections)
 
             response = await axios.get(`${basePath.value}?${params.toString()}`)
 

@@ -5,6 +5,7 @@ import com.hashjosh.pcic.dto.auth.AuthenticatedResponse;
 import com.hashjosh.pcic.dto.auth.AuthenticatedUser;
 import com.hashjosh.pcic.dto.auth.LoginResponse;
 import com.hashjosh.pcic.dto.auth.RegistrationRequest;
+import com.hashjosh.pcic.dto.role.AuthenticatedRoleResponse;
 import com.hashjosh.pcic.dto.role.RoleResponse;
 import com.hashjosh.pcic.entity.*;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -55,9 +57,12 @@ public class UserMapper {
     }
 
     public AuthenticatedUser toAuthenticatedResponse(Pcic pcic) {
-        Set<RoleResponse> roles = pcic.getRoles().stream()
-                .map(roleMapper::toRoleResponse)
-                .collect(Collectors.toSet());
+
+        Set<AuthenticatedRoleResponse> roles = new HashSet<>();
+
+        pcic.getRoles().forEach(role -> {
+            roles.add(toAuthenticatedRoleResponse(role));
+        });
 
         return AuthenticatedUser.builder()
                 .userId(pcic.getId())
@@ -68,6 +73,18 @@ public class UserMapper {
                 .phoneNumber(pcic.getPhoneNumber())
                 .address(pcic.getAddress())
                 .roles(roles)
+                .build();
+    }
+
+    public AuthenticatedRoleResponse toAuthenticatedRoleResponse(Role role) {
+
+        List<String> permissions = role.getPermissions().stream()
+                .map(Permission::getName)
+                .collect(Collectors.toList());
+
+        return AuthenticatedRoleResponse.builder()
+                .name(role.getName())
+                .permissions(permissions)
                 .build();
     }
 

@@ -9,6 +9,23 @@ router = APIRouter(prefix="/ai", tags=["ai"])
 
 def format_ai_result_response(result: AIResponseDTO) -> Dict:
     """Helper function to format AI result into complete response structure"""
+    # Generate presigned URL for original image from documents bucket
+    original_image_url = AIService.generate_presigned_url_for_original_image(result.image_path)
+
+    # Generate presigned URLs for leaf analysis images on-the-fly
+    leaf_analysis_images = []
+    for img in result.leaf_analysis_images:
+        presigned_url = AIService.generate_presigned_url_for_analysis_image(img.image_path)
+        leaf_analysis_images.append({
+            "image_type": img.image_type,
+            "image_path": img.image_path,
+            "presigned_url": presigned_url,
+            "width": img.width,
+            "height": img.height,
+            "file_size": img.file_size,
+            "created_at": img.created_at
+        })
+
     return {
         "id": result.id,
         "result": result.result,
@@ -21,6 +38,7 @@ def format_ai_result_response(result: AIResponseDTO) -> Dict:
         "lesion_area": result.lesion_area,
         "leaf_area": result.leaf_area,
         "image_path": result.image_path,
+        "original_image_url": original_image_url,
         "top3_predictions": [
             {
                 "class_name": pred.class_name,
@@ -28,17 +46,7 @@ def format_ai_result_response(result: AIResponseDTO) -> Dict:
                 "rank": pred.rank
             } for pred in result.top3_predictions
         ],
-        "leaf_analysis_images": [
-            {
-                "image_type": img.image_type,
-                "image_path": img.image_path,
-                "presigned_url": img.presigned_url,
-                "width": img.width,
-                "height": img.height,
-                "file_size": img.file_size,
-                "created_at": img.created_at
-            } for img in result.leaf_analysis_images
-        ]
+        "leaf_analysis_images": leaf_analysis_images
     }
 
 @router.get("/", response_model=Dict)
@@ -214,11 +222,13 @@ def get_analysis_images(result_id: int, db: Session = Depends(get_db)):
 
         images_data = []
         for img in analysis_images:
+            # Generate presigned URL on-the-fly
+            presigned_url = AIService.generate_presigned_url_for_analysis_image(img.image_path)
             images_data.append({
                 "id": img.id,
                 "image_type": img.image_type,
                 "image_path": img.image_path,
-                "presigned_url": img.presigned_url,
+                "presigned_url": presigned_url,
                 "width": img.width,
                 "height": img.height,
                 "file_size": img.file_size,

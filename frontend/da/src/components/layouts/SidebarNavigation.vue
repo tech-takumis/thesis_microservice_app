@@ -65,11 +65,7 @@ import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useWebSocketStore } from '@/stores/websocket'
 import { ChevronDown, LogOut, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-vue-next'
-import {
-    ADMIN_NAVIGATION,
-    MUNICIPAL_AGRICULTURIST_NAVIGATION,
-    AGRICULTURAL_EXTENSION_WORKER_NAVIGATION,
-} from '@/lib/navigation'
+import { UNIFIED_NAVIGATION } from '@/lib/navigation'
 
 const route = useRoute()
 const auth = useAuthStore()
@@ -109,15 +105,35 @@ const isActive = to => {
     return route.path.startsWith(to.path)
 }
 
-/* Get navigation items based on user role */
+/* Check if user has access to a navigation item */
+const hasAccess = (item) => {
+    // Check role constraint
+    if (item.roles && item.roles.length > 0) {
+        const hasRole = item.roles.some(role => auth.hasRole(role))
+        if (!hasRole) return false
+    }
+    // Check permission constraint
+    if (item.permissions && item.permissions.length > 0) {
+        const hasPermission = auth.hasPermission(item.permissions)
+        if (!hasPermission) return false
+    }
+    return true
+}
+
+/* Filter navigation items based on roles and permissions */
 const filteredNavigation = computed(() => {
-    const roles = auth.userRoles
-    if (roles.includes('ADMIN')) return ADMIN_NAVIGATION
-    if (roles.includes('MUNICIPAL AGRICULTURISTS'))
-        return MUNICIPAL_AGRICULTURIST_NAVIGATION
-    if (roles.includes('AGRICULTURAL EXTENSION WORKERS'))
-        return AGRICULTURAL_EXTENSION_WORKER_NAVIGATION
-    return []
+    return UNIFIED_NAVIGATION
+        .filter(item => hasAccess(item))
+        .map(item => {
+            if (item.children) {
+                return {
+                    ...item,
+                    children: item.children.filter(child => hasAccess(child))
+                }
+            }
+            return item
+        })
+        .filter(item => !item.children || item.children.length > 0)
 })
 
 /* Format role title */

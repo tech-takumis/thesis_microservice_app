@@ -20,5 +20,5 @@ public class AuthUser {
     private String firstName;
     private String lastName;
     private String phoneNumber;
-    private Set<RoleResponse> roles;
+    private Set<AuthenticatedRoles> roles;
 }

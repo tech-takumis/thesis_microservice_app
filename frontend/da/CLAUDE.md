@@ -31,7 +31,12 @@ The application requires a `.env` file with:
 
 Copy `.env.example` to `.env` and configure for your environment.
 
-**Note**: The `.env.example` shows port 8000, but the actual backend default in `src/lib/axios.js` is 9001. WebSocket connection URL is currently hardcoded in `src/stores/websocket.js` to `ws://localhost:9001/ws`. If the backend runs on a different port, update both the environment variable and the WebSocket URL accordingly.
+**Important**: The backend default is port 9001 (not 8000 as shown in `.env.example`). The WebSocket URL in `src/stores/websocket.js` is hardcoded to `ws://localhost:9001/ws`. Update both if using a different port.
+
+## Additional Libraries
+
+- **QR Code**: `qrcode` for generation, `html5-qrcode` for scanning (used in voucher features)
+- **Animations**: `vue3-lottie` for Lottie animations
 
 ## Architecture
 

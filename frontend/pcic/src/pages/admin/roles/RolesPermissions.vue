@@ -1,6 +1,5 @@
 <template>
-  <AuthenticatedLayout 
-    :navigation="adminNavigation" 
+  <AuthenticatedLayout
     role-title="Admin Portal"
     page-title="Roles & Permissions"
   >
@@ -235,11 +234,9 @@ import {
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
 import RoleModal from '@/components/modals/RoleModal.vue'
 import { useRoleStore, usePermissionStore } from '@/stores/authorization'
-import { ADMIN_NAVIGATION } from '@/lib/navigation'
 
 const roleStore = useRoleStore()
 const permissionStore = usePermissionStore()
-const adminNavigation = ADMIN_NAVIGATION
 
 // Reactive state
 const searchQuery = ref('')

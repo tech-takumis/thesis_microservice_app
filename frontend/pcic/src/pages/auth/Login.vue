@@ -22,7 +22,7 @@
 
    <!-- Right Column - Login Form -->
 <div class="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50 min-h-screen">
-  <div class="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
+  <div class="w-full max-w-md bg-gray-100 border border-gray-300 rounded-xl shadow-lg p-8">
     
     <!-- Logo (mobile & desktop) -->
     <div class="text-center mb-6">

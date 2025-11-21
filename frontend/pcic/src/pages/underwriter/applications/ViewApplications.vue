@@ -1,6 +1,5 @@
 <template>
     <AuthenticatedLayout
-        :navigation="underwriterNavigation"
         role-title="Underwriter Portal"
         page-title="All Applications">
         <template #header>
@@ -55,7 +54,7 @@
                 <!-- Advanced Filters Panel -->
                 <div
                     class="bg-slate-50/50 border border-slate-200/60 rounded-2xl p-5 backdrop-blur-sm">
-                    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <!-- Status Filter -->
                         <div>
                             <label
@@ -67,30 +66,26 @@
                                 class="w-full px-4 py-2 rounded-lg border-2 border-slate-200 bg-white text-slate-900 text-sm font-medium focus:border-blue-400 focus:bg-blue-50/30 focus:outline-none focus:ring-4 focus:ring-blue-400/10 hover:border-slate-300 transition-all duration-200">
                                 <option value="">All Status</option>
                                 <option value="PENDING">Pending</option>
-                                <option value="VERIFIED">Verified</option>
-                                <option value="POLICY_ISSUED">Policy Issued</option>
-                                <option value="SCHEDULE_ASSIGNED_FOR_INSPECTION">Schedule Assigned for Inspection</option>
-                                <option value="INSPECTION_COMPLETED">Inspection Completed</option>
-                                <option value="REJECTED">Rejected</option>
                                 <option value="APPROVED">Approved</option>
+                                <option value="REJECTED">Rejected</option>
                             </select>
                         </div>
 
-                        <!-- Application Type Filter -->
+                        <!-- Crop Filter -->
                         <div>
                             <label
                                 class="block text-xs font-semibold text-slate-700 mb-2 uppercase tracking-wider"
-                                >Application Type</label
+                                >Crop Type</label
                             >
                             <select
-                                v-model="selectedApplicationType"
+                                v-model="selectedCrop"
                                 class="w-full px-4 py-2 rounded-lg border-2 border-slate-200 bg-white text-slate-900 text-sm font-medium focus:border-blue-400 focus:bg-blue-50/30 focus:outline-none focus:ring-4 focus:ring-blue-400/10 hover:border-slate-300 transition-all duration-200">
-                                <option value="">All Applications</option>
+                                <option value="">All Crops</option>
                                 <option
-                                    v-for="appType in availableApplicationTypes"
-                                    :key="appType"
-                                    :value="appType">
-                                    {{ appType }}
+                                    v-for="crop in availableCrops"
+                                    :key="crop"
+                                    :value="crop">
+                                    {{ crop }}
                                 </option>
                             </select>
                         </div>
@@ -112,36 +107,6 @@
                                     {{ location }}
                                 </option>
                             </select>
-                        </div>
-
-                        <!-- Area Min Filter -->
-                        <div>
-                            <label
-                                class="block text-xs font-semibold text-slate-700 mb-2 uppercase tracking-wider"
-                                >Min Area (Ha)</label
-                            >
-                            <input
-                                v-model="selectedAreaMin"
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                placeholder="0.00"
-                                class="w-full px-4 py-2 rounded-lg border-2 border-slate-200 bg-white text-slate-900 text-sm font-medium focus:border-blue-400 focus:bg-blue-50/30 focus:outline-none focus:ring-4 focus:ring-blue-400/10 hover:border-slate-300 transition-all duration-200" />
-                        </div>
-
-                        <!-- Area Max Filter -->
-                        <div>
-                            <label
-                                class="block text-xs font-semibold text-slate-700 mb-2 uppercase tracking-wider"
-                                >Max Area (Ha)</label
-                            >
-                            <input
-                                v-model="selectedAreaMax"
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                placeholder="0.00"
-                                class="w-full px-4 py-2 rounded-lg border-2 border-slate-200 bg-white text-slate-900 text-sm font-medium focus:border-blue-400 focus:bg-blue-50/30 focus:outline-none focus:ring-4 focus:ring-blue-400/10 hover:border-slate-300 transition-all duration-200" />
                         </div>
 
                         <!-- Date From Filter -->
@@ -169,7 +134,7 @@
                         </div>
 
                         <!-- Clear Filters Button -->
-                        <div class="flex items-end col-span-2 md:col-span-4 lg:col-span-1">
+                        <div class="flex items-end">
                             <button
                                 class="w-full px-4 py-2 border-2 border-slate-200 rounded-lg text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 hover:border-slate-300 transition-all duration-200"
                                 @click="clearAllFilters">
@@ -340,17 +305,7 @@
                                                 ? 'bg-emerald-100 text-emerald-700'
                                                 : insurance.status === 'PENDING'
                                                 ? 'bg-amber-100 text-amber-700'
-                                                : insurance.status === 'VERIFIED'
-                                                ? 'bg-blue-100 text-blue-700'
-                                                : insurance.status === 'POLICY_ISSUED'
-                                                ? 'bg-indigo-100 text-indigo-700'
-                                                : insurance.status === 'SCHEDULE_ASSIGNED_FOR_INSPECTION'
-                                                ? 'bg-purple-100 text-purple-700'
-                                                : insurance.status === 'INSPECTION_COMPLETED'
-                                                ? 'bg-cyan-100 text-cyan-700'
-                                                : insurance.status === 'REJECTED'
-                                                ? 'bg-red-100 text-red-700'
-                                                : 'bg-slate-100 text-slate-700',
+                                                : 'bg-red-100 text-red-700',
                                         ]">
                                         {{ insurance.status }}
                                     </span>
@@ -396,10 +351,8 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { RefreshCw, Search, Filter, ChevronDown, Trash2 } from 'lucide-vue-next'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
-import { UNDERWRITER_NAVIGATION } from '@/lib/navigation'
 import { useInsuranceStore } from '@/stores/insurance'
 
-const underwriterNavigation = UNDERWRITER_NAVIGATION
 const router = useRouter()
 const insuranceStore = useInsuranceStore()
 
@@ -416,9 +369,6 @@ const searchQuery = ref('')
 const selectedStatus = ref('')
 const selectedCrop = ref('')
 const selectedLocation = ref('')
-const selectedApplicationType = ref('')
-const selectedAreaMin = ref('')
-const selectedAreaMax = ref('')
 const dateFrom = ref('')
 const dateTo = ref('')
 
@@ -492,17 +442,6 @@ const extractContactInfo = insurance => {
     )
 }
 
-// Status hierarchy for ordering
-const STATUS_HIERARCHY = {
-    PENDING: 1,
-    VERIFIED: 2,
-    POLICY_ISSUED: 3,
-    SCHEDULE_ASSIGNED_FOR_INSPECTION: 4,
-    INSPECTION_COMPLETED: 5,
-    REJECTED: 6,
-    APPROVED: 7,
-}
-
 // Computed
 const filteredApplications = computed(() => {
     let filtered = [...applications.value]
@@ -514,14 +453,12 @@ const filteredApplications = computed(() => {
             const crop = extractCropType(insurance).toLowerCase()
             const location = extractLocation(insurance).toLowerCase()
             const id = insurance.insuranceId?.toLowerCase() || ''
-            const appName = insurance.applicationName?.toLowerCase() || ''
 
             return (
                 name.includes(query) ||
                 crop.includes(query) ||
                 location.includes(query) ||
-                id.includes(query) ||
-                appName.includes(query)
+                id.includes(query)
             )
         })
     }
@@ -550,28 +487,6 @@ const filteredApplications = computed(() => {
         )
     }
 
-    if (selectedApplicationType.value) {
-        filtered = filtered.filter(insurance =>
-            insurance.applicationName
-                ?.toLowerCase()
-                .includes(selectedApplicationType.value.toLowerCase()),
-        )
-    }
-
-    if (selectedAreaMin.value) {
-        filtered = filtered.filter(insurance => {
-            const area = extractAreaInsured(insurance)
-            return area >= parseFloat(selectedAreaMin.value)
-        })
-    }
-
-    if (selectedAreaMax.value) {
-        filtered = filtered.filter(insurance => {
-            const area = extractAreaInsured(insurance)
-            return area <= parseFloat(selectedAreaMax.value)
-        })
-    }
-
     if (dateFrom.value) {
         filtered = filtered.filter(insurance => {
             const verifiedDate = insurance.verification?.verifiedAt
@@ -587,33 +502,6 @@ const filteredApplications = computed(() => {
             return new Date(verifiedDate) <= new Date(dateTo.value)
         })
     }
-
-    // Sort by status hierarchy first, then by submission dates
-    filtered.sort((a, b) => {
-        // Primary sort: Status hierarchy
-        const statusA = STATUS_HIERARCHY[a.status] || 999
-        const statusB = STATUS_HIERARCHY[b.status] || 999
-
-        if (statusA !== statusB) {
-            return statusA - statusB
-        }
-
-        // Secondary sort: By submission dates (most recent first)
-        // Use inspectionAt, verifiedAt, or createdAt in that priority
-        const getSubmissionDate = insurance => {
-            return (
-                insurance.inspectionAt ||
-                insurance.verification?.verifiedAt ||
-                insurance.createdAt ||
-                new Date(0)
-            )
-        }
-
-        const dateA = new Date(getSubmissionDate(a))
-        const dateB = new Date(getSubmissionDate(b))
-
-        return dateB - dateA // Most recent first
-    })
 
     return filtered
 })
@@ -643,16 +531,6 @@ const availableLocations = computed(() => {
         }
     })
     return Array.from(locations).sort()
-})
-
-const availableApplicationTypes = computed(() => {
-    const appTypes = new Set()
-    applications.value.forEach(insurance => {
-        if (insurance.applicationName) {
-            appTypes.add(insurance.applicationName)
-        }
-    })
-    return Array.from(appTypes).sort()
 })
 
 // Check if all visible applications are selected
@@ -688,7 +566,7 @@ const refreshApplications = () => {
 
 const navigateToDetail = insurance => {
     router.push({
-        name: 'underwriter-applications-detail',
+        name: 'applications-detail',
         params: {
             insuranceId: insurance.insuranceId,
             submissionId: insurance.submissionId,
@@ -800,9 +678,6 @@ const clearAllFilters = () => {
     selectedStatus.value = ''
     selectedCrop.value = ''
     selectedLocation.value = ''
-    selectedApplicationType.value = ''
-    selectedAreaMin.value = ''
-    selectedAreaMax.value = ''
     dateFrom.value = ''
     dateTo.value = ''
 }

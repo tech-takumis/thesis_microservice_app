@@ -9,7 +9,7 @@
             <li>
               <div>
                 <router-link
-                  :to="{ name: 'underwriter-dashboard' }"
+                  :to="{ name: 'dashboard' }"
                   class="text-gray-400 hover:text-gray-500"
                 >
                   <HomeIcon class="flex-shrink-0 h-5 w-5" />
@@ -523,14 +523,14 @@ const createAIClaim = async () => {
 // Navigation function for breadcrumb
 const navigateToApplicationList = () => {
   router.push({
-    name: 'underwriter-applications-all'
+    name: 'applications-all'
   })
 }
 
 const navigateToApplicationDetail = () => {
   if (insuranceId && submissionId) {
     router.push({
-      name: 'underwriter-applications-detail',
+      name: 'applications-detail',
       params: {
         insuranceId: insuranceId,
         submissionId: submissionId

@@ -1,5 +1,5 @@
 <template>
-  <div class="h-screen bg-white flex flex-col">
+  <div class="h-screen bg-gray-50 flex flex-col">
     <!-- Mobile Sidebar (Off-canvas) -->
     <div v-if="sidebarOpen" class="fixed inset-0 z-40 md:hidden">
       <!-- Overlay -->
@@ -34,10 +34,10 @@
 
     <!-- Main Container -->
     <div class="flex-1 flex flex-col md:flex-row overflow-hidden px-1 md:px-2 py-2 md:py-3 gap-2 md:gap-3 rounded-lg">
-      <!-- Sidebar: Tight spacing, closer to screen edge -->
+      <!-- Sidebar: fixed and flush to viewport edge on md+ -->
       <aside
         :class="[
-          'hidden md:flex md:flex-col md:h-full bg-white rounded-lg overflow-hidden transition-all duration-300',
+          'hidden md:flex md:flex-col md:fixed md:inset-y-0 md:left-0 md:h-screen bg-white md:rounded-none overflow-hidden transition-all duration-300 md:z-20',
           isCollapsed ? 'md:w-20' : 'md:w-72'
         ]"
       >
@@ -56,7 +56,10 @@
 
       <!-- Dashboard: Slight gap to right side -->
       <main
-        class="flex-1 flex flex-col bg-white rounded-lg overflow-hidden"
+        :class="[
+          'flex-1 flex flex-col bg-white rounded-lg overflow-hidden',
+          isCollapsed ? 'md:ml-20' : 'md:ml-72'
+        ]"
       >
         <!-- Mobile Top Bar -->
         <div
@@ -76,7 +79,7 @@
         <!-- Page Header -->
         <header
           v-if="$slots.header"
-          class="bg-gray-100 border-b border-gray-200 flex-shrink-0"
+          class="bg-gray-50 flex-shrink-0"
         >
           <div class="px-6 py-5">
             <slot name="header" />
@@ -84,8 +87,8 @@
         </header>
 
         <!-- Dashboard Content -->
-        <div class="flex-1 bg-gray-100 overflow-hidden">
-          <div class="px-6 py-6 h-full overflow-y-auto scrollbar-hide">
+        <div class="flex-1 bg-gray-50 overflow-hidden">
+          <div class="px-2 py-2 h-full overflow-y-auto scrollbar-hide">
             <slot />
           </div>
         </div>
@@ -95,18 +98,15 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { Menu, X } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth'
 import SidebarNavigation from '@/components/layouts/SidebarNavigation.vue'
+import { NAVIGATION } from '@/lib/navigation'
 
 const store = useAuthStore()
 
 const props = defineProps({
-  navigation: {
-    type: Array,
-    default: () => []
-  },
   roleTitle: {
     type: String,
     default: 'Staff Portal'
@@ -115,6 +115,15 @@ const props = defineProps({
     type: String,
     default: 'Dashboard'
   }
+})
+
+// Filter navigation items based on user roles
+const navigation = computed(() => {
+  const userRoles = store.userRoles || []
+  return NAVIGATION.filter((item) => {
+    if (!item.roles) return true
+    return item.roles.some((role) => userRoles.includes(role))
+  })
 })
 
 const SIDEBAR_STORAGE_KEY = 'pcic_sidebar_collapsed'

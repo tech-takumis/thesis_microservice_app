@@ -40,6 +40,50 @@ export const useInsuranceStore = defineStore("insuranceStore",() => {
 
     }
 
+     const fetchInsuranceByStatus = async (status) => {
+        try{
+            loading.value = true
+            error.value = null
+            const response = await axios.get(`${basePath.value}/status/${status}`);
+
+            if(response.status > 200 && response.status < 300){
+                insurance.value = response.data
+                return {success: "true", message: `Successfully fetch insurance with status: ${status}`, data: insurance.value}
+            }
+
+            return {success: "false",message: response.data.message, data: null};
+        }catch (error){
+            console.log("Failed to fetch insurance by status");
+            error.value = error.data.message;
+            loading.value = false
+            return {success: "false", message: error.value, data: null}
+        }finally {
+            loading.value = false
+        }
+    }
+
+    const fetchInsuranceStatusStatistics = async () => {
+        try{
+            loading.value = true
+            error.value = null
+
+            const response = await axios.get(`${basePath.value}/statistics/status`);
+
+            if(response.status === 200 || response.status === 204){
+                return {success: "true", message: "Successfully fetch insurance status statistics", data: response.data}
+            }
+
+            return {success: "false",message: response.data.message, data: null};
+        }catch (error){
+            console.log("Failed to fetch insurance status statistics");
+            error.value = error.data.message;
+            loading.value = false
+            return {success: "false", message: error.value, data: null}
+        }finally {
+            loading.value = false
+        }
+    }
+
     const fetchVerifiedInsurance = async () => {
         try{
             loading.value = true
@@ -152,6 +196,8 @@ export const useInsuranceStore = defineStore("insuranceStore",() => {
         hasError,
         fetchAllInsurance,
         fetchVerifiedInsurance,
+        fetchInsuranceByStatus,
+        fetchInsuranceStatusStatistics,
         fetchInsuranceById,
         fetchInsuranceBySubmissionId,
         updateInsurance,

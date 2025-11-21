@@ -1,14 +1,14 @@
+import io
+import logging
+import os
+import tempfile
+from typing import Dict, List
+
 import cv2
 import numpy as np
-from skimage.segmentation import slic
-import matplotlib.pyplot as plt
-from tensorflow.keras.preprocessing import image
 import tensorflow as tf
-import os
-import io
-from typing import Dict, List
-import tempfile
-import logging
+from skimage.segmentation import slic
+from tensorflow.keras.preprocessing import image
 
 logger = logging.getLogger(__name__)
 
@@ -90,7 +90,6 @@ class PredictionService:
         if self.model is None:
             raise ValueError("Model not loaded. Cannot make predictions.")
 
-        # --- Step 1: Load and enhance image ---
         img = cv2.imread(image_path)
         if img is None:
             raise ValueError("Image not found or invalid path.")
@@ -124,46 +123,143 @@ class PredictionService:
         leaf_mask = refined_mask * 255
         leaf_only = cv2.bitwise_and(enhanced, enhanced, mask=leaf_mask)
 
-        # --- Step 3: Adaptive lesion segmentation ---
+        # --- Step 3: Improved lesion segmentation (handles multiple damage types) ---
         hsv = cv2.cvtColor(leaf_only, cv2.COLOR_RGB2HSV)
         gray = cv2.cvtColor(leaf_only, cv2.COLOR_RGB2GRAY)
 
-        # Adaptive threshold to detect dark and brown lesions dynamically
-        mean_val = np.mean(gray)
-        adaptive_dark = cv2.adaptiveThreshold(
-            gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-            cv2.THRESH_BINARY_INV, 51, int(mean_val / 20)
-        )
+        # Only analyze pixels within the leaf area to avoid background
+        leaf_pixels = gray[leaf_mask > 0]
+        if len(leaf_pixels) == 0:
+            # No leaf detected, cannot compute severity
+            logger.warning("No leaf pixels detected, setting severity to 0")
+            lesion_area = 0
+            leaf_area = 1  # Avoid division by zero
+            lesion_ratio = 0.0
+            final_lesion = np.zeros_like(leaf_mask)
+        else:
+            # Calculate statistics only from leaf pixels
+            leaf_mean = np.mean(leaf_pixels)
+            leaf_std = np.std(leaf_pixels)
+            logger.info(f"Leaf pixel stats - mean: {leaf_mean:.2f}, std: {leaf_std:.2f}")
 
-        # Dynamic brown range based on average leaf color
-        hue_mean = np.mean(hsv[:, :, 0])
-        lower_brown = np.array([max(5, hue_mean - 20), 40, 20], dtype=np.uint8)
-        upper_brown = np.array([min(35, hue_mean + 20), 255, 200], dtype=np.uint8)
-        brown_mask = cv2.inRange(hsv, lower_brown, upper_brown)
+            # === DAMAGE TYPE 1: Brown/Dark lesions (bacterial blight, brown spot, blast) ===
+            # Brown spots typically have Hue: 10-25, darker than healthy leaf
+            lower_brown = np.array([10, 40, 20], dtype=np.uint8)
+            upper_brown = np.array([30, 255, 180], dtype=np.uint8)
+            brown_mask = cv2.inRange(hsv, lower_brown, upper_brown)
+            brown_mask = cv2.bitwise_and(brown_mask, leaf_mask)
 
-        # Combine and refine
-        lesion_mask = cv2.bitwise_or(brown_mask, adaptive_dark)
-        lesion_mask = cv2.bitwise_and(lesion_mask, leaf_mask)
+            # Dark brown/black lesions
+            lower_dark_brown = np.array([0, 20, 10], dtype=np.uint8)
+            upper_dark_brown = np.array([30, 255, 100], dtype=np.uint8)
+            dark_brown_mask = cv2.inRange(hsv, lower_dark_brown, upper_dark_brown)
+            dark_brown_mask = cv2.bitwise_and(dark_brown_mask, leaf_mask)
 
-        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
-        lesion_mask = cv2.morphologyEx(lesion_mask, cv2.MORPH_OPEN, kernel, iterations=2)
-        lesion_mask = cv2.morphologyEx(lesion_mask, cv2.MORPH_CLOSE, kernel, iterations=3)
+            # === DAMAGE TYPE 2: White/bleached areas (Rice Hispa scraping damage) ===
+            # Hispa beetles scrape leaf surface creating white/transparent streaks
+            # High brightness (Value > 180), low saturation (< 80)
+            lower_white = np.array([0, 0, 180], dtype=np.uint8)
+            upper_white = np.array([180, 80, 255], dtype=np.uint8)
+            white_mask = cv2.inRange(hsv, lower_white, upper_white)
+            white_mask = cv2.bitwise_and(white_mask, leaf_mask)
+            logger.info(f"White/bleached damage pixels detected: {np.sum(white_mask > 0)}")
 
-        # --- Step 4: Superpixel refinement ---
-        segments = slic(enhanced, n_segments=600, compactness=6, sigma=1, start_label=0)
-        refined_lesion = np.zeros_like(lesion_mask)
-        for seg_val in np.unique(segments):
-            mask_region = (segments == seg_val)
-            lesion_ratio = lesion_mask[mask_region].mean()
-            if lesion_ratio > 0.4:
-                refined_lesion[mask_region] = 255
+            # === DAMAGE TYPE 3: Yellowish/chlorotic areas (various diseases, nutrient deficiency) ===
+            # Yellow hue range with moderate to high saturation
+            lower_yellow = np.array([20, 50, 100], dtype=np.uint8)
+            upper_yellow = np.array([40, 255, 255], dtype=np.uint8)
+            yellow_mask = cv2.inRange(hsv, lower_yellow, upper_yellow)
+            yellow_mask = cv2.bitwise_and(yellow_mask, leaf_mask)
+            logger.info(f"Yellow/chlorotic damage pixels detected: {np.sum(yellow_mask > 0)}")
 
-        final_lesion = cv2.bitwise_and(refined_lesion, leaf_mask)
+            # === DAMAGE TYPE 4: Grayish/necrotic areas ===
+            # Low saturation, medium brightness (dead tissue)
+            lower_gray = np.array([0, 0, 80], dtype=np.uint8)
+            upper_gray = np.array([180, 50, 170], dtype=np.uint8)
+            gray_damage_mask = cv2.inRange(hsv, lower_gray, upper_gray)
+            gray_damage_mask = cv2.bitwise_and(gray_damage_mask, leaf_mask)
 
-        # --- Step 5: Severity computation ---
-        lesion_area = np.sum(final_lesion > 0)
-        leaf_area = np.sum(leaf_mask > 0)
-        lesion_ratio = (lesion_area / leaf_area) * 100 if leaf_area > 0 else 0
+            # Adaptive threshold for detecting anomalous regions (both dark and bright)
+            # Dark regions
+            threshold_dark = max(10, int(leaf_mean / 12))
+            adaptive_dark = cv2.adaptiveThreshold(
+                gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+                cv2.THRESH_BINARY_INV, 51, threshold_dark
+            )
+            adaptive_dark = cv2.bitwise_and(adaptive_dark, leaf_mask)
+
+            # Bright regions (for hispa-type damage)
+            threshold_bright = min(245, int(leaf_mean + leaf_std * 1.5))
+            _, adaptive_bright = cv2.threshold(gray, threshold_bright, 255, cv2.THRESH_BINARY)
+            adaptive_bright = cv2.bitwise_and(adaptive_bright, leaf_mask)
+
+            # Combine all damage types
+            # Brown/dark damage (use AND with adaptive for precision)
+            brown_damage = cv2.bitwise_or(brown_mask, dark_brown_mask)
+            brown_lesion = cv2.bitwise_and(brown_damage, adaptive_dark)
+
+            # White/bleached damage (hispa) - direct detection without AND
+            white_lesion = white_mask
+
+            # Yellow/chlorotic damage
+            yellow_lesion = yellow_mask
+
+            # Gray/necrotic damage
+            gray_lesion = gray_damage_mask
+
+            # Combine all damage types
+            all_damage = cv2.bitwise_or(brown_lesion, white_lesion)
+            all_damage = cv2.bitwise_or(all_damage, yellow_lesion)
+            all_damage = cv2.bitwise_or(all_damage, gray_lesion)
+
+            logger.info(f"Brown lesion pixels: {np.sum(brown_lesion > 0)}")
+            logger.info(f"White lesion pixels: {np.sum(white_lesion > 0)}")
+            logger.info(f"Yellow lesion pixels: {np.sum(yellow_lesion > 0)}")
+            logger.info(f"Gray lesion pixels: {np.sum(gray_lesion > 0)}")
+            logger.info(f"Total damage pixels before filtering: {np.sum(all_damage > 0)}")
+
+            # Morphological filtering to remove noise and small artifacts
+            kernel_small = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+            kernel_large = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+
+            # Open to remove small noise
+            lesion_mask = cv2.morphologyEx(all_damage, cv2.MORPH_OPEN, kernel_small, iterations=2)
+            # Close to fill small holes within lesions
+            lesion_mask = cv2.morphologyEx(lesion_mask, cv2.MORPH_CLOSE, kernel_large, iterations=2)
+
+            # Remove very small connected components (noise)
+            num_labels, labels, stats, _ = cv2.connectedComponentsWithStats(lesion_mask, connectivity=8)
+            min_lesion_size = max(30, int(np.sum(leaf_mask > 0) * 0.0005))  # At least 0.05% of leaf area
+            filtered_lesion = np.zeros_like(lesion_mask)
+            for label_idx in range(1, num_labels):  # Skip background (0)
+                if stats[label_idx, cv2.CC_STAT_AREA] >= min_lesion_size:
+                    filtered_lesion[labels == label_idx] = 255
+
+            logger.info(f"Damage pixels after filtering: {np.sum(filtered_lesion > 0)}")
+
+            # --- Step 4: Superpixel refinement (less conservative for better detection) ---
+            segments = slic(enhanced, n_segments=400, compactness=10, sigma=1, start_label=0)
+            refined_lesion = np.zeros_like(filtered_lesion)
+            for seg_val in np.unique(segments):
+                mask_region = (segments == seg_val)
+                # Only consider regions that overlap with leaf
+                if np.sum(leaf_mask[mask_region]) == 0:
+                    continue  # Skip background regions
+
+                lesion_ratio_in_segment = filtered_lesion[mask_region].mean() / 255.0
+                # Lower threshold for better damage detection (30% coverage in segment)
+                if lesion_ratio_in_segment > 0.3:
+                    refined_lesion[mask_region] = 255
+
+            # Final strict masking to ensure only leaf pixels
+            final_lesion = cv2.bitwise_and(refined_lesion, leaf_mask)
+
+            # --- Step 5: Severity computation ---
+            lesion_area = np.sum(final_lesion > 0)
+            leaf_area = np.sum(leaf_mask > 0)
+            lesion_ratio = (lesion_area / leaf_area) * 100 if leaf_area > 0 else 0.0
+
+            logger.info(f"Final lesion area: {lesion_area}, leaf area: {leaf_area}, severity: {lesion_ratio:.2f}%")
 
         # --- Step 6: Model prediction ---
         logger.info("Starting model prediction...")
@@ -339,13 +435,9 @@ class PredictionService:
                     success = self._upload_to_minio(minio_config, image_bytes, leaf_object_name)
 
                 if success:
-                    # Get presigned URL
-                    presigned_url = self._get_presigned_url(minio_config, leaf_object_name)
-
                     analysis_images.append({
                         "image_type": "isolated_leaf",
                         "image_path": leaf_object_name,
-                        "presigned_url": presigned_url,
                         "width": leaf_width,
                         "height": leaf_height,
                         "file_size": leaf_file_size,
@@ -385,13 +477,9 @@ class PredictionService:
                     success = self._upload_to_minio(minio_config, image_bytes, overlay_object_name)
 
                 if success:
-                    # Get presigned URL
-                    presigned_url = self._get_presigned_url(minio_config, overlay_object_name)
-
                     analysis_images.append({
                         "image_type": "lesion_overlay",
                         "image_path": overlay_object_name,
-                        "presigned_url": presigned_url,
                         "width": overlay_width,
                         "height": overlay_height,
                         "file_size": overlay_file_size,
@@ -434,28 +522,6 @@ class PredictionService:
         except Exception as e:
             logger.error(f"Failed to upload to MinIO: {str(e)}")
             return False
-
-    def _get_presigned_url(self, minio_config, object_name, expires_in_seconds=7200):
-        """Get presigned URL for MinIO object"""
-        try:
-            if not minio_config.client:
-                logger.error("MinIO client not available")
-                return None
-
-            from datetime import timedelta
-            expires = timedelta(seconds=expires_in_seconds)
-
-            url = minio_config.client.presigned_get_object(
-                bucket_name="ai-service-bucket",
-                object_name=object_name,
-                expires=expires
-            )
-
-            return url
-
-        except Exception as e:
-            logger.error(f"Failed to get presigned URL: {str(e)}")
-            return None
 
 # Global instance
 prediction_service = PredictionService()

@@ -650,6 +650,9 @@ const filteredApplications = computed(() => {
         apps = apps.filter(app => new Date(app.submittedAt) <= new Date(filters.value.dateTo))
     }
 
+    // Sort by submittedAt (earliest first)
+    apps = [...apps].sort((a, b) => new Date(a.submittedAt) - new Date(b.submittedAt))
+
     return apps
 })
 

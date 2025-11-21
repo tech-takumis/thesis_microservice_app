@@ -17,7 +17,7 @@ class AIResult(Base):
     severity = Column(Float)
     lesion_area = Column(Float)
     leaf_area = Column(Float)
-    image_path = Column(String)
+    image_path = Column(String)  # MinIO object key for original uploaded image (stored in documents bucket)
 
     # Relationship to top 3 predictions
     top3_predictions = relationship("Top3Prediction", back_populates="ai_result", cascade="all, delete-orphan")
@@ -46,7 +46,7 @@ class Top3PredictionDTO(BaseModel):
 class LeafAnalysisImageDTO(BaseModel):
     image_type: str  # 'isolated_leaf', 'lesion_overlay'
     image_path: str
-    presigned_url: str | None = ""  # Allow None and default to empty string
+    presigned_url: str | None = None  # Computed on-the-fly, not stored in database
     width: int
     height: int
     file_size: int
@@ -68,7 +68,6 @@ class AIRequestDTO(BaseModel):
     image_path: str | None = None
     top3_predictions: List[Top3PredictionDTO] = []
     leaf_analysis_images: List[LeafAnalysisImageDTO] = []
-
     model_config = {'from_attributes': True}
 
 class AIResponseDTO(BaseModel):
@@ -82,7 +81,8 @@ class AIResponseDTO(BaseModel):
     severity: float
     lesion_area: float
     leaf_area: float
-    image_path: str | None = None
+    image_path: str | None = None  # MinIO object key for original image
+    original_image_url: str | None = None  # Presigned URL for original image (computed on-the-fly)
     top3_predictions: List[Top3PredictionDTO] = []
     leaf_analysis_images: List[LeafAnalysisImageDTO] = []
 
@@ -94,7 +94,6 @@ class LeafAnalysisImage(Base):
     ai_result_id = Column(Integer, ForeignKey("ai_result.id"))
     image_type = Column(String)  # 'isolated_leaf', 'lesion_overlay'
     image_path = Column(String)  # MinIO object name/path for the image
-    presigned_url = Column(String)  # Presigned URL for accessing the image
     width = Column(Integer)  # Image width in pixels
     height = Column(Integer)  # Image height in pixels
     file_size = Column(Integer)  # File size in bytes

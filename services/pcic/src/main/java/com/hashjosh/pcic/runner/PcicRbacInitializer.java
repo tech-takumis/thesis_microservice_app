@@ -106,21 +106,21 @@ public class PcicRbacInitializer implements CommandLineRunner {
                             permMap.get("CAN_INSPECT_FIELD"),
                             permMap.get("CAN_PROCESS_INDEMNITY"),
                             permMap.get("CAN_NOTIFY_DENIAL")
-                    ))),
-                    new Role(null, "TELLER_STAFF", slug.toSlug("TELLER_STAFF"), "/teller/dashboard",new HashSet<>(Arrays.asList(
-                            permMap.get("CAN_VIEW_USER"),
-                            permMap.get("CAN_MANAGE_SUPPLIES"),
-                            permMap.get("CAN_HANDLE_REPAIRS"),
-                            permMap.get("CAN_PROVIDE_TRANSPORT"),
-                            permMap.get("CAN_ISSUE_RECEIPT")
-                    ))),
-                    new Role(null, "EXTENSION_FIELD_STAFF", slug.toSlug("EXTENSION_FIELD_STAFF"), "/extension/dashboard",new HashSet<>(Arrays.asList(
-                            permMap.get("CAN_VIEW_USER"),
-                            permMap.get("CAN_FACILITATE_APPLICATIONS"),
-                            permMap.get("CAN_RECEIVE_CLAIMS_ON_SITE"),
-                            permMap.get("CAN_INSPECT_FIELD"),
-                            permMap.get("CAN_ENCODE_CLAIM")
                     )))
+//                    new Role(null, "TELLER_STAFF", slug.toSlug("TELLER_STAFF"), "/teller/dashboard",new HashSet<>(Arrays.asList(
+//                            permMap.get("CAN_VIEW_USER"),
+//                            permMap.get("CAN_MANAGE_SUPPLIES"),
+//                            permMap.get("CAN_HANDLE_REPAIRS"),
+//                            permMap.get("CAN_PROVIDE_TRANSPORT"),
+//                            permMap.get("CAN_ISSUE_RECEIPT")
+//                    ))),
+//                    new Role(null, "EXTENSION_FIELD_STAFF", slug.toSlug("EXTENSION_FIELD_STAFF"), "/extension/dashboard",new HashSet<>(Arrays.asList(
+//                            permMap.get("CAN_VIEW_USER"),
+//                            permMap.get("CAN_FACILITATE_APPLICATIONS"),
+//                            permMap.get("CAN_RECEIVE_CLAIMS_ON_SITE"),
+//                            permMap.get("CAN_INSPECT_FIELD"),
+//                            permMap.get("CAN_ENCODE_CLAIM")
+//                    )))
             );
 
             roleRepository.saveAllAndFlush(roles);

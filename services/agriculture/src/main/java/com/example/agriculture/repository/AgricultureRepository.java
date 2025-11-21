@@ -29,5 +29,11 @@ public interface AgricultureRepository extends JpaRepository<Agriculture, UUID> 
             "LOWER(a.email) LIKE LOWER(CONCAT('%', :search, '%'))")
     Page<Agriculture> search(@Param("search") String search, Pageable pageable);
 
+    @Query("SELECT a FROM Agriculture a WHERE (LOWER(a.username) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(a.firstName) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(a.lastName) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(a.email) LIKE LOWER(CONCAT('%', :search, '%'))) AND a.id <> :excludedUserId")
+    Page<Agriculture> searchExcludingUser(@Param("search") String search, Pageable pageable, @Param("excludedUserId") UUID excludedUserId);
+
+    @Query("SELECT a FROM Agriculture a WHERE a.id <> :excludedUserId")
+    Page<Agriculture> findAllExcludingUser(Pageable pageable, @Param("excludedUserId") UUID excludedUserId);
+
     Optional<Agriculture> findByUsername(String username);
 }

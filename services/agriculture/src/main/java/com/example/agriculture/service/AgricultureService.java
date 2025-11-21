@@ -77,4 +77,14 @@ public class AgricultureService {
         Agriculture agri = getUserById(id);
         return agri.getFirstName() + " " + agri.getLastName();
     }
+
+    public Page<AgricultureResponseDto> getAllExcludingUser(String search, Pageable pageable, UUID excludedUserId) {
+        Page<Agriculture> result;
+        if (search != null && !search.isEmpty()) {
+            result = agricultureRepository.searchExcludingUser(search, pageable, excludedUserId);
+        } else {
+            result = agricultureRepository.findAllExcludingUser(pageable, excludedUserId);
+        }
+        return result.map(userMapper::toAgricultureResponseDto);
+    }
 }

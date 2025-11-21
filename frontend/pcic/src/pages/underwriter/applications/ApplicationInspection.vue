@@ -1,6 +1,5 @@
 <template>
   <AuthenticatedLayout
-    :navigation="underwriterNavigation"
     role-title="Underwriter Portal"
     page-title="Inspection"
   >
@@ -476,7 +475,6 @@ import { useRoute, useRouter } from 'vue-router'
 import { useInsuranceStore } from '@/stores/insurance'
 import { useInspectionStore } from '@/stores/inspection'
 import { useToastStore } from '@/stores/toast'
-import { UNDERWRITER_NAVIGATION } from '@/lib/navigation'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
 import LoadingSpinner from '@/components/others/LoadingSpinner.vue'
 import {
@@ -495,7 +493,6 @@ const router = useRouter()
 const insuranceStore = useInsuranceStore()
 const inspectionStore = useInspectionStore()
 const toastStore = useToastStore()
-const underwriterNavigation = UNDERWRITER_NAVIGATION
 
 const loading = ref(false)
 const error = ref(null)

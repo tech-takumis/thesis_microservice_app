@@ -1,6 +1,5 @@
 <template>
-  <AuthenticatedLayout 
-    :navigation="adminNavigation" 
+  <AuthenticatedLayout
     role-title="Admin Portal"
     page-title="New Application Type"
   >
@@ -241,12 +240,10 @@ import { ArrowLeft, Plus, Trash2, Loader2, FileText, Layers, Edit } from 'lucide
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
 import SectionModal from '@/components/modals/SectionModal.vue'
 import FieldModal from '@/components/modals/FieldModal.vue'
-import { ADMIN_NAVIGATION } from '@/lib/navigation'
 import axios from '@/lib/axios'
 
 const router = useRouter()
 
-const adminNavigation = ADMIN_NAVIGATION
 
 const applicationType = ref({
   name: '',

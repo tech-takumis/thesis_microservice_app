@@ -1,6 +1,5 @@
 <template>
-  <AuthenticatedLayout 
-    :navigation="adminNavigation" 
+  <AuthenticatedLayout
     role-title="Admin Portal"
     page-title="Dashboard"
   >
@@ -167,12 +166,10 @@ import AuthenticatedLayout from '../../layouts/AuthenticatedLayout.vue'
 import ApplicationCard from '@/components/underwriter/ApplicationCard.vue'
 import UnderwriterQuickActionButton from '@/components/underwriter/UnderwriterQuickActionButton.vue'
 import { useAuthStore } from '@/stores/auth'
-import { ADMIN_NAVIGATION } from '@/lib/navigation'
 
 const store = useAuthStore()
 const router = useRouter()
 
-const adminNavigation = ADMIN_NAVIGATION
 
 // Sample data for stats
 const totalStaffAccounts = ref(45)

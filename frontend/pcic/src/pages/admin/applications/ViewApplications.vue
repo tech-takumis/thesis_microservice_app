@@ -1,6 +1,5 @@
 <template>
-  <AuthenticatedLayout 
-    :navigation="adminNavigation" 
+  <AuthenticatedLayout
     role-title="Admin Portal"
     page-title="All Application Types"
   >
@@ -11,16 +10,8 @@
           <p class="text-gray-600">Manage and view all insurance application types in the system</p>
         </div>
         <div class="flex items-center space-x-3">
-          <button
-            @click="refreshApplications"
-            :disabled="loading"
-            class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-          >
-            <RefreshCw :class="['h-4 w-4 mr-2', loading ? 'animate-spin' : '']" />
-            Refresh
-          </button>
           <router-link
-            to="/admin/applications/new"
+            to="/applications/new"
             class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
           >
             <Plus class="h-4 w-4 mr-2" />
@@ -32,7 +23,7 @@
 
     <div class="space-y-6">
       <!-- Statistics Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div class="flex items-center">
             <div class="p-3 rounded-lg bg-blue-100">
@@ -65,18 +56,6 @@
             <div class="ml-4">
               <h3 class="text-lg font-semibold text-gray-900">{{ totalFields }}</h3>
               <p class="text-sm text-gray-500">Total Fields</p>
-            </div>
-          </div>
-        </div>
-        
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div class="flex items-center">
-            <div class="p-3 rounded-lg bg-yellow-100">
-              <Brain class="h-6 w-6 text-yellow-600" />
-            </div>
-            <div class="ml-4">
-              <h3 class="text-lg font-semibold text-gray-900">{{ aiEnabledCount }}</h3>
-              <p class="text-sm text-gray-500">AI-Enabled</p>
             </div>
           </div>
         </div>
@@ -120,22 +99,6 @@
                 <option value="single-step">Single Step</option>
                 <option value="two-step">Two Step</option>
                 <option value="multi-step">Multi Step</option>
-              </select>
-            </div>
-
-            <!-- AI Analysis Filter -->
-            <div>
-              <label for="aiFilter" class="block text-sm font-medium text-gray-700 mb-1">
-                AI Analysis
-              </label>
-              <select
-                v-model="selectedAIFilter"
-                id="aiFilter"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              >
-                <option value="">All Types</option>
-                <option value="true">AI Enabled</option>
-                <option value="false">Standard</option>
               </select>
             </div>
           </div>
@@ -380,21 +343,21 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { 
+import {
   Plus, RefreshCw, Loader2, AlertCircle, FileText, Layers, Settings, Brain,
   Search, Filter, ChevronDown, Edit, Copy, Trash2
 } from 'lucide-vue-next'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
 import ApplicationDetailModal from '@/components/modals/ApplicationDetailModal.vue'
-import { ADMIN_NAVIGATION } from '@/lib/navigation'
-import axios from '@/lib/axios'
+import { useApplicationTypeStore } from '@/stores/application-type'
 
-const adminNavigation = ADMIN_NAVIGATION
+// Store
+const applicationTypeStore = useApplicationTypeStore()
 
 // State
-const applications = ref([])
-const loading = ref(false)
-const error = ref(null)
+const applications = computed(() => applicationTypeStore.allApplicationTypes)
+const loading = computed(() => applicationTypeStore.isLoading)
+const error = computed(() => applicationTypeStore.errorMessage)
 
 // Search and Filter State
 const searchQuery = ref('')
@@ -505,26 +468,7 @@ const filteredApplications = computed(() => {
 
 // Methods
 const fetchApplications = async () => {
-  loading.value = true
-  error.value = null
-  
-  try {
-    const response = await axios.get('/api/v1/insurances', {
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'X-Tenant-ID': 'pcic'
-      },
-      withCredentials: true,
-    })
-    applications.value = response.data
-    console.log('Applications fetched:', response.data)
-  } catch (err) {
-    error.value = err.response?.data?.message || err.message || 'Failed to fetch applications'
-    console.error('Error fetching applications:', err)
-  } finally {
-    loading.value = false
-  }
+  await applicationTypeStore.fetchApplicationTypes({ sections: true, application: true })
 }
 
 const refreshApplications = () => {
@@ -574,42 +518,31 @@ const editApplication = (application) => {
 
 const duplicateApplication = async (application) => {
   if (confirm(`Are you sure you want to duplicate "${application.name}"?`)) {
-    try {
-      const duplicatedApp = {
-        ...application,
-        name: `${application.name} (Copy)`,
-        sections: application.sections.map(section => ({
-          title: section.title,
-          fields: section.fields.map(field => ({
-            key: field.key,
-            fieldName: field.fieldName,
-            label: field.label,
-            fieldType: field.fieldType,
-            choices: field.choices,
-            required: field.required,
-            defaultValue: field.defaultValue,
-            validationRegex: field.validationRegex
-          }))
+    const duplicatedApp = {
+      ...application,
+      name: `${application.name} (Copy)`,
+      sections: application.sections.map(section => ({
+        title: section.title,
+        fields: section.fields.map(field => ({
+          key: field.key,
+          fieldName: field.fieldName,
+          fieldType: field.fieldType,
+          choices: field.choices,
+          required: field.required,
+          defaultValue: field.defaultValue,
+          validationRegex: field.validationRegex
         }))
-      }
-      
-      delete duplicatedApp.id // Remove ID so it creates a new one
-      
-      const response = await axios.post('/api/v1/insurances', duplicatedApp, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'X-Tenant-ID': 'pcic'
-        },
-        withCredentials: true,
-      })
-      console.log('Application duplicated:', response.data)
-      
-      // Refresh the list
-      await fetchApplications()
+      }))
+    }
+
+    delete duplicatedApp.id
+    delete duplicatedApp.applications
+    delete duplicatedApp.workflow
+
+    const result = await applicationTypeStore.createApplicationType(duplicatedApp)
+    if (result.success) {
       alert('Application duplicated successfully!')
-    } catch (err) {
-      console.error('Error duplicating application:', err)
+    } else {
       alert('Failed to duplicate application. Please try again.')
     }
   }
@@ -617,28 +550,15 @@ const duplicateApplication = async (application) => {
 
 const deleteApplication = async (application) => {
   if (confirm(`Are you sure you want to delete "${application.name}"? This action cannot be undone.`)) {
-    try {
-      await axios.delete(`/api/v1/insurances/${application.id}`, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'X-Tenant-ID': 'pcic'
-        },
-        withCredentials: true,
-      })
-      console.log('Application deleted:', application.id)
-      
-      // Remove from local state
-      applications.value = applications.value.filter(app => app.id !== application.id)
-      
+    const result = await applicationTypeStore.deleteApplicationType(application.id)
+
+    if (result.success) {
       // Close modal if it's open
       if (detailModalOpen.value && selectedApplication.value?.id === application.id) {
         closeDetailModal()
       }
-      
       alert('Application deleted successfully!')
-    } catch (err) {
-      console.error('Error deleting application:', err)
+    } else {
       alert('Failed to delete application. Please try again.')
     }
   }

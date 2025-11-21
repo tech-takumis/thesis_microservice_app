@@ -1,6 +1,5 @@
 <template>
   <AuthenticatedLayout
-    :navigation="underwriterNavigation"
     role-title="Underwriter Portal"
     page-title="Geographic Analysis"
   >
@@ -44,12 +43,8 @@
 import { ref, onMounted } from 'vue'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
 import LoadingSpinner from '@/components/others/LoadingSpinner.vue'
-import { UNDERWRITER_NAVIGATION } from '@/lib/navigation'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-
-// Navigation
-const underwriterNavigation = UNDERWRITER_NAVIGATION
 
 // Map state
 const mapLoading = ref(true)

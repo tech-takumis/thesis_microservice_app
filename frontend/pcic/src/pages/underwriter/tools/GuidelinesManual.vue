@@ -1,6 +1,5 @@
 <template>
   <AuthenticatedLayout
-    :navigation="underwriterNavigation"
     role-title="Underwriter Portal"
     page-title="Guidelines Manual"
   >
@@ -8,7 +7,7 @@
     <template #header>
       <div class="flex items-center justify-between">
         <div>
-          <h2 class="text-2xl font-bold text-gray-900">Underwriting Guidelines Manual</h2>
+          <h2 class="text-2xl font-semibold text-green-600">Underwriting Guidelines Manual</h2>
           <p class="mt-1 text-sm text-gray-600">
             Comprehensive manual for rice crop insurance underwriting procedures and guidelines
           </p>
@@ -32,8 +31,8 @@
     <!-- Main Content -->
     <div class="h-full flex">
       <!-- Table of Contents Sidebar -->
-      <div class="w-80 bg-white rounded-lg shadow mr-6 overflow-hidden">
-        <div class="px-6 py-4 bg-gray-50 border-b">
+      <div class="w-80 bg-gray-100 border border-gray-300 rounded-lg mr-6 overflow-hidden">
+        <div class="px-6 py-4 bg-gray-100 border-b border-gray-300">
           <h3 class="text-lg font-semibold text-gray-900">Table of Contents</h3>
         </div>
         <div class="p-4 overflow-y-auto h-full">
@@ -53,24 +52,24 @@
       </div>
 
       <!-- Guidelines Content -->
-      <div class="flex-1 bg-white rounded-lg shadow overflow-hidden">
+      <div class="flex-1 bg-gray-100 rounded-xl border border-gray-300 overflow-hidden">
         <div class="h-full overflow-y-auto p-8" ref="contentArea">
           
           <!-- Section 1: Overview -->
           <section id="overview" class="mb-12">
-            <h2 class="text-3xl font-bold text-gray-900 mb-6">1. Overview</h2>
+            <h2 class="text-3xl font-bold text-gray-800 mb-6">1. Overview</h2>
             <div class="prose max-w-none">
               <p class="text-lg text-gray-700 mb-4">
                 This manual provides comprehensive guidelines for underwriting rice crop insurance policies 
                 in the Philippines. It covers procedures, risk assessment, coverage determination, and 
                 documentation requirements.
               </p>
-              <div class="bg-blue-50 border-l-4 border-blue-400 p-6 my-6">
+              <div class="bg-green-100 border-l-4 border-green-600 p-6 my-6">
                 <div class="flex">
-                  <Info class="h-6 w-6 text-blue-400 mr-3 flex-shrink-0 mt-1" />
+                  <Info class="h-6 w-6 text-green-600 mr-3 flex-shrink-0 mt-1" />
                   <div>
-                    <h4 class="text-lg font-semibold text-blue-800 mb-2">Important Note</h4>
-                    <p class="text-blue-700">
+                    <h4 class="text-lg font-semibold text-green-600 mb-2">Important Note</h4>
+                    <p class="text-gray-800">
                       All underwriting decisions must comply with the Philippine Crop Insurance Corporation (PCIC) 
                       regulations and this manual's guidelines. Regular updates are issued quarterly.
                     </p>
@@ -82,7 +81,7 @@
 
           <!-- Section 2: Application Process -->
           <section id="application-process" class="mb-12">
-            <h2 class="text-3xl font-bold text-gray-900 mb-6">2. Application Process</h2>
+            <h2 class="text-3xl font-bold text-gray-800 mb-6">2. Application Process</h2>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div class="space-y-6">
                 <h3 class="text-xl font-semibold text-gray-800">2.1 Required Documents</h3>
@@ -117,7 +116,7 @@
 
           <!-- Section 3: Risk Assessment -->
           <section id="risk-assessment" class="mb-12">
-            <h2 class="text-3xl font-bold text-gray-900 mb-6">3. Risk Assessment Criteria</h2>
+            <h2 class="text-3xl font-bold text-gray-800 mb-6">3. Risk Assessment Criteria</h2>
             <div class="space-y-8">
               <div class="overflow-hidden bg-white border border-gray-200 rounded-lg">
                 <table class="min-w-full divide-y divide-gray-200">
@@ -144,7 +143,7 @@
 
           <!-- Section 4: Premium Calculation -->
           <section id="premium-calculation" class="mb-12">
-            <h2 class="text-3xl font-bold text-gray-900 mb-6">4. Premium Calculation Guidelines</h2>
+            <h2 class="text-3xl font-bold text-gray-800 mb-6">4. Premium Calculation Guidelines</h2>
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div v-for="tier in premiumTiers" :key="tier.name" class="border rounded-lg p-6">
                 <div class="flex items-center mb-4">
@@ -166,7 +165,7 @@
 
           <!-- Section 5: Coverage Limits -->
           <section id="coverage-limits" class="mb-12">
-            <h2 class="text-3xl font-bold text-gray-900 mb-6">5. Coverage Limits and Conditions</h2>
+            <h2 class="text-3xl font-bold text-gray-800 mb-6">5. Coverage Limits and Conditions</h2>
             <div class="space-y-6">
               <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
                 <h3 class="text-lg font-semibold text-yellow-800 mb-3">Maximum Coverage Amounts</h3>
@@ -190,9 +189,9 @@
 
           <!-- Section 6: Claims Process -->
           <section id="claims-process" class="mb-12">
-            <h2 class="text-3xl font-bold text-gray-900 mb-6">6. Claims Processing Guidelines</h2>
+            <h2 class="text-3xl font-bold text-gray-800 mb-6">6. Claims Processing Guidelines</h2>
             <div class="space-y-6">
-              <div class="bg-gray-50 rounded-lg p-6">
+              <div class="bg-white rounded-xl p-6">
                 <h3 class="text-lg font-semibold text-gray-800 mb-4">Claim Notification Timeline</h3>
                 <div class="space-y-4">
                   <div v-for="timeline in claimsTimeline" :key="timeline.stage" class="flex items-center">
@@ -216,16 +215,12 @@
 <script setup>
 import { ref, computed, onMounted, nextTick } from 'vue'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
-import { UNDERWRITER_NAVIGATION } from '@/lib/navigation'
-import { 
+import {
   Search,
   Printer,
   Info,
   CheckCircle
 } from 'lucide-vue-next'
-
-// Navigation
-const underwriterNavigation = UNDERWRITER_NAVIGATION
 
 // Search
 const searchQuery = ref('')

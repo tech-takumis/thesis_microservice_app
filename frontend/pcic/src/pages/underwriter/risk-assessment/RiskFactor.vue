@@ -1,6 +1,5 @@
 <template>
   <AuthenticatedLayout
-    :navigation="underwriterNavigation"
     role-title="Underwriter Portal"
     page-title="Risk Factors"
   >
@@ -8,7 +7,7 @@
     <template #header>
       <div class="flex items-center justify-between">
         <div>
-          <h2 class="text-2xl font-bold text-gray-900">Risk Factors Assessment</h2>
+          <h2 class="text-2xl font-semibold text-green-600">Risk Factors Assessment</h2>
           <p class="mt-1 text-sm text-gray-600">
             Comprehensive risk evaluation for crop insurance underwriting
           </p>
@@ -17,10 +16,10 @@
     </template>
 
     <!-- Main Content -->
-    <div class="h-full flex flex-col space-y-6">
+    <div class="h-full flex flex-col space-y-4">
       <!-- Risk Overview Cards -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div class="bg-white rounded-lg shadow p-6">
+        <div class="bg-gray-100 rounded-xl p-6 border border-gray-300">
           <div class="flex items-center">
             <div class="flex-shrink-0">
               <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
@@ -35,7 +34,7 @@
           </div>
         </div>
         
-        <div class="bg-white rounded-lg shadow p-6">
+        <div class="bg-gray-100 rounded-xl p-6 border border-gray-300">
           <div class="flex items-center">
             <div class="flex-shrink-0">
               <div class="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
@@ -50,7 +49,7 @@
           </div>
         </div>
         
-        <div class="bg-white rounded-lg shadow p-6">
+        <div class="bg-gray-100 rounded-xl p-6 border border-gray-300">
           <div class="flex items-center">
             <div class="flex-shrink-0">
               <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
@@ -70,11 +69,11 @@
       <div class="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         <!-- Risk Factor Categories -->
-        <div class="lg:col-span-2 space-y-6">
+        <div class="lg:col-span-2 space-y-4">
 
           <!-- Crop & Agricultural Risk -->
-          <div class="bg-white rounded-lg shadow">
-            <div class="px-6 py-4 border-b border-gray-200">
+          <div class="bg-gray-100 rounded-xl border border-gray-300">
+            <div class="px-6 py-4 border-b border-gray-300">
               <h3 class="text-lg font-medium text-gray-900 flex items-center">
                 <Sprout class="w-5 h-5 mr-2 text-green-600" />
                 Crop & Agricultural Risk Factors
@@ -82,9 +81,9 @@
             </div>
             <div class="p-6">
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div v-for="factor in cropRiskFactors" :key="factor.id" class="border rounded-lg p-4">
+                <div v-for="factor in cropRiskFactors" :key="factor.id" class="border border-gray-300 rounded-xl p-4">
                   <div class="flex items-center justify-between mb-2">
-                    <span class="text-sm font-medium text-gray-900">{{ factor.name }}</span>
+                    <span class="text-sm font-medium text-gray-800">{{ factor.name }}</span>
                     <span 
                       class="px-2 py-1 text-xs font-medium rounded-full"
                       :class="getRiskBadgeClass(factor.riskLevel)"
@@ -106,18 +105,18 @@
           </div>
 
           <!-- Financial & Market Risk -->
-          <div class="bg-white rounded-lg shadow">
-            <div class="px-6 py-4 border-b border-gray-200">
+          <div class="bg-gray-100 rounded-xl border border-gray-300">
+            <div class="px-6 py-4 border-b border-gray-300">
               <h3 class="text-lg font-medium text-gray-900 flex items-center">
-                <DollarSign class="w-5 h-5 mr-2 text-yellow-600" />
+                <DollarSign class="w-5 h-5 mr-2 text-green-600" />
                 Financial & Market Risk Factors
               </h3>
             </div>
             <div class="p-6">
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div v-for="factor in financialRiskFactors" :key="factor.id" class="border rounded-lg p-4">
+                <div v-for="factor in financialRiskFactors" :key="factor.id" class="border border-gray-300 rounded-xl p-4">
                   <div class="flex items-center justify-between mb-2">
-                    <span class="text-sm font-medium text-gray-900">{{ factor.name }}</span>
+                    <span class="text-sm font-medium text-gray-800">{{ factor.name }}</span>
                     <span 
                       class="px-2 py-1 text-xs font-medium rounded-full"
                       :class="getRiskBadgeClass(factor.riskLevel)"
@@ -132,7 +131,7 @@
                       :style="{ width: factor.score + '%' }"
                     ></div>
                   </div>
-                  <p class="text-xs text-gray-600">{{ factor.description }}</p>
+                  <p class="text-xs text-gray-700">{{ factor.description }}</p>
                 </div>
               </div>
             </div>
@@ -141,20 +140,20 @@
         </div>
 
         <!-- Risk Assessment Tools & Guidelines -->
-        <div class="space-y-6">
+        <div class="space-y-4">
           <!-- Risk Guidelines -->
-          <div class="bg-white rounded-lg shadow">
-            <div class="px-6 py-4 border-b border-gray-200">
-              <h3 class="text-lg font-medium text-gray-900 flex items-center">
-                <BookOpen class="w-5 h-5 mr-2 text-indigo-600" />
+          <div class="bg-green-600 rounded-xl border border-gray-300">
+            <div class="px-6 py-4 border-b border-green-300">
+              <h3 class="text-lg font-medium text-white flex items-center">
+                <BookOpen class="w-5 h-5 mr-2 text-green-300" />
                 Risk Assessment Guidelines
               </h3>
             </div>
             <div class="p-6">
               <div class="space-y-4">
                 <div v-for="guideline in riskGuidelines" :key="guideline.id" class="border-l-4 pl-4" :class="guideline.borderColor">
-                  <h4 class="text-sm font-semibold text-gray-900">{{ guideline.title }}</h4>
-                  <p class="text-xs text-gray-600 mt-1">{{ guideline.description }}</p>
+                  <h4 class="text-sm font-semibold text-gray-800">{{ guideline.title }}</h4>
+                  <p class="text-xs text-white mt-1">{{ guideline.description }}</p>
                   <div class="mt-2">
                     <span class="text-xs font-medium" :class="guideline.textColor">
                       Score Range: {{ guideline.scoreRange }}
@@ -166,9 +165,9 @@
           </div>
 
           <!-- Recent Risk Alerts -->
-          <div class="bg-white rounded-lg shadow">
-            <div class="px-6 py-4 border-b border-gray-200">
-              <h3 class="text-lg font-medium text-gray-900 flex items-center">
+          <div class="bg-gray-100 rounded-xl border border-gray-300">
+            <div class="px-6 py-4 border-b border-gray-300">
+              <h3 class="text-lg font-medium text-gray-800 flex items-center">
                 <Bell class="w-5 h-5 mr-2 text-red-600" />
                 Risk Alerts
               </h3>
@@ -180,9 +179,9 @@
                     <div class="w-2 h-2 rounded-full mt-2" :class="alert.severityColor"></div>
                   </div>
                   <div class="min-w-0 flex-1">
-                    <p class="text-sm font-medium text-gray-900">{{ alert.title }}</p>
-                    <p class="text-xs text-gray-600">{{ alert.message }}</p>
-                    <p class="text-xs text-gray-400 mt-1">{{ formatDate(alert.timestamp) }}</p>
+                    <p class="text-sm font-medium text-black">{{ alert.title }}</p>
+                    <p class="text-xs text-gray-700">{{ alert.message }}</p>
+                    <p class="text-xs text-black mt-1">{{ formatDate(alert.timestamp) }}</p>
                   </div>
                 </div>
                 
@@ -202,7 +201,6 @@
 <script setup>
 import { ref, computed, onMounted, reactive } from 'vue'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
-import { UNDERWRITER_NAVIGATION } from '@/lib/navigation'
 import { 
   AlertTriangle, 
   AlertTriangle as WarningIcon, 
@@ -214,12 +212,8 @@ import {
   Calculator,
   BookOpen,
   Bell,
-  Download,
-  RefreshCw
+  Sprout
 } from 'lucide-vue-next'
-
-// Navigation
-const underwriterNavigation = UNDERWRITER_NAVIGATION
 
 // Loading state
 const loading = ref(false)
@@ -412,7 +406,7 @@ const riskGuidelines = ref([
     description: 'Applications with minimal risk factors. Standard coverage and premium rates apply.',
     scoreRange: '0-40',
     borderColor: 'border-green-400',
-    textColor: 'text-green-600'
+    textColor: 'text-green-300'
   },
   {
     id: 2,
@@ -420,7 +414,7 @@ const riskGuidelines = ref([
     description: 'Moderate risk applications requiring additional assessment and possible premium adjustments.',
     scoreRange: '41-70',
     borderColor: 'border-yellow-400',
-    textColor: 'text-yellow-600'
+    textColor: 'text-yellow-400'
   },
   {
     id: 3,
@@ -428,7 +422,7 @@ const riskGuidelines = ref([
     description: 'High-risk applications requiring detailed evaluation, enhanced monitoring, or coverage limitations.',
     scoreRange: '71-100',
     borderColor: 'border-red-400',
-    textColor: 'text-red-600'
+    textColor: 'text-red-700'
   }
 ])
 
@@ -439,14 +433,14 @@ const riskAlerts = ref([
     title: 'Pest Outbreak Warning',
     message: 'Brown planthopper infestation reported in Central Luzon rice areas.',
     timestamp: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-    severityColor: 'bg-orange-500'
+    severityColor: 'bg-orange-300'
   },
   {
     id: 3,
     title: 'Drought Risk Update',
     message: 'Below-normal rainfall expected in Mindanao regions for next 30 days.',
     timestamp: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-    severityColor: 'bg-yellow-500'
+    severityColor: 'bg-yellow-300'
   }
 ])
 
@@ -467,13 +461,13 @@ const getRiskBadgeClass = (riskLevel) => {
 const getRiskBarClass = (riskLevel) => {
   switch (riskLevel?.toLowerCase()) {
     case 'high':
-      return 'bg-red-500'
+      return 'bg-red-600'
     case 'medium':
-      return 'bg-yellow-500'
+      return 'bg-yellow-400'
     case 'low':
-      return 'bg-green-500'
+      return 'bg-green-600'
     default:
-      return 'bg-gray-500'
+      return 'bg-gray-300'
   }
 }
 

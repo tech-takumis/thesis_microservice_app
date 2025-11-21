@@ -1,6 +1,5 @@
 <template>
   <AuthenticatedLayout
-    :navigation="underwriterNavigation"
     role-title="Underwriter Portal"
     page-title="Guidelines Eligibility"
   >
@@ -267,7 +266,6 @@
 <script setup>
 import { ref, computed } from 'vue'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
-import { UNDERWRITER_NAVIGATION } from '@/lib/navigation'
 import { 
   CheckSquare,
   User,
@@ -280,9 +278,6 @@ import {
   Calendar,
   TrendingUp
 } from 'lucide-vue-next'
-
-// Navigation
-const underwriterNavigation = UNDERWRITER_NAVIGATION
 
 // Modal state
 const showEligibilityChecker = ref(false)

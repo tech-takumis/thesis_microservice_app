@@ -98,18 +98,15 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { Menu, X } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth'
 import SidebarNavigation from '@/components/layouts/SidebarNavigation.vue'
+import { NAVIGATION } from '@/lib/navigation'
 
 const store = useAuthStore()
 
 const props = defineProps({
-  navigation: {
-    type: Array,
-    default: () => []
-  },
   roleTitle: {
     type: String,
     default: 'Staff Portal'
@@ -118,6 +115,15 @@ const props = defineProps({
     type: String,
     default: 'Dashboard'
   }
+})
+
+// Filter navigation items based on user roles
+const navigation = computed(() => {
+  const userRoles = store.userRoles || []
+  return NAVIGATION.filter((item) => {
+    if (!item.roles) return true
+    return item.roles.some((role) => userRoles.includes(role))
+  })
 })
 
 const SIDEBAR_STORAGE_KEY = 'pcic_sidebar_collapsed'

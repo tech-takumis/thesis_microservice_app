@@ -1,6 +1,5 @@
 <template>
   <AuthenticatedLayout
-    :navigation="underwriterNavigation"
     role-title="Underwriter Portal"
     page-title="Guidelines Manual"
   >
@@ -216,16 +215,12 @@
 <script setup>
 import { ref, computed, onMounted, nextTick } from 'vue'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
-import { UNDERWRITER_NAVIGATION } from '@/lib/navigation'
-import { 
+import {
   Search,
   Printer,
   Info,
   CheckCircle
 } from 'lucide-vue-next'
-
-// Navigation
-const underwriterNavigation = UNDERWRITER_NAVIGATION
 
 // Search
 const searchQuery = ref('')

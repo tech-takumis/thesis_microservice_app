@@ -1,6 +1,5 @@
 <template>
   <AuthenticatedLayout
-    :navigation="underwriterNavigation"
     role-title="Underwriter Portal"
     page-title="Claim Processing"
   >
@@ -880,7 +879,6 @@ import { useRoute, useRouter } from 'vue-router'
 import { useInspectionStore } from '@/stores/inspection'
 import { useClaimStore } from '@/stores/claim'
 import { useToastStore } from '@/stores/toast'
-import { UNDERWRITER_NAVIGATION } from '@/lib/navigation'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
 import {
   HomeIcon,
@@ -898,7 +896,6 @@ const router = useRouter()
 const inspectionStore = useInspectionStore()
 const claimStore = useClaimStore()
 const toastStore = useToastStore()
-const underwriterNavigation = UNDERWRITER_NAVIGATION
 
 // State
 const inspectionData = ref(null)

@@ -1,6 +1,5 @@
 <template>
   <AuthenticatedLayout
-    :navigation="navigation"
     :role-title="roleTitle"
     page-title="Application Location Map"
   >
@@ -225,10 +224,6 @@ import { useAuthStore } from '@/stores/auth'
 import { useApplicationStore } from '@/stores/application'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
 import {
-  ADMIN_NAVIGATION,
-  UNDERWRITER_NAVIGATION
-} from '@/lib/navigation'
-import {
   HomeIcon,
   ChevronRightIcon,
   ArrowLeftIcon,
@@ -248,13 +243,6 @@ let map = null
 let marker = null
 
 // Computed
-const navigation = computed(() => {
-  const role = authStore.userData?.roles?.[0]?.name
-  if (role === 'ADMIN') return ADMIN_NAVIGATION
-  if (role === 'UNDERWRITER') return UNDERWRITER_NAVIGATION
-  // Return underwriter navigation as default for other roles accessing this page
-  return UNDERWRITER_NAVIGATION
-})
 
 const roleTitle = computed(() => {
   const role = authStore.userData?.roles?.[0]?.name

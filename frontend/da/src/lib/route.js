@@ -1,14 +1,15 @@
+// Unified dashboard for all users
+export const DASHBOARD_ROUTE = {
+    path: '/agriculturist/dashboard',
+    name: 'agriculturist-dashboard',
+    component: () => import('@/pages/agriculturist/AgriculturistDashboard.vue'),
+    meta: {
+        title: 'Dashboard',
+        guard: 'auth'
+    }
+};
+
 export const ADMIN_ROUTES = [
-    {
-        path: '/admin/dashboard',
-        name: 'admin-dashboard',
-        component: () => import('@/pages/admin/AdminDashboard.vue'),
-        meta: {
-            title: 'Admin Dashboard',
-            guard: 'auth',
-            role: 'ADMIN'
-        }
-    },
     {
         path: '/admin/users',
         name: 'admin-users',
@@ -16,7 +17,7 @@ export const ADMIN_ROUTES = [
         meta: {
             title: 'All Users',
             guard: 'auth',
-            role: 'ADMIN'
+            permissions: ['CAN_VIEW_USER']
         }
     },
     {
@@ -26,7 +27,7 @@ export const ADMIN_ROUTES = [
         meta: {
             title: 'View User',
             guard: 'auth',
-            role: 'ADMIN'
+            permissions: ['CAN_VIEW_USER']
         }
     },
     {
@@ -36,7 +37,7 @@ export const ADMIN_ROUTES = [
         meta: {
             title: 'Edit User',
             guard: 'auth',
-            role: 'ADMIN'
+            permissions: ['CAN_VIEW_USER']
         }
     },
     {
@@ -46,7 +47,7 @@ export const ADMIN_ROUTES = [
         meta: {
             title: 'Roles & Permissions',
             guard: 'auth',
-            role: 'ADMIN'
+            permissions: ['CAN_VIEW_USER']
         }
     },
     {
@@ -78,46 +79,18 @@ export const ADMIN_ROUTES = [
             guard: 'auth',
             role: 'ADMIN'
         }
-    },
-    {
-        path: '/admin/analytics',
-        name: 'admin-analytics',
-        component: () => import('@/pages/admin/analytics/Analytics.vue'),
-        meta: {
-            title: 'Analytics',
-            guard: 'auth',
-            role: 'ADMIN'
-        }
-    },
-    {
-        path: '/admin/reports',
-        name: 'admin-reports',
-        component: () => import('@/pages/admin/AdminReports.vue'),
-        meta: {
-            title: 'Reports',
-            guard: 'auth',
-            role: 'ADMIN'
-        }
     }
 ];
 
 export const MUNICIPALITY_ROUTES = [
-    {
-        path: '/agriculturist/dashboard',
-        name: 'agriculturist-dashboard',
-        component: () => import('@/pages/agriculturist/AgriculturistDashboard.vue'),
-        meta: {
-            title: 'Municipal Agriculturist Dashboard',
-            guard: 'auth'
-        }
-    },
     {
         path: '/agriculturist/submit-crop-data',
         name: 'agriculturist-submit-crop-data',
         component: () => import('@/pages/agriculturist/applications/ApplicationType.vue'),
         meta: {
             title: 'Manage Applications',
-            guard: 'auth'
+            guard: 'auth',
+            permissions: ['CAN_SUBMIT_CROP_DATA']
         }
     },
     {
@@ -126,7 +99,8 @@ export const MUNICIPALITY_ROUTES = [
         component: () => import('@/pages/agriculturist/applications/ApplicationList.vue'),
         meta: {
             title: 'Application Submission',
-            guard: 'auth'
+            guard: 'auth',
+            permissions: ['CAN_SUBMIT_CROP_DATA']
         }
     },
     {
@@ -135,16 +109,18 @@ export const MUNICIPALITY_ROUTES = [
         component: () => import('@/pages/agriculturist/applications/ApplicationDetail.vue'),
         meta: {
             title: 'Application Submission Detail',
-            guard: 'auth'
+            guard: 'auth',
+            permissions: ['CAN_SUBMIT_CROP_DATA']
         }
     },
-     {
+    {
         path: '/agriculturist/submit-crop-data/application/:applicationId/map',
         name: 'agriculturist-submit-crop-data-map',
         component: () => import('@/pages/agriculturist/applications/ApplicationMap.vue'),
         meta: {
             title: 'Application Location Map',
-            guard: 'auth'
+            guard: 'auth',
+            permissions: ['CAN_SUBMIT_CROP_DATA']
         }
     },
     {
@@ -153,7 +129,8 @@ export const MUNICIPALITY_ROUTES = [
         component: () => import('@/pages/agriculturist/applications/DamageClaimReview.vue'),
         meta: {
             title: 'AI Damage Analysis',
-            guard: 'auth'
+            guard: 'auth',
+            permissions: ['CAN_SUBMIT_CROP_DATA']
         }
     },
     {
@@ -162,16 +139,18 @@ export const MUNICIPALITY_ROUTES = [
         component: () => import('@/pages/agriculturist/applications/ApplicationVerificationPage.vue'),
         meta: {
             title: 'Application Verification',
-            guard: 'auth'
+            guard: 'auth',
+            permissions: ['CAN_SUBMIT_CROP_DATA']
         }
-    }, 
+    },
     {
         path: '/agriculturist/voucher/all',
         name: 'agriculturist-voucher-all',
         component: () => import('@/pages/agriculturist/operations/VoucherList.vue'),
         meta: {
             title: 'All Vouchers',
-            guard: 'auth'
+            guard: 'auth',
+            permissions: ['CAN_SUBMIT_CROP_DATA']
         }
     },
     {
@@ -180,10 +159,11 @@ export const MUNICIPALITY_ROUTES = [
         component: () => import('@/pages/agriculturist/operations/AgriculturistVoucher.vue'),
         meta: {
             title: 'Voucher Generation',
-            guard: 'auth'
+            guard: 'auth',
+            permissions: ['CAN_SUBMIT_CROP_DATA']
         }
     },
-     {
+    {
         path: '/agriculturist/voucher/scanner',
         name: 'agriculturist-voucher-scanner',
         component: () => import('@/pages/agriculturist/operations/VoucherScanner.vue'),
@@ -192,7 +172,7 @@ export const MUNICIPALITY_ROUTES = [
             guard: 'auth'
         }
     },
-     {
+    {
         path: '/agriculturist/voucher/:id/detail',
         name: 'agriculturist-voucher-detail',
         component: () => import('@/pages/agriculturist/operations/VoucherDetails.vue'),
@@ -225,16 +205,18 @@ export const MUNICIPALITY_ROUTES = [
         component: () => import('@/pages/agriculturist/operations/AgriculturistMonitorPrograms.vue'),
         meta: {
             title: 'Monitor Programs',
-            guard: 'auth'
+            guard: 'auth',
+            permissions: ['CAN_MONITOR_PROGRAMS']
         }
     },
-     {
+    {
         path: '/agriculturist/monitor-programs/:id/detail',
         name: 'agriculturist-monitor-programs-detail',
         component: () => import('@/pages/agriculturist/operations/ProgramDetail.vue'),
         meta: {
             title: 'Program Detail',
-            guard: 'auth'
+            guard: 'auth',
+            permissions: ['CAN_MONITOR_PROGRAMS']
         }
     },
     {
@@ -243,7 +225,8 @@ export const MUNICIPALITY_ROUTES = [
         component: () => import('@/pages/agriculturist/claims/AgriculturistProcessClaims.vue'),
         meta: {
             title: 'Process Claims',
-            guard: 'auth'
+            guard: 'auth',
+            permissions: ['CAN_PROCESS_CLAIM']
         }
     },
     {
@@ -252,7 +235,8 @@ export const MUNICIPALITY_ROUTES = [
         component: () => import('@/pages/agriculturist/claims/ClaimDetails.vue'),
         meta: {
             title: 'Claim Detail',
-            guard: 'auth'
+            guard: 'auth',
+            permissions: ['CAN_PROCESS_CLAIM']
         }
     },
     {
@@ -268,21 +252,13 @@ export const MUNICIPALITY_ROUTES = [
 
 export const AGRICULTURAL_EXTENSION_WORKER_ROUTES = [
     {
-        path: '/extension-worker/dashboard',
-        name: 'extension-worker-dashboard',
-        component: () => import('@/pages/extension-worker/ExtensionWorkerDashboard.vue'),
-        meta: {
-            title: 'Extension Worker Dashboard',
-            guard: 'auth'
-        }
-    },
-    {
         path: '/extension-worker/submit-crop-data',
         name: 'extension-worker-submit-crop-data',
         component: () => import('@/pages/extension-worker/ExtensionWorkerSubmitCropData.vue'),
         meta: {
             title: 'Submit Crop Data',
-            guard: 'auth'
+            guard: 'auth',
+            permissions: ['CAN_SUBMIT_CROP_DATA']
         }
     },
     {
@@ -291,61 +267,8 @@ export const AGRICULTURAL_EXTENSION_WORKER_ROUTES = [
         component: () => import('@/pages/extension-worker/ExtensionWorkerConductTraining.vue'),
         meta: {
             title: 'Conduct Training',
-            guard: 'auth'
-        }
-    },
-    {
-        path: '/extension-worker/facilitate-tech-adoption',
-        name: 'extension-worker-facilitate-tech-adoption',
-        component: () => import('@/pages/extension-worker/ExtensionWorkerFacilitateTechAdoption.vue'),
-        meta: {
-            title: 'Facilitate Tech Adoption',
-            guard: 'auth'
-        }
-    },
-    {
-        path: '/extension-worker/diagnostic-services',
-        name: 'extension-worker-diagnostic-services',
-        component: () => import('@/pages/extension-worker/ExtensionWorkerDiagnosticServices.vue'),
-        meta: {
-            title: 'Provide Diagnostic Services',
-            guard: 'auth'
-        }
-    },
-    {
-        path: '/extension-worker/market-access',
-        name: 'extension-worker-market-access',
-        component: () => import('@/pages/extension-worker/ExtensionWorkerMarketAccess.vue'),
-        meta: {
-            title: 'Enhance Market Access',
-            guard: 'auth'
-        }
-    },
-    {
-        path: '/extension-worker/promote-sustainability',
-        name: 'extension-worker-promote-sustainability',
-        component: () => import('@/pages/extension-worker/ExtensionWorkerPromoteSustainability.vue'),
-        meta: {
-            title: 'Promote Sustainability',
-            guard: 'auth'
-        }
-    },
-    {
-        path: '/extension-worker/support-veterinary',
-        name: 'extension-worker-support-veterinary',
-        component: () => import('@/pages/extension-worker/ExtensionWorkerSupportVeterinary.vue'),
-        meta: {
-            title: 'Support Veterinary',
-            guard: 'auth'
-        }
-    },
-    {
-        path: '/extension-worker/process-claims',
-        name: 'extension-worker-process-claims',
-        component: () => import('@/pages/extension-worker/ExtensionWorkerProcessClaims.vue'),
-        meta: {
-            title: 'Process Claims',
-            guard: 'auth'
+            guard: 'auth',
+            role: 'AGRICULTURAL EXTENSION WORKER'
         }
     }
 ];

@@ -1,6 +1,5 @@
 <template>
   <AuthenticatedLayout
-    :navigation="underwriterNavigation"
     role-title="Underwriter Portal"
     page-title="Geographic Analysis"
   >
@@ -199,7 +198,6 @@ import { useApplicationStore } from '@/stores/application'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { LMap, LTileLayer, LCircleMarker, LPopup, LControl } from '@vue-leaflet/vue-leaflet'
-import { UNDERWRITER_NAVIGATION } from '@/lib/navigation'
 
 // Fix Leaflet default marker icons issue
 import iconRetinaUrl from 'leaflet/dist/images/marker-icon-2x.png'
@@ -215,7 +213,6 @@ L.Icon.Default.mergeOptions({
 })
 
 // Navigation and role data
-const underwriterNavigation = UNDERWRITER_NAVIGATION
 const applicationStore = useApplicationStore()
 
 // Applications data

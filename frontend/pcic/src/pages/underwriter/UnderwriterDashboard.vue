@@ -1,7 +1,6 @@
 <template>
     <AuthenticatedLayout
-        :navigation="underwriterNavigation"
-        role-title="Underwriter Portal"
+        role-title="Staff Portal"
         page-title="Dashboard">
         <template #header>
             <div class="flex items-center justify-between w-full">
@@ -424,11 +423,9 @@ import SparklineChart from '@/components/SparklineChart.vue'
 import Clock from '@/components/Clock.vue'
 
 import { useAuthStore } from '@/stores/auth'
-import { UNDERWRITER_NAVIGATION } from '@/lib/navigation'
 
 const store = useAuthStore()
 const router = useRouter()
-const underwriterNavigation = UNDERWRITER_NAVIGATION
 
 // Sample data for stats
 const pendingApplications = ref(12)

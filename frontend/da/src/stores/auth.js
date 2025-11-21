@@ -28,9 +28,10 @@ export const useAuthStore = defineStore('auth', () => {
     const userPhoneNumber = computed(() => userData.value?.phoneNumber);
     const userId = computed(() => userData.value?.id);
 
+    // Single dashboard for all users
     const defaultRoute = computed(() => {
         if (!userData.value?.roles || userData.value.roles.length === 0) return null;
-        return userData.value.roles[0].defaultRoute;
+        return '/agriculturist/dashboard';
     });
 
 
@@ -46,15 +47,15 @@ export const useAuthStore = defineStore('auth', () => {
         if (Array.isArray(permissionName)) {
             return permissionName.some(name =>
                 userData.value?.roles?.some(role =>
-                    role.permissions.some(perm =>
-                        perm.name.toUpperCase() === name.toUpperCase()
+                    role.permissions?.some(perm =>
+                        (typeof perm === 'string' ? perm : perm.name).toUpperCase() === name.toUpperCase()
                     )
                 )
             );
         }
         return userData.value?.roles?.some(role =>
-            role.permissions.some(perm =>
-                perm.name.toUpperCase() === permissionName.toUpperCase()
+            role.permissions?.some(perm =>
+                (typeof perm === 'string' ? perm : perm.name).toUpperCase() === permissionName.toUpperCase()
             )
         );
     };
@@ -103,9 +104,13 @@ export const useAuthStore = defineStore('auth', () => {
         if (userData.value.roles) {
             userData.value.roles.forEach(role => {
                 normalizedRoles.value.add(role.name.toUpperCase());
-                role.permissions.forEach(permission => {
-                    normalizedPermissions.value.add(permission.name.toUpperCase());
-                });
+                if (role.permissions) {
+                    role.permissions.forEach(permission => {
+                        // Handle both string and object permissions
+                        const permName = typeof permission === 'string' ? permission : permission.name;
+                        normalizedPermissions.value.add(permName.toUpperCase());
+                    });
+                }
             });
         }
     }

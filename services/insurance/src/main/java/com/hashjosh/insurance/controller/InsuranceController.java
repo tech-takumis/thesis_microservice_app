@@ -2,6 +2,7 @@ package com.hashjosh.insurance.controller;
 
 import com.hashjosh.insurance.dto.insurance.InsuranceRequestDTO;
 import com.hashjosh.insurance.dto.insurance.InsuranceResponse;
+import com.hashjosh.insurance.dto.insurance.InsuranceStatusStatisticDTO;
 import com.hashjosh.insurance.service.InsuranceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -53,6 +54,16 @@ public class InsuranceController {
             @PathVariable("application-type") UUID applicationTypeId
     ){
         return ResponseEntity.ok(insuranceService.findByApplicationTypeId(applicationTypeId));
+    }
+
+    @GetMapping("/status/{status}")
+    public ResponseEntity<List<InsuranceResponse>> getInsuranceByStatus(@PathVariable("status") com.hashjosh.constant.pcic.enums.InsuranceStatus status) {
+        return ResponseEntity.ok(insuranceService.findByStatus(status));
+    }
+
+    @GetMapping("/statistics/status")
+    public ResponseEntity<List<InsuranceStatusStatisticDTO>> getInsuranceStatisticsByStatus() {
+        return ResponseEntity.ok(insuranceService.getInsuranceStatisticsByStatus());
     }
 
     @PutMapping("/{insurance-Id}")

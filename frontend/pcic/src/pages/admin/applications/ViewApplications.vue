@@ -1,6 +1,5 @@
 <template>
-  <AuthenticatedLayout 
-    :navigation="adminNavigation" 
+  <AuthenticatedLayout
     role-title="Admin Portal"
     page-title="All Application Types"
   >
@@ -386,10 +385,8 @@ import {
 } from 'lucide-vue-next'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
 import ApplicationDetailModal from '@/components/modals/ApplicationDetailModal.vue'
-import { ADMIN_NAVIGATION } from '@/lib/navigation'
 import axios from '@/lib/axios'
 
-const adminNavigation = ADMIN_NAVIGATION
 
 // State
 const applications = ref([])

@@ -1,6 +1,5 @@
 <template>
   <AuthenticatedLayout
-    :navigation="underwriterNavigation"
     role-title="Underwriter Portal"
     page-title="Risk Factors"
   >
@@ -202,7 +201,6 @@
 <script setup>
 import { ref, computed, onMounted, reactive } from 'vue'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
-import { UNDERWRITER_NAVIGATION } from '@/lib/navigation'
 import { 
   AlertTriangle, 
   AlertTriangle as WarningIcon, 
@@ -216,9 +214,6 @@ import {
   Bell,
   Sprout
 } from 'lucide-vue-next'
-
-// Navigation
-const underwriterNavigation = UNDERWRITER_NAVIGATION
 
 // Loading state
 const loading = ref(false)

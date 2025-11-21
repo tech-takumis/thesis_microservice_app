@@ -1,6 +1,5 @@
 <template>
-  <AuthenticatedLayout 
-    :navigation="adminNavigation" 
+  <AuthenticatedLayout
     role-title="Admin Portal"
     page-title="Register Staff"
   >
@@ -192,13 +191,11 @@ import { ArrowLeft, Loader2 } from 'lucide-vue-next'
 import AuthenticatedLayout from '../../../layouts/AuthenticatedLayout.vue'
 import { useRoleStore, usePermissionStore } from '@/stores/authorization'
 import { useAuthStore } from '@/stores/auth'
-import { ADMIN_NAVIGATION } from '@/lib/navigation'
 
 const roleStore = useRoleStore()
 const permissionStore = usePermissionStore()
 const authStore = useAuthStore()
 
-const adminNavigation = ADMIN_NAVIGATION
 
 const form = ref({
   fullname: '',

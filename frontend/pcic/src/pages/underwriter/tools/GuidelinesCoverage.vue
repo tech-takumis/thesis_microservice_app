@@ -1,6 +1,5 @@
 <template>
   <AuthenticatedLayout
-    :navigation="underwriterNavigation"
     role-title="Underwriter Portal"
     page-title="Guidelines Coverage"
   >
@@ -347,7 +346,6 @@
 <script setup>
 import { ref, computed } from 'vue'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
-import { UNDERWRITER_NAVIGATION } from '@/lib/navigation'
 import { 
   Calculator,
   BookOpen,
@@ -360,9 +358,6 @@ import {
   Bug,
   Wind,
 } from 'lucide-vue-next'
-
-// Navigation
-const underwriterNavigation = UNDERWRITER_NAVIGATION
 
 // Modal states
 const showCalculator = ref(false)

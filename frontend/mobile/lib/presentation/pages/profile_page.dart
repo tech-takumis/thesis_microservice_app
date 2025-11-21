@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../controllers/auth_controller.dart';
 import 'package:mobile/data/services/websocket.dart';
 import 'package:mobile/data/services/storage_service.dart';
@@ -79,6 +80,14 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 Navigator.of(context).push(
                   MaterialPageRoute(builder: (context) => const ApplicationTrackerPage()),
                 );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.confirmation_number, color: Colors.green),
+              title: const Text('My Vouchers'),
+              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+              onTap: () {
+                context.push('/my-vouchers');
               },
             ),
             const SizedBox(height: 20),

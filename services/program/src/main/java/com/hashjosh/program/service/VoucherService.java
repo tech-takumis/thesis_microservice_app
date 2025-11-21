@@ -1,5 +1,6 @@
 package com.hashjosh.program.service;
 
+import com.hashjosh.program.config.CustomUserDetails;
 import com.hashjosh.program.dto.CreateVoucherRequestDto;
 import com.hashjosh.program.dto.UpdateVoucherRequestDto;
 import com.hashjosh.program.dto.VoucherResponseDto;
@@ -8,6 +9,7 @@ import com.hashjosh.program.enums.VoucherStatus;
 import com.hashjosh.program.mapper.VoucherMapper;
 import com.hashjosh.program.repository.VoucherRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -88,5 +90,13 @@ public class VoucherService {
 
     public Optional<VoucherResponseDto> getVoucherById(UUID id) {
         return voucherRepository.findById(id).map(voucherMapper::toResponseDto);
+    }
+
+    public List<VoucherResponseDto> getAllVouchers() {
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        List<Voucher> vouchers = voucherRepository.findAllByOwnerUserId(UUID.fromString(userDetails.getUserId()));
+
+        return vouchers.stream().map(voucherMapper::toResponseDto).toList();
     }
 }

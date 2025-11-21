@@ -307,12 +307,6 @@ onMounted(() => {
       <!-- Header -->
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div class="flex items-center gap-4">
-          <button
-            @click="navigateToVoucherList"
-            class="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-          >
-            <ArrowLeftIcon class="w-5 h-5 text-gray-600" />
-          </button>
           <div>
             <h1 class="text-2xl sm:text-3xl font-bold text-green-600">Voucher Details</h1>
             <p class="text-xs sm:text-sm text-gray-500 mt-1">View voucher information and generate QR code</p>

@@ -29,6 +29,11 @@ public class VoucherController {
         return voucherService.claimVoucher(code, userId);
     }
 
+    @GetMapping("/user/all")
+    public List<VoucherResponseDto> getAllVouchers() {
+        return voucherService.getAllVouchers();
+    }
+
     @GetMapping("/owner/{ownerUserId}")
     public List<VoucherResponseDto> getVouchersByOwner(@PathVariable UUID ownerUserId) {
         return voucherService.getVouchersByOwner(ownerUserId);

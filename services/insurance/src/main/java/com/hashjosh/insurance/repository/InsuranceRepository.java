@@ -16,4 +16,6 @@ public interface InsuranceRepository extends JpaRepository<Insurance, UUID> {
     Optional<Insurance> findBySubmissionId(UUID submissionId);
 
     List<Insurance> findByVerificationIsNotNull();
+
+    List<Insurance> findByFarmerId(UUID userId);
 }

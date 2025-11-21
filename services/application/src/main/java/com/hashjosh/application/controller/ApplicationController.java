@@ -69,6 +69,11 @@ public class ApplicationController {
         }
     }
 
+    @GetMapping("/user/all")
+    public ResponseEntity<List<ApplicationResponseDto>> findApplicationsByCurrentUser(){
+        return ResponseEntity.ok(applicationService.findByCurrentUser());
+    }
+
     @GetMapping("/{applicationId}/required-ai-analysis")
     public ResponseEntity<Boolean> isAiAnalysisRequired(
             @PathVariable("applicationId") UUID applicationId

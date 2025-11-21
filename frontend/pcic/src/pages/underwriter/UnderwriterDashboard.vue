@@ -80,11 +80,6 @@
                                 >Settings</a
                             >
                             <div class="border-t my-1"></div>
-                            <a
-                                href="#"
-                                class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                                >Logout</a
-                            >
                         </div>
                     </div>
                 </div>
@@ -423,14 +418,32 @@ import SparklineChart from '@/components/SparklineChart.vue'
 import Clock from '@/components/Clock.vue'
 
 import { useAuthStore } from '@/stores/auth'
+import { useInsuranceStore } from '@/stores/insurance'
 
 const store = useAuthStore()
+const insuranceStore = useInsuranceStore()
 const router = useRouter()
 
-// Sample data for stats
-const pendingApplications = ref(12)
-const approvedApplications = ref(85)
-const rejectedApplications = ref(5)
+// Stats data from API
+const pendingApplications = ref(0)
+const approvedApplications = ref(0)
+const rejectedApplications = ref(0)
+
+// Fetch insurance status statistics
+const fetchStatusStatistics = async () => {
+    const result = await insuranceStore.fetchInsuranceStatusStatistics()
+    if (result.success === "true" && result.data) {
+        result.data.forEach(stat => {
+            if (stat.status === 'PENDING') {
+                pendingApplications.value = stat.count
+            } else if (stat.status === 'POLICY_ISSUED') {
+                approvedApplications.value = stat.count
+            } else if (stat.status === 'CLAIMED_ISSUED') {
+                rejectedApplications.value = stat.count
+            }
+        })
+    }
+}
 
 // Filter state
 const showFilter = ref(false)
@@ -472,6 +485,7 @@ const onClickOutside = e => {
 }
 onMounted(() => {
     window.addEventListener('click', onClickOutside)
+    fetchStatusStatistics()
 })
 onBeforeUnmount(() => {
     window.removeEventListener('click', onClickOutside)

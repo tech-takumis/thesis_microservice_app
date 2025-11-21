@@ -38,7 +38,6 @@ export const NAVIGATION = [
     children: [
       { title: "Create Application Type", to: { name: "applications-new" } },
       { title: "View All Applications", to: { name: "admin-applications-all" } },
-      { title: "Manage Application Types", to: { name: "applications-manage" } },
     ],
   },
   // System Settings (Admin only)
@@ -60,7 +59,6 @@ export const NAVIGATION = [
     children: [
       { title: "Overall Performance", to: { name: "reports-overall" } },
       { title: "User Activity", to: { name: "reports-user-activity" } },
-      { title: "Financial Overview", to: { name: "reports-financial" } },
     ],
   },
   // Applications (Underwriter & Claim Adjuster)

@@ -566,7 +566,7 @@ const refreshApplications = () => {
 
 const navigateToDetail = insurance => {
     router.push({
-        name: 'underwriter-applications-detail',
+        name: 'applications-detail',
         params: {
             insuranceId: insurance.insuranceId,
             submissionId: insurance.submissionId,

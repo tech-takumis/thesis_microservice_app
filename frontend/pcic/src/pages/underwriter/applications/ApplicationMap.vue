@@ -250,13 +250,7 @@ const roleTitle = computed(() => {
 })
 
 const dashboardRoute = computed(() => {
-  const role = authStore.userData?.roles?.[0]?.name
-  if (role === 'ADMIN') return { name: 'admin-dashboard' }
-  if (role === 'UNDERWRITER') return { name: 'underwriter-dashboard' }
-  if (role === 'CLAIM_PROCESSOR') return { name: 'claims-processor-dashboard' }
-  if (role === 'TELLER') return { name: 'teller-dashboard' }
-  // Default to underwriter dashboard for other roles
-  return { name: 'underwriter-dashboard' }
+  return { name: 'dashboard' }
 })
 
 const coordinates = computed(() => {

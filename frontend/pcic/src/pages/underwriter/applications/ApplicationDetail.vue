@@ -1,6 +1,5 @@
 <template>
   <AuthenticatedLayout
-    :navigation="underwriterNavigation"
     role-title="Underwriter Portal"
     page-title="Application Details"
   >
@@ -11,7 +10,7 @@
           <ol class="flex items-center space-x-1.5">
             <li>
               <router-link
-                :to="{ name: 'underwriter-dashboard' }"
+                :to="{ name: 'dashboard' }"
                 class="text-slate-400 hover:text-slate-700 transition-colors duration-200"
               >
                 <HomeIcon class="h-4 w-4" />
@@ -58,7 +57,7 @@
           <div class="flex items-center gap-2">
              <router-link
               v-if="applicationData?.coordinates"
-              :to="{ name: 'agriculturist-submit-crop-data-map', params: { applicationId: route.params.submissionId } }"
+              :to="{ name: 'application-map', params: { applicationId: route.params.submissionId } }"
               class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
             >
               <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -352,7 +351,7 @@
                     <div class="flex items-center gap-1">
                       <router-link
                         :to="{
-                          name: 'underwriter-applications-claim',
+                          name: 'applications-claim',
                           params: { insuranceId: route.params.insuranceId, submissionId: route.params.submissionId },
                           query: { action: 'view' }
                         }"
@@ -361,8 +360,9 @@
                         View
                       </router-link>
                       <router-link
+                        v-if="!insuranceData.claim.finalized"
                         :to="{
-                          name: 'underwriter-applications-claim',
+                          name: 'applications-claim',
                           params: { insuranceId: route.params.insuranceId, submissionId: route.params.submissionId },
                           query: { action: 'update' }
                         }"
@@ -370,6 +370,13 @@
                       >
                         Update
                       </router-link>
+                      <span
+                        v-else
+                        class="text-xs text-slate-400 font-medium px-2 py-1"
+                        title="This claim has been finalized and cannot be updated"
+                      >
+                        Finalized
+                      </span>
                     </div>
                   </div>
                   <div class="space-y-2 text-xs ml-7">
@@ -391,7 +398,7 @@
                     <router-link
                       v-if="insuranceData?.inspection && insuranceData.inspection.inspected === true"
                       :to="{
-                        name: 'underwriter-applications-claim',
+                        name: 'applications-claim',
                         params: { insuranceId: route.params.insuranceId, submissionId: route.params.submissionId },
                         query: { action: 'file_claim' }
                       }"
@@ -491,27 +498,12 @@
               <dd class="mt-1.5 text-sm text-gray-800">{{ insuranceData.batch.description }}</dd>
             </div>
             <div>
-              <dt class="text-xs font-medium text-green-600 uppercase tracking-wide">Total Applications</dt>
-              <dd class="mt-1.5 text-sm text-gray-800">{{ insuranceData.batch.totalApplications }} / {{ insuranceData.batch.maxApplications }}</dd>
-            </div>
-            <div>
               <dt class="text-xs font-medium text-green-600 uppercase tracking-wide">Start Date</dt>
               <dd class="mt-1.5 text-sm text-gray-800">{{ formatDate(insuranceData.batch.startDate) }}</dd>
             </div>
             <div>
               <dt class="text-xs font-medium text-green-600 uppercase tracking-wide">End Date</dt>
               <dd class="mt-1.5 text-sm text-slate-900">{{ formatDate(insuranceData.batch.endDate) }}</dd>
-            </div>
-            <div>
-              <dt class="text-xs font-medium text-green-600 uppercase tracking-wide">Status</dt>
-              <dd class="mt-1.5 text-sm">
-                <span :class="[
-                  'inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium',
-                  insuranceData.batch.available ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
-                ]">
-                  {{ insuranceData.batch.available ? 'Available' : 'Closed' }}
-                </span>
-              </dd>
             </div>
           </div>
         </div>
@@ -628,7 +620,6 @@ import { useInsuranceStore } from '@/stores/insurance'
 import { usePolicyStore } from '@/stores/policy'
 import { useClaimStore } from '@/stores/claim'
 import { useToastStore } from '@/stores/toast'
-import { UNDERWRITER_NAVIGATION } from '@/lib/navigation'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
 import DetailField from '@/components/tables/DetailField.vue'
 import LoadingSpinner from '@/components/others/LoadingSpinner.vue'
@@ -651,7 +642,6 @@ const insuranceStore = useInsuranceStore()
 const policyStore = usePolicyStore()
 const claimStore = useClaimStore()
 const toastStore = useToastStore()
-const underwriterNavigation = UNDERWRITER_NAVIGATION
 
 // State
 const loading = ref(false)
@@ -797,7 +787,7 @@ async function fetchApplicationDetails() {
 const navigateToApplicationList = () => {
   // Navigate back to underwriter applications list
   router.push({
-    name: 'underwriter-applications-all'
+    name: 'applications-all'
   })
 }
 
@@ -1048,7 +1038,7 @@ const closeBatchModal = () => {
 const proceedInspection = () => {
   if (insuranceData.value?.insuranceId) {
     router.push({
-      path: `/underwriter/application/${insuranceData.value.insuranceId}/inspection`
+      path: `/application/${insuranceData.value.insuranceId}/inspection`
     })
   } else {
     alert('Cannot proceed to inspection: Insurance ID not found.')
@@ -1122,7 +1112,7 @@ const processClaim = () => {
   // Navigate to application claim page
   if (insuranceData.value?.insuranceId) {
     router.push({
-      name: 'underwriter-applications-claim',
+      name: 'applications-claim',
       params: { 
         insuranceId: insuranceData.value.insuranceId,
         submissionId: route.params.submissionId

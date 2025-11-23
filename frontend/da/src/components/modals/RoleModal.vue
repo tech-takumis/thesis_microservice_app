@@ -9,7 +9,7 @@
     
     <!-- Modal Panel (Right Side) -->
     <div 
-      class="absolute right-0 top-0 h-full w-full max-w-2xl bg-white shadow-xl transform transition-transform duration-300 ease-in-out"
+      class="absolute right-0 top-0 h-full w-5/12 bg-white shadow-xl transform transition-transform duration-300 ease-in-out"
       :class="isOpen ? 'translate-x-0' : 'translate-x-full'"
       @click.stop
     >

@@ -221,22 +221,38 @@ const submitLogin = async (event) => {
         event.stopPropagation()
     }
 
-    // Clear previous errors
+    // Clear previous errors and status
     setErrors.value = []
+    status.value = null
     processing.value = true
 
     try {
         const result = await authStore.login(form, setErrors, processing)
 
         if (result?.success) {
+            // Show success notification
             notificationStore.showSuccess(result.message || 'Login successful!')
         } else {
-            notificationStore.showError(result?.message || 'Login failed. Please check your credentials.')
-            setErrors.value = [result?.message || 'Login failed. Please check your credentials.']
+            // Handle backend exception response format
+            // {success: false, message: "...", status: 401, details: null}
+            const errorMessage = result?.message || 'Login failed. Please check your credentials.'
+
+            // Show error notification
+            notificationStore.showError(errorMessage)
+
+            // Set errors for display in the form
+            setErrors.value = [errorMessage]
+
+            console.error('[Login] Login failed:', {
+                message: errorMessage,
+                status: result?.status,
+                details: result?.details
+            })
         }
     } catch (error) {
-        console.error('Login error:', error)
-        const errorMessage = error.response?.data?.message || error.message || 'Login failed. Please try again.'
+        // This catch block handles unexpected errors (network errors, etc.)
+        console.error('Unexpected login error:', error)
+        const errorMessage = error?.message || 'An unexpected error occurred. Please try again.'
         notificationStore.showError(errorMessage)
         setErrors.value = [errorMessage]
     } finally {

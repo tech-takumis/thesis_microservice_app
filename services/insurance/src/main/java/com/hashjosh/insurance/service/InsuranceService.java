@@ -4,6 +4,7 @@ import com.hashjosh.insurance.config.CustomUserDetails;
 import com.hashjosh.insurance.dto.InsuranceFilter;
 import com.hashjosh.insurance.dto.insurance.InsuranceRequestDTO;
 import com.hashjosh.insurance.dto.insurance.InsuranceResponse;
+import com.hashjosh.insurance.dto.insurance.InsuranceStatusStatisticDTO;
 import com.hashjosh.insurance.entity.Insurance;
 import com.hashjosh.insurance.exception.ApiException;
 import com.hashjosh.insurance.mapper.InsuranceMapper;
@@ -88,5 +89,27 @@ public class InsuranceService {
         return insurances.stream()
                 .map(insuranceMapper::toInsuranceResponse)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<InsuranceResponse> findByStatus(com.hashjosh.constant.pcic.enums.InsuranceStatus status) {
+        List<Insurance> insurances = insuranceRepository.findByCurrentStatus(status);
+        return insurances.stream()
+                .map(insuranceMapper::toInsuranceResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<InsuranceStatusStatisticDTO> getInsuranceStatisticsByStatus() {
+        List<Object[]> results = insuranceRepository.countInsuranceByStatus();
+        return results.stream()
+                .map(obj -> new InsuranceStatusStatisticDTO(String.valueOf(obj[0]), (Long) obj[1]))
+                .toList();
+    }
+
+    public String getInsuranceStatusBySubmissionId(UUID submissionId) {
+        return insuranceRepository.findBySubmissionId(submissionId)
+                .map(insurance -> insurance.getCurrentStatus().name())
+                .orElseThrow(() -> ApiException.notFound("Insurance not found"));
     }
 }

@@ -1,6 +1,5 @@
 package com.hashjosh.insurance.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hashjosh.insurance.config.CustomUserDetails;
 import com.hashjosh.insurance.dto.claim.ClaimAIRequest;
 import com.hashjosh.insurance.dto.claim.ClaimRequest;
@@ -18,7 +17,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.util.List;
 import java.util.UUID;
 
@@ -29,12 +27,10 @@ import java.util.UUID;
 public class ClaimController {
 
     private final ClaimService claimService;
-    private final ObjectMapper objectMapper;
 
     private String getAuthenticatedUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.getPrincipal() instanceof CustomUserDetails) {
-            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        if (authentication != null && authentication.getPrincipal() instanceof CustomUserDetails userDetails) {
             return userDetails.getUserId() != null ? userDetails.getUserId().toString() : null;
         }
         log.warn("No authenticated user found in security context");
@@ -43,12 +39,11 @@ public class ClaimController {
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ClaimResponse> createClaimManually(
-            @RequestPart("claim") String claimJson,
+            @RequestPart("claim") ClaimRequest request,
             @RequestPart(value = "supportingFiles", required = false) List<MultipartFile> supportingFiles) {
 
         try {
             String userId = getAuthenticatedUserId();
-            ClaimRequest request = objectMapper.readValue(claimJson, ClaimRequest.class);
             log.info("Creating manual claim for insurance ID: {} by user: {}", request.getInsuranceId(), userId);
 
             ClaimResponse response = claimService.createClaimManually(request, supportingFiles, userId);
@@ -65,12 +60,11 @@ public class ClaimController {
 
     @PostMapping(value = "/ai", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ClaimResponse> createClaimFromAI(
-            @RequestPart("claim") String claimJson,
+            @RequestPart("claim") ClaimAIRequest request,
             @RequestPart(value = "supportingFiles", required = false) List<MultipartFile> supportingFiles) {
 
         try {
             String userId = getAuthenticatedUserId();
-            ClaimAIRequest request = objectMapper.readValue(claimJson, ClaimAIRequest.class);
             log.info("Creating AI claim for insurance ID: {} with application ID: {} by user: {}",
                     request.getInsuranceId(), request.getApplicationId(), userId);
 

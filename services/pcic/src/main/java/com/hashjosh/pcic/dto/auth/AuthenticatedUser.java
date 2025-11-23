@@ -1,5 +1,6 @@
 package com.hashjosh.pcic.dto.auth;
 
+import com.hashjosh.pcic.dto.role.AuthenticatedRoleResponse;
 import com.hashjosh.pcic.dto.role.RoleResponse;
 import lombok.*;
 
@@ -19,5 +20,5 @@ public class AuthenticatedUser {
     private String email;
     private String phoneNumber;
     private String address;
-    private Set<RoleResponse> roles;
+    private Set<AuthenticatedRoleResponse> roles;
 }

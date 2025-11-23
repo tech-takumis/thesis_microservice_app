@@ -1,6 +1,5 @@
 <template>
   <AuthenticatedLayout
-    :navigation="underwriterNavigation"
     role-title="Underwriter Portal"
     page-title="Claim Processing"
   >
@@ -11,7 +10,7 @@
           <ol class="flex items-center space-x-1.5">
             <li>
               <router-link
-                :to="{ name: 'underwriter-dashboard' }"
+                :to="{ name: 'dashboard' }"
                 class="text-slate-400 hover:text-slate-700 transition-colors duration-200"
               >
                 <HomeIcon class="h-4 w-4" />
@@ -90,6 +89,45 @@
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
           <!-- Left Column: Inspection Details -->
           <div class="xl:col-span-2 space-y-6">
+            <!-- Claim Information (if exists) -->
+            <div v-if="claimData" class="bg-blue-50/70 backdrop-blur-sm rounded-2xl border border-blue-200/60 shadow-sm overflow-hidden">
+              <div class="px-6 py-4 border-b border-blue-100/80 bg-blue-100/50">
+                <div class="flex items-center justify-between">
+                  <h3 class="text-lg font-semibold text-blue-900">Claim Information</h3>
+                  <span
+                    v-if="claimData.finalized"
+                    class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-100 text-amber-700 border border-amber-200"
+                  >
+                    Finalized
+                  </span>
+                </div>
+              </div>
+              <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label class="text-sm font-medium text-blue-700">Claim ID</label>
+                    <p class="text-blue-900 font-mono text-xs">{{ claimData.id?.substring(0, 13) }}...</p>
+                  </div>
+                  <div>
+                    <label class="text-sm font-medium text-blue-700">Claim Amount</label>
+                    <p class="text-blue-900 font-bold text-lg">{{ formatCurrency(claimData.claimAmount) }}</p>
+                  </div>
+                  <div>
+                    <label class="text-sm font-medium text-blue-700">Farmer Name</label>
+                    <p class="text-blue-900 font-semibold">{{ claimData.farmerName }}</p>
+                  </div>
+                  <div>
+                    <label class="text-sm font-medium text-blue-700">Filed Date</label>
+                    <p class="text-blue-900">{{ formatDate(claimData.filedAt) }}</p>
+                  </div>
+                  <div class="md:col-span-2">
+                    <label class="text-sm font-medium text-blue-700">Damage Assessment</label>
+                    <p class="text-blue-900">{{ claimData.damageAssessment || 'No assessment provided' }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <!-- Inspector Information -->
             <div class="bg-white/70 backdrop-blur-sm rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
               <div class="px-6 py-4 border-b border-slate-100/80">
@@ -222,6 +260,38 @@
 
           <!-- Right Column: Photos & Actions -->
           <div class="space-y-6">
+            <!-- Claim Supporting Photos -->
+            <div v-if="claimData && claimData.supportingFiles && claimData.supportingFiles.length > 0" class="bg-blue-50/70 backdrop-blur-sm rounded-2xl border border-blue-200/60 shadow-sm overflow-hidden">
+              <div class="px-6 py-4 border-b border-blue-100/80 bg-blue-100/50">
+                <h3 class="text-lg font-semibold text-blue-900">Claim Supporting Photos</h3>
+                <p class="text-xs text-blue-700 mt-1">{{ claimData.supportingFiles.length }} file(s)</p>
+              </div>
+              <div class="p-6">
+                <div class="space-y-4">
+                  <div
+                    v-for="(photo, index) in claimData.supportingFiles"
+                    :key="`claim-${index}`"
+                    class="group relative aspect-video rounded-xl overflow-hidden bg-blue-100 cursor-pointer border border-blue-200 hover:border-blue-400 hover:shadow-md transition-all duration-200"
+                    @click="openImageModal(photo)"
+                  >
+                    <img
+                      :src="photo"
+                      :alt="`Claim supporting photo ${index + 1}`"
+                      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                      @error="handleImageError"
+                    />
+                    <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-200 flex items-center justify-center">
+                      <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        <div class="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium text-blue-700">
+                          View Full Size
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <!-- Inspection Photos -->
             <div class="bg-white/70 backdrop-blur-sm rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
               <div class="px-6 py-4 border-b border-slate-100/80">
@@ -692,6 +762,23 @@
                   </div>
                 </div>
               </div>
+
+              <!-- Finalize Claim Option -->
+              <div class="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                <label class="flex items-start cursor-pointer">
+                  <input
+                    type="checkbox"
+                    v-model="isFinalized"
+                    class="mt-1 w-5 h-5 rounded-md border-2 border-slate-300 text-blue-500 focus:ring-4 focus:ring-blue-400/20 focus:border-blue-400 cursor-pointer transition-all duration-200"
+                  />
+                  <div class="ml-3">
+                    <div class="font-semibold text-amber-900">Finalize Farmer Claim</div>
+                    <p class="text-sm text-amber-700 mt-1">
+                      Check this box to finalize the claim. Once finalized, this claim cannot be edited again.
+                    </p>
+                  </div>
+                </label>
+              </div>
             </div>
           </div>
 
@@ -841,6 +928,23 @@
                   </div>
                 </div>
               </div>
+
+              <!-- Finalize Claim Option -->
+              <div class="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                <label class="flex items-start cursor-pointer">
+                  <input
+                    type="checkbox"
+                    v-model="updateForm.isFinalized"
+                    class="mt-1 w-5 h-5 rounded-md border-2 border-slate-300 text-blue-500 focus:ring-4 focus:ring-blue-400/20 focus:border-blue-400 cursor-pointer transition-all duration-200"
+                  />
+                  <div class="ml-3">
+                    <div class="font-semibold text-amber-900">Finalize Farmer Claim</div>
+                    <p class="text-sm text-amber-700 mt-1">
+                      Check this box to finalize the claim. Once finalized, this claim cannot be edited again.
+                    </p>
+                  </div>
+                </label>
+              </div>
             </div>
           </div>
 
@@ -880,7 +984,6 @@ import { useRoute, useRouter } from 'vue-router'
 import { useInspectionStore } from '@/stores/inspection'
 import { useClaimStore } from '@/stores/claim'
 import { useToastStore } from '@/stores/toast'
-import { UNDERWRITER_NAVIGATION } from '@/lib/navigation'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
 import {
   HomeIcon,
@@ -898,7 +1001,6 @@ const router = useRouter()
 const inspectionStore = useInspectionStore()
 const claimStore = useClaimStore()
 const toastStore = useToastStore()
-const underwriterNavigation = UNDERWRITER_NAVIGATION
 
 // State
 const inspectionData = ref(null)
@@ -912,6 +1014,7 @@ const claimType = ref('manual') // 'manual' or 'ai'
 const selectedFiles = ref([])
 const additionalNotes = ref('')
 const isSubmitting = ref(false)
+const isFinalized = ref(false)
 
 // Action handling based on query parameters
 const currentAction = ref('view') // Default to view mode
@@ -919,7 +1022,8 @@ const claimData = ref(null)
 const showUpdateModal = ref(false)
 const updateForm = ref({
   claimAmount: 0,
-  damageAssessment: ''
+  damageAssessment: '',
+  isFinalized: false
 })
 const updateFiles = ref([])
 const isUpdating = ref(false)
@@ -1132,7 +1236,7 @@ const navigateToApplicationList = () => {
 const navigateToApplicationDetail = () => {
   if (insuranceId && submissionId) {
     router.push({
-      name: 'underwriter-applications-detail',
+      name: 'applications-detail',
       params: {
         insuranceId: insuranceId,
         submissionId: submissionId
@@ -1173,6 +1277,7 @@ const closeClaimModal = () => {
   selectedFiles.value = []
   additionalNotes.value = ''
   claimType.value = 'manual'
+  isFinalized.value = false
 }
 
 // File handling functions
@@ -1202,28 +1307,26 @@ const submitClaim = async () => {
   try {
     isSubmitting.value = true
 
-    // Prepare claim data from inspection field values
-    const claimData = {
-      insuranceId: insuranceId,
-      applicationId: submissionId,
-      damageDescription: fieldValues.value.damage_description || additionalNotes.value || 'Claim based on inspection findings',
-      causeOfDamage: fieldValues.value.cause_of_damage,
-      areaInsured: fieldValues.value.area_insured,
-      areaDamaged: fieldValues.value.area_damaged,
-      dateOfLoss: fieldValues.value.date_of_loss,
-      inspectionId: inspectionData.value.id,
-      claimAmount: estimatedIndemnity.value,
-      fieldValues: fieldValues.value, // Pass all field values
-      additionalNotes: additionalNotes.value
-    }
-
     let result
     if (claimType.value === 'manual') {
-      result = await claimStore.createClaimManually(claimData, selectedFiles.value)
+      // Prepare manual claim data matching ClaimRequest DTO
+      const claimRequest = {
+        insuranceId: insuranceId,
+        isFinalized: isFinalized.value,
+        damageAssessment: fieldValues.value.damage_description || additionalNotes.value || 'Claim based on inspection findings',
+        fieldValues: fieldValues.value // Pass all field values as JsonNode
+      }
+
+      result = await claimStore.createClaimManually(claimRequest, selectedFiles.value)
     } else {
-      // For AI claims, we might want to include AI analysis data
-      claimData.aiAnalysisResults = {} // This would come from AI store if available
-      result = await claimStore.createClaimFromAI(claimData, selectedFiles.value)
+      // Prepare AI claim data matching ClaimAIRequest DTO
+      const claimAIRequest = {
+        insuranceId: insuranceId,
+        isFinalized: isFinalized.value,
+        applicationId: submissionId
+      }
+
+      result = await claimStore.createClaimFromAI(claimAIRequest, selectedFiles.value)
     }
 
     if (result.success) {
@@ -1282,19 +1385,19 @@ const fetchInspectionData = async () => {
 const initializeAction = () => {
   const action = route.query.action || 'view'
   currentAction.value = action
-  
+
   switch (action) {
     case 'file_claim':
-      // Show claim filing modal automatically
-      setTimeout(() => openManualClaimModal(), 500)
+      // Don't auto-open modal, just set the action mode
+      // User will click the button to open the modal
       break
     case 'update':
-      // Fetch claim data and show update modal
-      setTimeout(() => handleUpdateAction(), 500)
+      // Fetch claim data for update mode
+      setTimeout(() => fetchClaimDataForUpdate(), 500)
       break
     case 'ai-analysis':
-      // Show AI claim modal automatically
-      setTimeout(() => openAIClaimModal(), 500)
+      // Don't auto-open AI modal, just set the action mode
+      // User will click the button to open the modal
       break
     case 'view':
       // Fetch claim data for viewing
@@ -1311,7 +1414,7 @@ const fetchClaimDataForView = async () => {
 
   try {
     const result = await claimStore.getClaimsByInsuranceId(insuranceId)
-    
+
     if (result.success && result.data) {
       claimData.value = result.data
     } else {
@@ -1324,25 +1427,57 @@ const fetchClaimDataForView = async () => {
   }
 }
 
+const fetchClaimDataForUpdate = async () => {
+  if (!insuranceId) return
+
+  try {
+    const result = await claimStore.getClaimsByInsuranceId(insuranceId)
+
+    if (result.success && result.data) {
+      claimData.value = result.data
+
+      // Populate update form
+      updateForm.value = {
+        claimAmount: result.data.claimAmount || 0,
+        damageAssessment: result.data.damageAssessment || '',
+        isFinalized: result.data.isFinalized || false
+      }
+    } else {
+      console.log('No claim data found for update')
+      claimData.value = null
+    }
+  } catch (error) {
+    console.error('Error fetching claim for update:', error)
+    claimData.value = null
+  }
+}
+
 const handleUpdateAction = async () => {
   if (!insuranceId) {
     toastStore.error('Insurance ID not found')
     return
   }
 
+  // If claim data is already loaded from fetchClaimDataForUpdate, just show the modal
+  if (claimData.value) {
+    showUpdateModal.value = true
+    return
+  }
+
+  // Otherwise fetch it now
   try {
-    // Fetch existing claim data
     const result = await claimStore.getClaimsByInsuranceId(insuranceId)
-    
+
     if (result.success && result.data) {
       claimData.value = result.data
-      
+
       // Populate update form
       updateForm.value = {
         claimAmount: result.data.claimAmount || 0,
-        damageAssessment: result.data.damageAssessment || ''
+        damageAssessment: result.data.damageAssessment || '',
+        isFinalized: result.data.isFinalized || false
       }
-      
+
       showUpdateModal.value = true
     } else {
       toastStore.error(result.message || 'No existing claim found to update')
@@ -1357,7 +1492,8 @@ const closeUpdateModal = () => {
   showUpdateModal.value = false
   updateForm.value = {
     claimAmount: 0,
-    damageAssessment: ''
+    damageAssessment: '',
+    isFinalized: false
   }
   updateFiles.value = []
   claimData.value = null
@@ -1386,8 +1522,10 @@ const submitUpdate = async () => {
   try {
     isUpdating.value = true
 
+    // Prepare update data matching ClaimUpdateRequest DTO
     const updateData = {
       claimAmount: updateForm.value.claimAmount,
+      isFinalized: updateForm.value.isFinalized,
       damageAssessment: updateForm.value.damageAssessment
     }
 
@@ -1416,9 +1554,11 @@ const submitUpdate = async () => {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   if (insuranceId) {
-    fetchInspectionData()
+    await fetchInspectionData()
+    // Try to fetch claim data if exists (don't fail if it doesn't)
+    await fetchClaimDataForView()
     // Initialize action after data is loaded
     setTimeout(() => initializeAction(), 100)
   } else {

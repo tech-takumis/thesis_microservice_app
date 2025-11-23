@@ -1,5 +1,6 @@
 package com.example.agriculture.mapper;
 
+import com.example.agriculture.dto.auth.AuthenticatedRoles;
 import com.example.agriculture.dto.rbac.PermissionRequest;
 import com.example.agriculture.dto.rbac.PermissionResponse;
 import com.example.agriculture.dto.rbac.RoleRequest;
@@ -44,4 +45,14 @@ public class RoleMapper {
                 .build();
     }
 
+    public AuthenticatedRoles toAuthenticatedRole(Role role) {
+        List<String> permissions = role.getPermissions().stream()
+                .map(Permission::getName)
+                .collect(Collectors.toList());
+
+        return AuthenticatedRoles.builder()
+                .name(role.getName())
+                .permissions(permissions)
+                .build();
+    }
 }

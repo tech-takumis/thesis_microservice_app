@@ -24,7 +24,7 @@ export const usePermissionStore = defineStore("permission", () => {
     try {
       loading.value = true
       error.value = null
-      const response = await axios.get("/api/v1/permissions")
+      const response = await axios.get("/api/v1/pcic/permissions")
       permissions.value = response.data
       return { success: true, data: response.data }
     } catch (err) {

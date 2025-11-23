@@ -1,6 +1,5 @@
 <template>
     <AuthenticatedLayout
-        :navigation="underwriterNavigation"
         role-title="Underwriter Portal"
         page-title="All Applications">
         <template #header>
@@ -352,10 +351,8 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { RefreshCw, Search, Filter, ChevronDown, Trash2 } from 'lucide-vue-next'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
-import { UNDERWRITER_NAVIGATION } from '@/lib/navigation'
 import { useInsuranceStore } from '@/stores/insurance'
 
-const underwriterNavigation = UNDERWRITER_NAVIGATION
 const router = useRouter()
 const insuranceStore = useInsuranceStore()
 
@@ -569,7 +566,7 @@ const refreshApplications = () => {
 
 const navigateToDetail = insurance => {
     router.push({
-        name: 'underwriter-applications-detail',
+        name: 'applications-detail',
         params: {
             insuranceId: insurance.insuranceId,
             submissionId: insurance.submissionId,

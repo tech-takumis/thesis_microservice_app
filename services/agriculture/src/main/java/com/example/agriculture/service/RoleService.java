@@ -1,6 +1,7 @@
 package com.example.agriculture.service;
 
 
+import com.example.agriculture.dto.auth.AuthenticatedRoles;
 import com.example.agriculture.dto.rbac.RoleRequest;
 import com.example.agriculture.dto.rbac.RoleResponse;
 import com.example.agriculture.dto.rbac.RoleUpdateRequest;
@@ -76,5 +77,15 @@ public class RoleService {
     @Transactional
     public void deleteRole(UUID roleId) {
         roleRepository.deleteById(roleId);
+    }
+
+    public AuthenticatedRoles getAuthenticateRoles(Role role) {
+        List<String> permissions = role.getPermissions().stream()
+                .map(Permission::getName)
+                .toList();
+        return AuthenticatedRoles.builder()
+                .name(role.getName())
+                .permissions(permissions)
+                .build();
     }
 }

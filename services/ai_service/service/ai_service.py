@@ -3,6 +3,7 @@ from models.ai_result import AIResult, AIResponseDTO, AIRequestDTO
 from service.prediction_service import PredictionService
 from config.minio_config import MinIOConfig, DOCUMENT_BUCKET
 from typing import Dict, Optional
+from datetime import timedelta
 import uuid
 import io
 import logging
@@ -54,7 +55,6 @@ class AIService:
                 ai_result_id=db_result.id,
                 image_type=leaf_img.image_type,
                 image_path=leaf_img.image_path,
-                presigned_url=leaf_img.presigned_url,
                 width=leaf_img.width,
                 height=leaf_img.height,
                 file_size=leaf_img.file_size,
@@ -123,7 +123,6 @@ class AIService:
                 LeafAnalysisImageDTO(
                     image_type=img["image_type"],
                     image_path=img["image_path"],
-                    presigned_url=img["presigned_url"],
                     width=img["width"],
                     height=img["height"],
                     file_size=img["file_size"],
@@ -168,29 +167,75 @@ class AIService:
             raise Exception(f"Prediction failed: {str(e)}")
 
     @staticmethod
-    def create_ai_result_with_default_prediction(application_id: str, user_id: str, db: Session, image_path: str = None) -> AIResponseDTO:
+    def create_ai_result_with_default_prediction(
+        application_id: str,
+        user_id: str,
+        db: Session,
+        image_path: str = None,
+        image_bytes: bytes = None
+    ) -> AIResponseDTO:
         """
-        Create an AI result with default/unknown prediction when no image analysis can be performed
+        Create an AI result with default/unknown prediction when disease classification fails
+        Still attempts to run RICEMASTER_PERFECTION to get severity estimation if image_bytes provided
         """
-        from models.ai_result import Top3PredictionDTO
+        from models.ai_result import Top3PredictionDTO, LeafAnalysisImageDTO
+
+        severity = 0.0
+        lesion_area = 0.0
+        leaf_area = 0.0
+        analysis_image_dtos = []
+        prediction_text = "Disease: Unknown - Classification failed"
+
+        # If image bytes are provided, try to get severity estimation using RICEMASTER_PERFECTION
+        if image_bytes:
+            try:
+                logger.info(f"Attempting severity estimation for application {application_id}")
+                prediction_service = PredictionService()
+
+                # Run RICEMASTER_PERFECTION to get severity metrics
+                prediction_result = prediction_service.predict_disease_from_bytes(image_bytes)
+
+                # Extract severity metrics even though we'll mark disease as Unknown
+                severity = prediction_result.get("lesion_ratio", 0.0)
+                lesion_area = prediction_result.get("lesion_area", 0.0)
+                leaf_area = prediction_result.get("leaf_area", 0.0)
+
+                # Convert analysis_images to DTOs if available
+                analysis_image_dtos = [
+                    LeafAnalysisImageDTO(
+                        image_type=img["image_type"],
+                        image_path=img["image_path"],
+                        width=img["width"],
+                        height=img["height"],
+                        file_size=img["file_size"],
+                        created_at=img["created_at"]
+                    ) for img in prediction_result.get("analysis_images", [])
+                ]
+
+                prediction_text = f"Disease: Unknown - Classification failed, Severity: {severity:.2f}%"
+                logger.info(f"Severity estimation successful: {severity:.2f}%")
+
+            except Exception as e:
+                logger.warning(f"Severity estimation also failed for {application_id}: {str(e)}")
+                prediction_text = "Disease: Unknown - No analysis could be performed"
 
         ai_request = AIRequestDTO(
             applicationId=application_id,
             userId=user_id,
             result="Unknown",
-            prediction="Disease: Unknown - No image analysis performed",
+            prediction=prediction_text,
             accuracy="0.00%",
             confidence=0.0,
-            severity=0.0,
-            lesion_area=0.0,
-            leaf_area=0.0,
+            severity=severity,
+            lesion_area=lesion_area,
+            leaf_area=leaf_area,
             image_path=image_path,
             top3_predictions=[
                 Top3PredictionDTO(class_name="Unknown", confidence=0.0, rank=1),
                 Top3PredictionDTO(class_name="Unknown", confidence=0.0, rank=2),
                 Top3PredictionDTO(class_name="Unknown", confidence=0.0, rank=3)
             ],
-            leaf_analysis_images=[]
+            leaf_analysis_images=analysis_image_dtos
         )
         return AIService.add_ai_result(db, ai_request)
 
@@ -264,7 +309,6 @@ class AIService:
                     LeafAnalysisImageDTO(
                         image_type=img["image_type"],
                         image_path=img["image_path"],
-                        presigned_url=img["presigned_url"],
                         width=img["width"],
                         height=img["height"],
                         file_size=img["file_size"],
@@ -290,14 +334,48 @@ class AIService:
 
                 return AIService.add_ai_result(db, ai_request)
             else:
-                # No images could be processed
+                # No images could be processed, try to at least get severity estimation
                 logger.warning(f"No images could be processed for application {application_id}")
-                return AIService.create_ai_result_with_default_prediction(application_id, user_id, db)
+
+                # Try to download first image for severity estimation
+                image_bytes = None
+                image_path = None
+                if object_keys and len(object_keys) > 0:
+                    try:
+                        first_object_key = object_keys[0]
+                        logger.info(f"Attempting to download first image for severity estimation: {first_object_key}")
+                        image_bytes = AIService._download_image_from_minio(minio_config, first_object_key)
+                        image_path = first_object_key
+                    except Exception as download_error:
+                        logger.warning(f"Failed to download image for severity estimation: {download_error}")
+
+                return AIService.create_ai_result_with_default_prediction(
+                    application_id, user_id, db, image_path=image_path, image_bytes=image_bytes
+                )
 
         except Exception as e:
             logger.error(f"Failed to process PCIC application {application_data.get('submissionId')}: {str(e)}")
-            # Fallback to default result
-            return AIService.create_ai_result_with_default_prediction(application_data.get('submissionId'), application_data.get('userId'), db)
+
+            # Fallback to default result - try to download first image for severity estimation
+            application_id = application_data.get('submissionId')
+            user_id = application_data.get('userId')
+            object_keys = application_data.get('objectKeysForAIAnalysis', [])
+
+            image_bytes = None
+            image_path = None
+            if object_keys and len(object_keys) > 0:
+                try:
+                    minio_config = MinIOConfig()
+                    first_object_key = object_keys[0]
+                    logger.info(f"Attempting to download first image for fallback severity estimation: {first_object_key}")
+                    image_bytes = AIService._download_image_from_minio(minio_config, first_object_key)
+                    image_path = first_object_key
+                except Exception as download_error:
+                    logger.warning(f"Failed to download image for fallback: {download_error}")
+
+            return AIService.create_ai_result_with_default_prediction(
+                application_id, user_id, db, image_path=image_path, image_bytes=image_bytes
+            )
 
     @staticmethod
     def analyze_single_image(image_bytes: bytes, application_id: str, user_id: str, db: Session, object_key: str = None) -> AIResponseDTO:
@@ -333,7 +411,6 @@ class AIService:
                 LeafAnalysisImageDTO(
                     image_type=img["image_type"],
                     image_path=img["image_path"],
-                    presigned_url=img["presigned_url"],
                     width=img["width"],
                     height=img["height"],
                     file_size=img["file_size"],
@@ -364,9 +441,11 @@ class AIService:
 
         except Exception as e:
             logger.error(f"Failed to analyze single image: {str(e)}", exc_info=True)
-            logger.info("Falling back to default prediction")
-            # Return default prediction as fallback
-            return AIService.create_ai_result_with_default_prediction(application_id, user_id, db, object_key)
+            logger.info("Falling back to default prediction with severity estimation")
+            # Return default prediction as fallback, still attempt severity estimation
+            return AIService.create_ai_result_with_default_prediction(
+                application_id, user_id, db, image_path=object_key, image_bytes=image_bytes
+            )
 
     @staticmethod
     def get_prediction_statistics(db: Session, application_id: str = None) -> Dict:
@@ -429,6 +508,58 @@ class AIService:
             }
 
     @staticmethod
+    def generate_presigned_url_for_analysis_image(image_path: str, expires_in_seconds: int = 7200) -> Optional[str]:
+        """
+        Generate presigned URL for analysis image from MinIO
+        Analysis images are stored in ai-service-bucket
+        """
+        try:
+            minio_config = MinIOConfig()
+            if not minio_config.client:
+                logger.error("MinIO client not available")
+                return None
+
+            url = minio_config.client.presigned_get_object(
+                bucket_name="ai-service-bucket",
+                object_name=image_path,
+                expires=timedelta(seconds=expires_in_seconds)
+            )
+
+            return url
+
+        except Exception as e:
+            logger.error(f"Failed to generate presigned URL for {image_path}: {str(e)}")
+            return None
+
+    @staticmethod
+    def generate_presigned_url_for_original_image(image_path: str, expires_in_seconds: int = 7200) -> Optional[str]:
+        """
+        Generate presigned URL for original uploaded image from MinIO
+        Original images are stored in documents bucket
+        """
+        try:
+            if not image_path:
+                return None
+
+            minio_config = MinIOConfig()
+            if not minio_config.client:
+                logger.error("MinIO client not available")
+                return None
+
+            # Original images are stored in the documents bucket
+            url = minio_config.client.presigned_get_object(
+                bucket_name=DOCUMENT_BUCKET,
+                object_name=image_path,
+                expires=timedelta(seconds=expires_in_seconds)
+            )
+
+            return url
+
+        except Exception as e:
+            logger.error(f"Failed to generate presigned URL for original image {image_path}: {str(e)}")
+            return None
+
+    @staticmethod
     def _upload_image_to_minio(minio_config: MinIOConfig, image_bytes: bytes, object_name: str) -> bool:
         """Upload image bytes to MinIO"""
         try:
@@ -466,7 +597,7 @@ class AIService:
             url = minio_config.client.presigned_get_object(
                 bucket_name="ai-service-bucket",
                 object_name=object_name,
-                expires=expires_in_seconds
+                expires=timedelta(seconds=expires_in_seconds)
             )
 
             return url

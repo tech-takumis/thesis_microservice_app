@@ -28,9 +28,10 @@ export const useAuthStore = defineStore('auth', () => {
     const userPhoneNumber = computed(() => userData.value?.phoneNumber);
     const userId = computed(() => userData.value?.id);
 
+    // Single dashboard for all users
     const defaultRoute = computed(() => {
         if (!userData.value?.roles || userData.value.roles.length === 0) return null;
-        return userData.value.roles[0].defaultRoute;
+        return '/agriculturist/dashboard';
     });
 
 
@@ -46,15 +47,15 @@ export const useAuthStore = defineStore('auth', () => {
         if (Array.isArray(permissionName)) {
             return permissionName.some(name =>
                 userData.value?.roles?.some(role =>
-                    role.permissions.some(perm =>
-                        perm.name.toUpperCase() === name.toUpperCase()
+                    role.permissions?.some(perm =>
+                        (typeof perm === 'string' ? perm : perm.name).toUpperCase() === name.toUpperCase()
                     )
                 )
             );
         }
         return userData.value?.roles?.some(role =>
-            role.permissions.some(perm =>
-                perm.name.toUpperCase() === permissionName.toUpperCase()
+            role.permissions?.some(perm =>
+                (typeof perm === 'string' ? perm : perm.name).toUpperCase() === permissionName.toUpperCase()
             )
         );
     };
@@ -103,9 +104,13 @@ export const useAuthStore = defineStore('auth', () => {
         if (userData.value.roles) {
             userData.value.roles.forEach(role => {
                 normalizedRoles.value.add(role.name.toUpperCase());
-                role.permissions.forEach(permission => {
-                    normalizedPermissions.value.add(permission.name.toUpperCase());
-                });
+                if (role.permissions) {
+                    role.permissions.forEach(permission => {
+                        // Handle both string and object permissions
+                        const permName = typeof permission === 'string' ? permission : permission.name;
+                        normalizedPermissions.value.add(permName.toUpperCase());
+                    });
+                }
             });
         }
     }
@@ -156,24 +161,36 @@ export const useAuthStore = defineStore('auth', () => {
         } catch (err) {
             console.error('Login error:', err);
             console.log('[Auth Store] Setting isAuthenticated to false after login error');
-            const errorMessage = null;
-            if(err.response.status === 503){
+
+            let errorMessage = 'Login failed. Please check your credentials.';
+
+            // Handle different error response formats
+            if (err.response?.status === 503) {
                 errorMessage = 'Service is currently unavailable. Please try again later.';
-                error.value = errorMessage;
-                isAuthenticated.value = false;
-                userData.value = { roles: [], permissions: [] };
-                return { success: false, message: 'Service is currently unavailable. Please try again later.' };
+            } else if (err.response?.data) {
+                // Handle backend exception response format
+                // {success: false, message: "...", status: 401, details: null, timestamp: "..."}
+                errorMessage = err.response.data.message || errorMessage;
+            } else if (err.message) {
+                errorMessage = err.message;
             }
-            errorMessage = err.response?.data?.message || err.message || 'Login failed. Please check your credentials.';
+
             error.value = errorMessage;
             isAuthenticated.value = false;
             userData.value = { roles: [], permissions: [] }; // Reset user data
             normalizedRoles.value.clear();
             normalizedPermissions.value.clear();
+
             if (setErrors) {
                 setErrors.value = [errorMessage];
             }
-            return { success: false, message: errorMessage };
+
+            return {
+                success: false,
+                message: errorMessage,
+                status: err.response?.status || err.response?.data?.status,
+                details: err.response?.data?.details || null
+            };
         } finally {
             loading.value = false;
             if (processing) {

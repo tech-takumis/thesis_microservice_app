@@ -310,8 +310,8 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- QR Code Action Buttons - Responsive -->
-        <div v-if="voucher && !loading" class="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
+        <!-- QR Code Action Buttons - Only show when status is ISSUED -->
+        <div v-if="voucher && !loading && voucher.status === 'ISSUED'" class="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
           <button
             @click="generateQRCode"
             class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors"

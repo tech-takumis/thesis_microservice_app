@@ -1,32 +1,37 @@
-import { FileBarChart2, FileCheck, LayoutDashboard, MessageCircle, Sprout, Users, ClipboardList, CheckSquare, BarChart } from 'lucide-vue-next'
+import { FileBarChart2, FileCheck, LayoutDashboard, MessageCircle, Sprout, Users, ClipboardList, CheckSquare, BarChart, BookOpen, Stethoscope, ShoppingCart, Leaf, PawPrint, Wallet, Receipt, QrCode, ScanLine } from 'lucide-vue-next'
 
 /**
- * Admin navigation items
+ * Unified navigation for all users
+ * Access is controlled by roles and permissions
  */
-export const ADMIN_NAVIGATION = [
+export const UNIFIED_NAVIGATION = [
     {
         title: 'Dashboard',
         icon: LayoutDashboard,
-        to: { name: 'admin-dashboard' },
+        to: { name: 'agriculturist-dashboard' },
         exact: true
     },
     {
         title: 'User Management',
         icon: Users,
+        roles: ['ADMIN'],
         children: [
             {
                 title: 'All Users',
-                to: { name: 'admin-users' }
+                to: { name: 'admin-users' },
+                permissions: ['CAN_VIEW_USER']
             },
             {
                 title: 'Roles & Permissions',
-                to: { name: 'admin-roles-permissions' }
+                to: { name: 'admin-roles-permissions' },
+                permissions: ['CAN_VIEW_USER']
             }
         ]
     },
     {
         title: 'Applications',
         icon: ClipboardList,
+        roles: ['ADMIN'],
         children: [
             {
                 title: 'View Applications',
@@ -41,65 +46,85 @@ export const ADMIN_NAVIGATION = [
     {
         title: 'Approvals',
         icon: CheckSquare,
-        to: { name: 'admin-approvals' }
+        to: { name: 'admin-approvals' },
+        roles: ['ADMIN']
     },
     {
-        title: 'Analytics',
-        icon: BarChart,
-        to: { name: 'admin-analytics' }
+        title: 'Manage Applications',
+        icon: ClipboardList,
+        to: { name: 'agriculturist-submit-crop-data' },
+        permissions: ['CAN_SUBMIT_CROP_DATA']
     },
     {
-        title: 'Reports',
-        icon: FileBarChart2,
-        to: { name: 'admin-reports' }
-    }
-];
-
-/**
- * Municipal Agriculturists navigation items
- */
-export const MUNICIPAL_AGRICULTURIST_NAVIGATION = [
-    {
-        title: 'Dashboard',
-        icon: LayoutDashboard,
-        to: { name: 'agriculturist-dashboard' },
-        exact: true
-    },
-    {
-        title: 'Agricultural Operations',
-        icon: Sprout,
+        title: 'Vouchers',
+        icon: Receipt,
+        permissions: ['CAN_SUBMIT_CROP_DATA'],
         children: [
             {
-                title: 'Submit Crop Data',
-                to: { name: 'agriculturist-submit-crop-data' }
+                title: 'Generate Voucher',
+                to: { name: 'agriculturist-voucher-generate' }
             },
             {
-                title: 'Voucher Program',
+                title: 'All Vouchers',
                 to: { name: 'agriculturist-voucher-all' }
             },
-             {
-                title: 'Voucher Scanner',
+            {
+                title: 'Scan Voucher',
                 to: { name: 'agriculturist-voucher-scanner' }
-            },
-            {
-                title: 'Manage transaction',
-                to: { name: 'agriculturist-transaction' }
-            },
-            {
-                title: 'Monitor Programs',
-                to: { name: 'agriculturist-monitor-programs' }
             }
         ]
+    },
+    {
+        title: 'Transactions',
+        icon: Wallet,
+        to: { name: 'agriculturist-transaction' }
+    },
+    {
+        title: 'Monitor Programs',
+        icon: BarChart,
+        to: { name: 'agriculturist-monitor-programs' },
+        permissions: ['CAN_MONITOR_PROGRAMS']
     },
     {
         title: 'Claims',
         icon: FileCheck,
+        to: { name: 'agriculturist-process-claims' },
+        permissions: ['CAN_PROCESS_CLAIM']
+    },
+    {
+        title: 'Extension Services',
+        icon: BookOpen,
+        roles: ['AGRICULTURAL EXTENSION WORKER'],
         children: [
             {
-                title: 'Process Claims',
-                to: { name: 'agriculturist-process-claims' }
+                title: 'Conduct Training',
+                to: { name: 'extension-worker-conduct-training' }
             }
         ]
+    },
+    {
+        title: 'Diagnostic Services',
+        icon: Stethoscope,
+        to: { name: 'extension-worker-diagnostic-services' },
+        roles: ['AGRICULTURAL EXTENSION WORKER']
+    },
+    {
+        title: 'Market Access',
+        icon: ShoppingCart,
+        to: { name: 'extension-worker-market-access' },
+        roles: ['AGRICULTURAL EXTENSION WORKER']
+    },
+    {
+        title: 'Sustainability',
+        icon: Leaf,
+        to: { name: 'extension-worker-promote-sustainability' },
+        roles: ['AGRICULTURAL EXTENSION WORKER']
+    },
+    {
+        title: 'Veterinary Support',
+        icon: PawPrint,
+        to: { name: 'extension-worker-support-veterinary' },
+        roles: ['AGRICULTURAL EXTENSION WORKER']
     },
     {
         title: 'Messages',
@@ -108,58 +133,7 @@ export const MUNICIPAL_AGRICULTURIST_NAVIGATION = [
     }
 ];
 
-/**
- * Agricultural Extension Workers navigation items
- */
-export const AGRICULTURAL_EXTENSION_WORKER_NAVIGATION = [
-    {
-        title: 'Dashboard',
-        icon: LayoutDashboard,
-        to: { name: 'extension-worker-dashboard' },
-        exact: true
-    },
-    {
-        title: 'Agricultural Operations',
-        icon: Sprout,
-        children: [
-            {
-                title: 'Submit Crop Data',
-                to: { name: 'extension-worker-submit-crop-data' }
-            },
-            {
-                title: 'Conduct Training',
-                to: { name: 'extension-worker-conduct-training' }
-            },
-            {
-                title: 'Facilitate Tech Adoption',
-                to: { name: 'extension-worker-facilitate-tech-adoption' }
-            },
-            {
-                title: 'Provide Diagnostic Services',
-                to: { name: 'extension-worker-diagnostic-services' }
-            },
-            {
-                title: 'Enhance Market Access',
-                to: { name: 'extension-worker-market-access' }
-            },
-            {
-                title: 'Promote Sustainability',
-                to: { name: 'extension-worker-promote-sustainability' }
-            },
-            {
-                title: 'Support Veterinary',
-                to: { name: 'extension-worker-support-veterinary' }
-            }
-        ]
-    },
-    {
-        title: 'Claims',
-        icon: FileCheck,
-        children: [
-            {
-                title: 'Process Claims',
-                to: { name: 'extension-worker-process-claims' }
-            }
-        ]
-    }
-];
+// Legacy exports for backwards compatibility - will be removed
+export const ADMIN_NAVIGATION = UNIFIED_NAVIGATION;
+export const MUNICIPAL_AGRICULTURIST_NAVIGATION = UNIFIED_NAVIGATION;
+export const AGRICULTURAL_EXTENSION_WORKER_NAVIGATION = UNIFIED_NAVIGATION;

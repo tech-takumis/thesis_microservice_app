@@ -34,18 +34,65 @@ const claimedVoucher = ref(null)
 const scanMode = ref('camera') // 'camera' or 'file'
 const fileInputRef = ref(null)
 const processing = ref(false)
+const cameraNotAvailable = ref(false)
 
 // Computed
 const userId = computed(() => authStore.userId)
 
 // Methods
+const stopScanner = async () => {
+  try {
+    if (html5QrCode.value) {
+      const state = html5QrCode.value.getState()
+      // State 2 = SCANNING, State 1 = PAUSED
+      if (state === 2 || state === 1) {
+        await html5QrCode.value.stop()
+      }
+      html5QrCode.value.clear()
+      html5QrCode.value = null
+    }
+  } catch (err) {
+    console.error('Failed to stop scanner:', err)
+    // Force cleanup
+    html5QrCode.value = null
+  } finally {
+    isScanning.value = false
+  }
+}
+
 const startScanner = async () => {
   try {
+    // First, ensure any existing scanner is properly stopped
+    await stopScanner()
+
+    // Small delay to ensure DOM is ready and previous scanner is fully cleaned up
+    await new Promise(resolve => setTimeout(resolve, 100))
+
     errorMessage.value = null
     permissionDenied.value = false
-    isScanning.value = true
+    cameraNotAvailable.value = false
+
+    // Check if camera is available
+    try {
+      const devices = await Html5Qrcode.getCameras()
+      if (!devices || devices.length === 0) {
+        cameraNotAvailable.value = true
+        errorMessage.value = 'No camera found on this device. Please use the "Upload Image" option instead.'
+        notificationStore.showError('No camera found on this device')
+        return
+      }
+    } catch (cameraErr) {
+      console.error('Error checking cameras:', cameraErr)
+      if (cameraErr.name === 'NotAllowedError' || cameraErr.message?.includes('Permission')) {
+        permissionDenied.value = true
+        errorMessage.value = 'Camera permission denied. Please allow camera access in your browser settings to scan QR codes.'
+        notificationStore.showError('Camera permission denied')
+        return
+      }
+    }
 
     html5QrCode.value = new Html5Qrcode('qr-reader')
+    isScanning.value = true
 
     const config = {
       fps: 10,
@@ -61,27 +108,30 @@ const startScanner = async () => {
     )
   } catch (err) {
     console.error('Failed to start scanner:', err)
-    if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-      permissionDenied.value = true
-      errorMessage.value = 'Camera permission denied. Please allow camera access to scan QR codes.'
-    } else {
-      errorMessage.value = err.message || 'Failed to start camera. Please check if camera is available.'
-    }
     isScanning.value = false
-  }
-}
 
-const stopScanner = async () => {
-  try {
-    if (html5QrCode.value && isScanning.value) {
-      await html5QrCode.value.stop()
-      html5QrCode.value.clear()
+    if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError' || err.message?.includes('Permission')) {
+      permissionDenied.value = true
+      errorMessage.value = 'Camera permission denied. Please allow camera access in your browser settings to scan QR codes.'
+      notificationStore.showError('Camera permission denied')
+    } else if (err.message?.includes('NotReadableError') || err.message?.includes('Could not start')) {
+      cameraNotAvailable.value = true
+      errorMessage.value = 'Camera is being used by another application or is not accessible. Please close other apps using the camera and try again.'
+      notificationStore.showError('Camera not accessible')
+    } else {
+      errorMessage.value = 'Failed to start camera. Please check if camera is available and try again.'
+      notificationStore.showError('Failed to start camera')
+    }
+
+    // Cleanup on error
+    if (html5QrCode.value) {
+      try {
+        html5QrCode.value.clear()
+      } catch (e) {
+        // Ignore cleanup errors
+      }
       html5QrCode.value = null
     }
-  } catch (err) {
-    console.error('Failed to stop scanner:', err)
-  } finally {
-    isScanning.value = false
   }
 }
 
@@ -135,12 +185,14 @@ const processScan = async (code) => {
   }
 }
 
-const resetScanner = () => {
+const resetScanner = async () => {
   scanResult.value = null
   claimedVoucher.value = null
   errorMessage.value = null
   permissionDenied.value = false
-  startScanner()
+  cameraNotAvailable.value = false
+  scanMode.value = 'camera'
+  await startScanner()
 }
 
 const handleFileUpload = async (event) => {
@@ -173,6 +225,24 @@ const triggerFileUpload = () => {
   fileInputRef.value?.click()
 }
 
+const switchToCamera = async () => {
+  if (scanMode.value === 'camera') return
+  scanMode.value = 'camera'
+  errorMessage.value = null
+  permissionDenied.value = false
+  cameraNotAvailable.value = false
+  await startScanner()
+}
+
+const switchToFile = async () => {
+  if (scanMode.value === 'file') return
+  await stopScanner()
+  scanMode.value = 'file'
+  errorMessage.value = null
+  permissionDenied.value = false
+  cameraNotAvailable.value = false
+}
+
 const navigateBack = () => {
   router.push({ name: 'agriculturist-voucher-all' })
 }
@@ -184,14 +254,15 @@ const viewVoucherDetails = () => {
 }
 
 // Lifecycle
-onMounted(() => {
+onMounted(async () => {
   if (scanMode.value === 'camera') {
-    startScanner()
+    await startScanner()
   }
 })
 
-onBeforeUnmount(() => {
-  stopScanner()
+onBeforeUnmount(async () => {
+  // Ensure camera is properly stopped when leaving the page
+  await stopScanner()
 })
 </script>
 
@@ -217,13 +288,16 @@ onBeforeUnmount(() => {
       </div>
 
       <!-- Camera Permission Denied -->
-      <div v-if="permissionDenied" class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+      <div v-if="permissionDenied && !scanResult" class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
         <div class="flex items-start gap-3">
           <ExclamationTriangleIcon class="w-6 h-6 text-yellow-500 flex-shrink-0" />
           <div class="flex-1">
             <h3 class="text-sm font-medium text-yellow-800">Camera Permission Required</h3>
             <p class="text-sm text-yellow-700 mt-1">
               {{ errorMessage }}
+            </p>
+            <p class="text-xs text-yellow-600 mt-2">
+              To enable camera access: Open browser settings → Site permissions → Camera → Allow for this site
             </p>
             <div class="mt-3 flex flex-col sm:flex-row gap-2">
               <button
@@ -233,7 +307,35 @@ onBeforeUnmount(() => {
                 Try Again
               </button>
               <button
-                @click="triggerFileUpload"
+                @click="scanMode = 'file'; stopScanner()"
+                class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors"
+              >
+                <DocumentArrowUpIcon class="w-5 h-5" />
+                Upload QR Image Instead
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Camera Not Available -->
+      <div v-if="cameraNotAvailable && !scanResult" class="bg-orange-50 border border-orange-200 rounded-lg p-4">
+        <div class="flex items-start gap-3">
+          <ExclamationTriangleIcon class="w-6 h-6 text-orange-500 flex-shrink-0" />
+          <div class="flex-1">
+            <h3 class="text-sm font-medium text-orange-800">Camera Not Available</h3>
+            <p class="text-sm text-orange-700 mt-1">
+              {{ errorMessage }}
+            </p>
+            <div class="mt-3 flex flex-col sm:flex-row gap-2">
+              <button
+                @click="startScanner"
+                class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg text-sm font-medium hover:bg-orange-700 transition-colors"
+              >
+                Try Again
+              </button>
+              <button
+                @click="scanMode = 'file'; stopScanner()"
                 class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors"
               >
                 <DocumentArrowUpIcon class="w-5 h-5" />
@@ -249,7 +351,7 @@ onBeforeUnmount(() => {
         <!-- Mode Selector -->
         <div class="flex border-b border-gray-300">
           <button
-            @click="scanMode = 'camera'; startScanner()"
+            @click="switchToCamera"
             class="flex-1 px-4 py-3 text-sm font-medium transition-colors"
             :class="scanMode === 'camera' ? 'bg-green-50 text-green-700 border-b-2 border-green-600' : 'text-gray-600 hover:bg-gray-50'"
           >
@@ -257,7 +359,7 @@ onBeforeUnmount(() => {
             Camera
           </button>
           <button
-            @click="scanMode = 'file'; stopScanner()"
+            @click="switchToFile"
             class="flex-1 px-4 py-3 text-sm font-medium transition-colors"
             :class="scanMode === 'file' ? 'bg-green-50 text-green-700 border-b-2 border-green-600' : 'text-gray-600 hover:bg-gray-50'"
           >

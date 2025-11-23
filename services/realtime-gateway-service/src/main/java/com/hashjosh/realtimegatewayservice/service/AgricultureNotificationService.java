@@ -77,12 +77,11 @@ public class AgricultureNotificationService {
     public void sendAgricultureInvitationEvent(@Payload NewInvitationEvent event){
         try{
             String subject = "Invitation to join the platform";
-            String registrationLink = "http://localhost:5174/register?token=" + event.getToken();
             String recipientEmail = event.getEmail();
 
             //Create the context using thymeleaf
             Context context = new Context();
-            context.setVariable("registrationLink", registrationLink);
+            context.setVariable("registrationLink", event.getRegistrationLink());
             context.setVariable("expiryDate", event.getExpiryDate()
                     .format(DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm")));
             String emailContent = templateEngine.process("email/agriculture-invitation", context);

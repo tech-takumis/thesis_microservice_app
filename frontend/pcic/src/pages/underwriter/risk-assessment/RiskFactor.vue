@@ -1,6 +1,5 @@
 <template>
   <AuthenticatedLayout
-    :navigation="underwriterNavigation"
     role-title="Underwriter Portal"
     page-title="Risk Factors"
   >
@@ -19,7 +18,7 @@
     <!-- Main Content -->
     <div class="h-full flex flex-col space-y-4">
       <!-- Risk Overview Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <!-- <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <div class="bg-gray-100 rounded-xl p-6 border border-gray-300">
           <div class="flex items-center">
             <div class="flex-shrink-0">
@@ -64,7 +63,7 @@
             </div>
           </div>
         </div>
-      </div>
+      </div> -->
 
       <!-- Main Content Grid -->
       <div class="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -202,7 +201,6 @@
 <script setup>
 import { ref, computed, onMounted, reactive } from 'vue'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
-import { UNDERWRITER_NAVIGATION } from '@/lib/navigation'
 import { 
   AlertTriangle, 
   AlertTriangle as WarningIcon, 
@@ -216,9 +214,6 @@ import {
   Bell,
   Sprout
 } from 'lucide-vue-next'
-
-// Navigation
-const underwriterNavigation = UNDERWRITER_NAVIGATION
 
 // Loading state
 const loading = ref(false)

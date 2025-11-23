@@ -7,7 +7,7 @@ import LoadingSpinner from '@/components/others/LoadingSpinner.vue'
 import { MUNICIPAL_AGRICULTURIST_NAVIGATION } from '@/lib/navigation'
 import { useApplicationStore, useApplicationTypeStore } from '@/stores/applications'
 import { useVerificationStore } from '@/stores/verification'
-import { PencilIcon, HomeIcon, ChevronRightIcon, TrashIcon, PlusIcon, DocumentIcon, ArrowUpTrayIcon } from '@heroicons/vue/24/outline'
+import { PencilIcon, HomeIcon, ChevronRightIcon, TrashIcon, PlusIcon, DocumentIcon } from '@heroicons/vue/24/outline'
 
 const navigation = MUNICIPAL_AGRICULTURIST_NAVIGATION
 const route = useRoute()
@@ -424,22 +424,8 @@ onMounted(async () => {
       </div>
 
       <!-- Loading State -->
-      <div
-        v-if="loading"
-        class="flex flex-col items-center justify-center flex-1 space-y-4 min-h-[60vh]"
-      >
-        <!-- Spinner -->
-        <div class="relative">
-          <div
-            class="h-14 w-14 rounded-full border-4 border-gray-200"></div>
-          <div
-            class="absolute top-0 left-0 h-14 w-14 rounded-full border-4 border-green-600 border-t-transparent animate-spin"></div>
-        </div>
-
-        <!-- Loading Label -->
-        <p class="text-gray-600 font-medium tracking-wide">
-          Loading data…
-        </p>
+      <div v-if="loading" class="flex justify-center items-center h-64">
+        <LoadingSpinner />
       </div>
 
       <!-- Error State -->
@@ -458,9 +444,9 @@ onMounted(async () => {
   <div class="h-full overflow-y-auto space-y-5 px-1 py-1">
 
     <!-- Dynamic Fields -->
-    <BaseCard class="bg-black rounded-xl border border-gray-300">
+    <BaseCard class="shadow-sm rounded-xl border border-gray-200">
       <template #header>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 bg-gray-100">
           <DocumentIcon class="h-5 w-5 text-green-600" />
           <h3 class="text-lg font-semibold text-gray-800">
             Dynamic Fields
@@ -487,7 +473,7 @@ onMounted(async () => {
                 <textarea
                   v-if="typeof value === 'object'"
                   v-model="editValue"
-                  class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-1 focus:ring-green-500 focus:border-transparent"
+                  class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-green-500 focus:border-green-500"
                   rows="4"
                 ></textarea>
 
@@ -495,7 +481,7 @@ onMounted(async () => {
                 <input
                   v-else
                   v-model="editValue"
-                  class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-1 focus:ring-green-500 focus:border-transparent"
+                  class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-green-500 focus:border-green-500"
                 />
 
                 <!-- Action Buttons -->

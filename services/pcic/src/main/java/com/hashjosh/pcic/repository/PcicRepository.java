@@ -16,4 +16,6 @@ public interface PcicRepository extends JpaRepository<Pcic, UUID> {
     @Query("SELECT u FROM Pcic u LEFT JOIN FETCH u.roles r LEFT JOIN FETCH r.permissions WHERE u.id = :id")
     Optional<Pcic> findByIdWithRolesAndPermissions(@Param("id") UUID id);
     boolean existsByUsername(String username);
+    @Query("SELECT u.username FROM Pcic u ORDER BY u.username DESC LIMIT 1")
+    Optional<String> findLastUsername();
 }

@@ -30,7 +30,7 @@ export const useRoleStore = defineStore("role", () => {
     try {
       loading.value = true
       error.value = null
-      const response = await axios.get("/api/v1/roles")
+      const response = await axios.get("/api/v1/pcic/roles")
       roles.value = response.data
       return { success: true, data: response.data }
     } catch (err) {
@@ -40,7 +40,6 @@ export const useRoleStore = defineStore("role", () => {
       loading.value = false
     }
   }
-
   async function createRole(roleData) {
     try {
       loading.value = true
@@ -49,7 +48,7 @@ export const useRoleStore = defineStore("role", () => {
         name: roleData.name,
         permissionIds: roleData.permissionIds || []
       }
-      const response = await axios.post("/api/v1/roles", payload)
+      const response = await axios.post("/api/v1/pcic/roles", payload)
       roles.value.push(response.data)
       return { success: true, data: response.data }
     } catch (err) {
@@ -68,7 +67,7 @@ export const useRoleStore = defineStore("role", () => {
         name: roleData.name,
         permissionIds: roleData.permissionIds || []
       }
-      const response = await axios.put(`/api/v1/roles/${roleId}`, payload)
+      const response = await axios.put(`/api/v1/pcic/roles/${roleId}`, payload)
       const idx = roles.value.findIndex(role => role.id === roleId)
       if (idx !== -1) roles.value[idx] = response.data
       return { success: true, data: response.data }

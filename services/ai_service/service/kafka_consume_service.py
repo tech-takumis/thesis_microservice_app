@@ -43,9 +43,26 @@ def process_ai_analysis(submission_id: str, object_keys: list, user_id: str, db)
         except Exception as rollback_error:
             logger.error(f"[Kafka] Error during rollback: {rollback_error}")
 
-        # Create default result as fallback with a fresh session state
+        # Try to download at least one image for severity estimation
+        image_bytes = None
+        image_path = None
+        if object_keys and len(object_keys) > 0:
+            try:
+                from config.minio_config import MinIOConfig
+                minio_config = MinIOConfig()
+                first_object_key = object_keys[0]
+                logger.info(f"[Kafka] Attempting to download image for severity estimation: {first_object_key}")
+                image_bytes = AIService._download_image_from_minio(minio_config, first_object_key)
+                image_path = first_object_key
+                logger.info(f"[Kafka] Successfully downloaded image for fallback analysis")
+            except Exception as download_error:
+                logger.warning(f"[Kafka] Failed to download image for fallback: {download_error}")
+
+        # Create default result as fallback with severity estimation if possible
         try:
-            fallback_result = AIService.create_ai_result_with_default_prediction(submission_id, user_id, db)
+            fallback_result = AIService.create_ai_result_with_default_prediction(
+                submission_id, user_id, db, image_path=image_path, image_bytes=image_bytes
+            )
             logger.info(f"[Kafka] Created fallback result: {fallback_result}")
             return [fallback_result]
         except Exception as fallback_error:
@@ -54,7 +71,9 @@ def process_ai_analysis(submission_id: str, object_keys: list, user_id: str, db)
             # Try one more time with a complete session refresh
             try:
                 db.rollback()
-                fallback_result = AIService.create_ai_result_with_default_prediction(submission_id, user_id, db)
+                fallback_result = AIService.create_ai_result_with_default_prediction(
+                    submission_id, user_id, db, image_path=image_path, image_bytes=image_bytes
+                )
                 logger.info(f"[Kafka] Created fallback result after session refresh: {fallback_result}")
                 return [fallback_result]
             except Exception as final_error:
@@ -138,13 +157,29 @@ def handle_message(message):
                             logger.info(f"[Kafka]   {pred.rank}. {pred.class_name}: {pred.confidence:.2f}%")
                 else:
                     logger.warning(f"[Kafka] No results generated for submission: {submission_id}")
-                    # If no results were generated, create a default one
+                    # If no results were generated, create a default one with severity estimation
                     try:
                         db.rollback()
+                        # Try to download first image for severity estimation
+                        image_bytes = None
+                        image_path = None
+                        if object_keys and len(object_keys) > 0:
+                            try:
+                                from config.minio_config import MinIOConfig
+                                minio_config = MinIOConfig()
+                                first_object_key = object_keys[0]
+                                logger.info(f"[Kafka] Downloading image for severity estimation: {first_object_key}")
+                                image_bytes = AIService._download_image_from_minio(minio_config, first_object_key)
+                                image_path = first_object_key
+                            except Exception as img_error:
+                                logger.warning(f"[Kafka] Failed to download image: {img_error}")
+
                         default_result = AIService.create_ai_result_with_default_prediction(
                             submission_id,
                             user_id,
-                            db
+                            db,
+                            image_path=image_path,
+                            image_bytes=image_bytes
                         )
                         logger.info(f"[Kafka] ⚠️ Created default result for submission {submission_id}: {default_result.id}")
                     except Exception as default_error:
@@ -167,10 +202,27 @@ def handle_message(message):
                 try:
                     # Ensure clean session state
                     db.rollback()
+
+                    # Try to download first image for severity estimation
+                    image_bytes = None
+                    image_path = None
+                    if object_keys and len(object_keys) > 0:
+                        try:
+                            from config.minio_config import MinIOConfig
+                            minio_config = MinIOConfig()
+                            first_object_key = object_keys[0]
+                            logger.info(f"[Kafka] Downloading image for fallback severity estimation: {first_object_key}")
+                            image_bytes = AIService._download_image_from_minio(minio_config, first_object_key)
+                            image_path = first_object_key
+                        except Exception as img_error:
+                            logger.warning(f"[Kafka] Failed to download image for fallback: {img_error}")
+
                     default_result = AIService.create_ai_result_with_default_prediction(
                         submission_id,
                         user_id,
-                        db
+                        db,
+                        image_path=image_path,
+                        image_bytes=image_bytes
                     )
                     logger.info(f"[Kafka] ⚠️ Created fallback result for submission {submission_id}: {default_result.id}")
                 finally:

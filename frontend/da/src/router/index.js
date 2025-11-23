@@ -1,6 +1,7 @@
 import { createWebHistory, createRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import {
+    DASHBOARD_ROUTE,
     ADMIN_ROUTES,
     MUNICIPALITY_ROUTES,
     AGRICULTURAL_EXTENSION_WORKER_ROUTES
@@ -10,6 +11,8 @@ import Register from '@/pages/auth/Register.vue';
 const APP_NAME = import.meta.env.VITE_APP_NAME;
 
 const routes = [
+    // Unified dashboard for all authenticated users
+    DASHBOARD_ROUTE,
     ...ADMIN_ROUTES,
     ...MUNICIPALITY_ROUTES,
     ...AGRICULTURAL_EXTENSION_WORKER_ROUTES,
@@ -31,7 +34,6 @@ const routes = [
         meta: {
             title: 'User Registration',
             guard: 'guest',
-            role: 'PERSOR',
             requiresToken: true
         }
     },
@@ -73,16 +75,19 @@ router.beforeEach(async (to, from, next) => {
         : APP_NAME;
 
     try {
+        // Handle registration route token check
+        if (to.name === 'register') {
+            const token = to.query.token;
+            if (!token) {
+                return next({ name: 'access-denied' });
+            }
+        }
+
         // Handle guest routes (like login) first
         if (to.meta.guard === 'guest') {
             if (auth.isAuthenticated) {
-                // If already authenticated, redirect to user's default route
-                const defaultRoute = auth.defaultRoute || '/admin/dashboard'; // fallback to admin dashboard
-                if (to.path === '/') {
-                    // If user lands on login page and is authenticated, redirect to dashboard
-                    return next(defaultRoute);
-                }
-                return next(defaultRoute);
+                // If already authenticated, redirect to unified dashboard
+                return next('/agriculturist/dashboard');
             }
             // Skip auth check for guest routes
             await auth.initialize(true);
@@ -91,8 +96,6 @@ router.beforeEach(async (to, from, next) => {
 
         // For protected routes, initialize normally
         if (!auth.isAuthenticated) {
-            // Don't initialize if we're already on the login page
-            // This prevents page refresh after failed login attempts
             if (to.name !== 'login') {
                 await auth.initialize();
             }
@@ -104,7 +107,6 @@ router.beforeEach(async (to, from, next) => {
                 console.log('[Router Guard] Redirecting to login...');
                 return next({ name: 'login' });
             }
-            console.log('[Router Guard] Already on login, not redirecting.');
             return next();
         }
 
@@ -114,23 +116,23 @@ router.beforeEach(async (to, from, next) => {
             return next({ name: 'access-denied' });
         }
 
-        // User is authenticated and has required role, allow navigation
+        // Check permission-based access
+        if (to.meta.permissions) {
+            const hasPermission = auth.hasPermission(to.meta.permissions);
+            if (!hasPermission) {
+                console.warn(`Access denied: User does not have required permissions ${to.meta.permissions}`);
+                return next({ name: 'access-denied' });
+            }
+        }
+
+        // User is authenticated and has required role/permissions, allow navigation
         return next();
     } catch (error) {
         console.error('Navigation guard error:', error);
-        // Clear auth state and redirect to login on any error
         auth.$reset();
         if (to.name !== 'login') {
             return next({ name: 'login' });
         }
         return next();
-    }
-
-    // In case of register route, check for token
-    if (to.name === 'register') {
-        const token = to.query.token;
-        if (!token) {
-            return next({ name: 'access-denied' });
-        }
     }
 });

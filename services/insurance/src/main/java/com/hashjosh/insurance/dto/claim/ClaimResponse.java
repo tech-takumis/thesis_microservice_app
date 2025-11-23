@@ -30,6 +30,8 @@ public class ClaimResponse {
 
     private LocalDateTime filedAt;
 
+    private boolean isFinalized;
+
     private String damageAssessment;
 
     private Double claimAmount;

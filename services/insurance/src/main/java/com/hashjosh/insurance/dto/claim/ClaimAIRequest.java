@@ -13,5 +13,7 @@ public class ClaimAIRequest {
 
     private UUID insuranceId;
 
+    private boolean isFinalized;
+
     private String applicationId;
 }

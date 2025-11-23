@@ -1,7 +1,5 @@
 <template>
-  <AuthenticatedLayout 
-    :navigation="adminNavigation" 
-    role-title="Admin Portal"
+  <AuthenticatedLayout
     page-title="All Application Types"
   >
     <div class="h-full flex flex-col overflow-hidden">
@@ -42,14 +40,6 @@
           >
             <Trash2 class="h-4 w-4 mr-2" />
             Delete ({{ selectedApplications.length }})
-          </button>
-          <button
-            @click="refreshApplications"
-            :disabled="loading"
-            class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-          >
-            <RefreshCw :class="['h-4 w-4 mr-2', loading ? 'animate-spin' : '']" />
-            Refresh
           </button>
           <router-link
             to="/admin/applications/new"
@@ -157,7 +147,7 @@
                   </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-center">
-                  <span class="text-sm font-semibold text-gray-900">{{ application.sections.length }}</span>
+                  <span class="text-sm font-semibold text-gray-900">{{ application.sections?.length || 0 }}</span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-center">
                   <span class="text-sm font-semibold text-gray-900">{{ getTotalFields(application) }}</span>
@@ -226,13 +216,11 @@ import {
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
 import ApplicationDetailModal from '@/components/modals/ApplicationDetailModal.vue'
 import FilterModal from '@/components/modals/FilterModal.vue'
-import { ADMIN_NAVIGATION } from '@/lib/navigation'
+import { UNIFIED_NAVIGATION } from '@/lib/navigation'
 import { useApplicationTypeStore } from '@/stores/applications'
 
 const router = useRouter()
 const applicationTypeStore = useApplicationTypeStore()
-
-const adminNavigation = ADMIN_NAVIGATION
 
 // State - use store state
 const applications = computed(() => applicationTypeStore.applicationTypes)
@@ -281,7 +269,7 @@ const filteredApplications = computed(() => {
   // Section count filter
   if (selectedSectionCount.value) {
     filtered = filtered.filter(app => {
-      const sectionCount = app.sections.length
+      const sectionCount = app.sections?.length || 0
       switch (selectedSectionCount.value) {
         case '1': return sectionCount === 1
         case '2': return sectionCount === 2
@@ -312,7 +300,7 @@ const filteredApplications = computed(() => {
       case 'name-desc':
         return b.name.localeCompare(a.name)
       case 'sections':
-        return b.sections.length - a.sections.length
+        return (b.sections?.length || 0) - (a.sections?.length || 0)
       case 'fields':
         return getTotalFields(b) - getTotalFields(a)
       case 'recent':
@@ -327,8 +315,8 @@ const filteredApplications = computed(() => {
 
 // Methods
 const fetchApplications = async () => {
-  const result = await applicationTypeStore.fetchApplicationTypes()
-  
+  const result = await applicationTypeStore.fetchAllApplicationTypes()
+
   if (result.success) {
     console.log('Application types fetched:', result.data)
   } else {
@@ -341,7 +329,8 @@ const refreshApplications = () => {
 }
 
 const getTotalFields = (application) => {
-  return application.sections.reduce((total, section) => total + section.fields.length, 0)
+  if (!application.sections) return 0
+  return application.sections.reduce((total, section) => total + (section.fields?.length || 0), 0)
 }
 
 const formatLayout = (layout) => {

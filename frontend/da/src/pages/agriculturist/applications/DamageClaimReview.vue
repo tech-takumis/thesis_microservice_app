@@ -94,10 +94,10 @@
         <!-- AI Image + Confidence -->
         <div class="lg:col-span-2 bg-white border border-gray-200 rounded-2xl shadow-sm p-6">
           <!-- Display analyzed images as carousel if available -->
-          <div v-if="aiResult?.leaf_analysis_images?.length > 0" class="mb-6">
+          <div v-if="sortedLeafAnalysisImages.length > 0" class="mb-6">
             <div class="relative">
               <!-- Carousel Container -->
-              <div 
+              <div
                 class="overflow-hidden rounded-xl shadow-sm carousel-container"
                 role="region"
                 aria-label="AI Analysis Images"
@@ -109,7 +109,7 @@
                   :style="{ transform: `translateX(-${currentImageIndex * 100}%)` }"
                 >
                   <div
-                    v-for="(image, index) in aiResult.leaf_analysis_images"
+                    v-for="(image, index) in sortedLeafAnalysisImages"
                     :key="image.image_path"
                     class="w-full flex-shrink-0"
                   >
@@ -153,7 +153,7 @@
 
               <!-- Navigation Buttons -->
               <button
-                v-if="aiResult.leaf_analysis_images.length > 1"
+                v-if="sortedLeafAnalysisImages.length > 1"
                 class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 rounded-full p-3 shadow-lg carousel-btn"
                 :class="{ 'opacity-50 cursor-not-allowed': currentImageIndex === 0 }"
                 :disabled="currentImageIndex === 0"
@@ -167,12 +167,12 @@
               </button>
 
               <button
-                v-if="aiResult.leaf_analysis_images.length > 1"
+                v-if="sortedLeafAnalysisImages.length > 1"
                 class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 rounded-full p-3 shadow-lg carousel-btn"
-                :class="{ 'opacity-50 cursor-not-allowed': currentImageIndex === aiResult.leaf_analysis_images.length - 1 }"
-                :disabled="currentImageIndex === aiResult.leaf_analysis_images.length - 1"
+                :class="{ 'opacity-50 cursor-not-allowed': currentImageIndex === sortedLeafAnalysisImages.length - 1 }"
+                :disabled="currentImageIndex === sortedLeafAnalysisImages.length - 1"
                 aria-label="Next image"
-                :aria-disabled="currentImageIndex === aiResult.leaf_analysis_images.length - 1"
+                :aria-disabled="currentImageIndex === sortedLeafAnalysisImages.length - 1"
                 @click="nextImage"
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -182,13 +182,13 @@
 
               <!-- Dots indicator -->
               <div
-                v-if="aiResult.leaf_analysis_images.length > 1"
+                v-if="sortedLeafAnalysisImages.length > 1"
                 class="flex justify-center space-x-3 mt-4"
                 role="tablist"
                 aria-label="Image navigation"
               >
                 <button
-                  v-for="(_, index) in aiResult.leaf_analysis_images"
+                  v-for="(_, index) in sortedLeafAnalysisImages"
                   :key="`dot-${index}`"
                   class="w-3 h-3 rounded-full carousel-dot focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                   :class="index === currentImageIndex ? 'bg-blue-600 scale-125' : 'bg-gray-300 hover:bg-gray-400'"
@@ -201,11 +201,11 @@
 
               <!-- Image counter -->
               <div
-                v-if="aiResult.leaf_analysis_images.length > 1"
+                v-if="sortedLeafAnalysisImages.length > 1"
                 class="absolute top-4 right-4 bg-black/60 text-white text-xs px-3 py-1 rounded-full backdrop-blur-sm carousel-counter"
                 aria-live="polite"
               >
-                {{ currentImageIndex + 1 }} / {{ aiResult.leaf_analysis_images.length }}
+                {{ currentImageIndex + 1 }} / {{ sortedLeafAnalysisImages.length }}
               </div>
             </div>
           </div>
@@ -264,11 +264,11 @@
               :key="index"
               class="border border-gray-200 rounded-xl my-2 p-5 bg-white shadow-sm hover:shadow-md transition"
             >
-              <div class="flex justify-between items-center mb-2">
+              <div class="flex justify-between items-start mb-2">
                 <p class="font-medium text-gray-800">Document {{ index + 1 }}</p>
+                <a :href="fileUrl" target="_blank" class="text-blue-600 text-sm hover:underline font-medium">View</a>
               </div>
-              <p class="text-sm text-gray-500 mb-2">{{ aiResult ? aiResult.result : 'Pending Analysis' }}</p>
-              <a :href="fileUrl" target="_blank" class="text-blue-600 text-sm hover:underline font-medium">View</a>
+              <p class="text-sm text-gray-500">{{ aiResult ? aiResult.result : 'Pending Analysis' }}</p>
             </div>
           </div>
         </aside>
@@ -320,6 +320,35 @@ const farmerName = computed(() => {
   }
   if (dynamicFields.first_name) return dynamicFields.first_name
   return 'Unknown Farmer'
+})
+
+// Sort images: original first, then isolated_leaf, then lesion_overlay
+const sortedLeafAnalysisImages = computed(() => {
+  const images = []
+
+  // Add original image from original_image_url if available
+  if (aiResult.value?.original_image_url) {
+    images.push({
+      image_type: 'original',
+      presigned_url: aiResult.value.original_image_url,
+      image_path: aiResult.value.image_path,
+      width: null,
+      height: null
+    })
+  }
+
+  // Add leaf analysis images (isolated_leaf, lesion_overlay)
+  if (aiResult.value?.leaf_analysis_images?.length) {
+    const order = ['isolated_leaf', 'lesion_overlay']
+    const sorted = [...aiResult.value.leaf_analysis_images].sort((a, b) => {
+      const indexA = order.indexOf(a.image_type)
+      const indexB = order.indexOf(b.image_type)
+      return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB)
+    })
+    images.push(...sorted)
+  }
+
+  return images
 })
 
 const filteredDynamicFields = computed(() => {
@@ -378,7 +407,7 @@ const getConfidenceBarColor = (index) => {
 
 // Carousel methods
 const nextImage = () => {
-  if (aiResult.value?.leaf_analysis_images && currentImageIndex.value < aiResult.value.leaf_analysis_images.length - 1) {
+  if (sortedLeafAnalysisImages.value.length && currentImageIndex.value < sortedLeafAnalysisImages.value.length - 1) {
     currentImageIndex.value++
   }
 }
@@ -390,7 +419,7 @@ const previousImage = () => {
 }
 
 const goToImage = (index) => {
-  if (aiResult.value?.leaf_analysis_images && index >= 0 && index < aiResult.value.leaf_analysis_images.length) {
+  if (index >= 0 && index < sortedLeafAnalysisImages.value.length) {
     currentImageIndex.value = index
   }
 }

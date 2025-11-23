@@ -27,6 +27,12 @@ public class NotificationController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping
+    public ResponseEntity<List<NotificationResponseDTO>> getAllNotifications() {
+        List<NotificationResponseDTO> response = notificationService.getAllNotifications();
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/farmers")
     public ResponseEntity<String> createFarmersNotification(
             @RequestBody FarmersNotificationRequest request

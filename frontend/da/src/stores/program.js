@@ -45,6 +45,16 @@ export const useProgramStore = defineStore('program', () => {
     const pendingPrograms = computed(() =>
         programs.value.filter(program => program.status === 'PENDING')
     )
+    const latestPrograms = computed(() => {
+        // Sort by createdAt (newest first) and return only the latest 5
+        return [...programs.value]
+            .sort((a, b) => {
+                const dateA = new Date(a.createdAt || 0)
+                const dateB = new Date(b.createdAt || 0)
+                return dateB - dateA // Descending order (newest first)
+            })
+            .slice(0, 5)
+    })
     const programsStats = computed(() => {
         const total = programs.value.length
         const active = programs.value.filter(program => program.status === 'ACTIVE').length
@@ -210,6 +220,7 @@ export const useProgramStore = defineStore('program', () => {
         activePrograms,
         completedPrograms,
         pendingPrograms,
+        latestPrograms,
         programsStats,
 
         // Actions

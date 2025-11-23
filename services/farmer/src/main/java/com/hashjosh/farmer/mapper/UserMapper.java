@@ -11,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -38,13 +37,10 @@ public class UserMapper {
                 .totalFarmAreaHa(request.getTotalFarmAreaHa())
                 .build();
     }
-    public Farmer toUserEntity(RegistrationRequest request, Set<Role> roles) {
-        // Create UserProfile
+    public Farmer toUserEntity(RegistrationRequest request, Set<Role> roles, String username) {
         FarmerProfile farmerProfile = toUserProfileEntity(request);
-
-        // Create User with the profile
         Farmer farmer = Farmer.builder()
-                .username(request.getRsbsaId())
+                .username(username)
                 .password(passwordEncoder.encode(request.getPassword()))
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
@@ -53,8 +49,6 @@ public class UserMapper {
                 .roles(roles)
                 .farmerProfile(farmerProfile)
                 .build();
-
-        // Set bidirectional relationship
         farmerProfile.setFarmer(farmer);
 
         return farmer;

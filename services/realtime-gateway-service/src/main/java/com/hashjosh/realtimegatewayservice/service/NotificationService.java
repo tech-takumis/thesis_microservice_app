@@ -99,4 +99,17 @@ public class NotificationService {
            }
        });
     }
+
+    public List<NotificationResponseDTO> getAllNotifications() {
+        return notificationRepository.findAll().stream().map(notification ->
+                NotificationResponseDTO.builder()
+                        .id(notification.getId())
+                        .title(notification.getTitle())
+                        .message(notification.getMessage())
+                        .time(notification.getCreatedAt())
+                        .read(notification.isRead())
+                        .createdAt(notification.getCreatedAt())
+                        .build()
+        ).toList();
+    }
 }

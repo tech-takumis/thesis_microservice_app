@@ -28,6 +28,7 @@ public class Notification {
     @Column(name = "type", nullable = false, length = 50)
     private String type; // Type of notification (e.g., EMAIL, SMS, PUSH)
 
+    private String tenant;
     @Column(name = "status", length = 20)
     private String status; // e.g., PENDING, SENT, FAILED
 

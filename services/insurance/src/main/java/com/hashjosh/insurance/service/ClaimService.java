@@ -324,25 +324,37 @@ public class ClaimService {
 
             JsonNode inspectionValues = insurance.getInspection().getFieldValues();
 
-            // Get area values from inspection
+            // Manual inspection data
             double areaInsured = getDoubleValue(inspectionValues, "area_insured");
+            double areaDamaged = getDoubleValue(inspectionValues, "area_damaged");
 
-            // AI severity percentage represents the yield loss percentage
-            double yieldLossPercentage = aiResult.getSeverity() / 100.0; // Convert percentage to decimal
+            if (areaInsured <= 0) {
+                throw ApiException.badRequest("Area insured must be greater than zero");
+            }
 
-            // Get crop type and determine coverage amount per hectare based on PCIC rates
-            String cropType = getStringValue(inspectionValues, "insured_crops", "Rice"); // Default to Rice
-            String varietyPlanted = getStringValue(inspectionValues, "variety_planted", "Inbred"); // Default to Inbred
+            // AI severity percentage
+            double aiSeverity = aiResult.getSeverity() / 100.0; // convert to decimal
 
-            // Calculate amount of cover based on PCIC rates per hectare
+            // Option 1: Multiplicative model
+            // Hybrid Yield Loss = (areaDamaged / areaInsured) × (aiSeverity)
+            double manualYieldLoss = areaDamaged / areaInsured;
+            double hybridYieldLoss = manualYieldLoss * aiSeverity;
+
+            // Ensure it does not exceed 100%
+            if (hybridYieldLoss > 1) hybridYieldLoss = 1;
+
+            // Insurance coverage computation
+            String cropType = getStringValue(inspectionValues, "insured_crops", "Rice");
+            String varietyPlanted = getStringValue(inspectionValues, "variety_planted", "Inbred");
+
             double coveragePerHectare = getCoveragePerHectare(cropType, varietyPlanted);
             double totalAmountOfCover = areaInsured * coveragePerHectare;
 
-            // Get cultivation stage adjustment factor
+            // Stage adjustment factor
             double stageAdjustmentFactor = getStageAdjustmentFactor(inspectionValues);
 
-            // PCIC Formula: Indemnity = (Amount of Cover × % Yield Loss × Adjustment Factor based on crop stage)
-            double claimAmount = totalAmountOfCover * yieldLossPercentage * stageAdjustmentFactor;
+            // PCIC Indemnity Formula
+            double claimAmount = totalAmountOfCover * hybridYieldLoss * stageAdjustmentFactor;
 
             // Validate claim amount
             if (claimAmount < 0) {
@@ -355,17 +367,28 @@ public class ClaimService {
                 claimAmount = totalAmountOfCover;
             }
 
-            log.info("PCIC AI Claim Calculation - Crop: {}, Variety: {}, Area: {} ha, Severity: {}%, Coverage/ha: ₱{}, Total Cover: ₱{}, Stage Adjustment: {}%, Final Claim: ₱{}",
-                    cropType, varietyPlanted, areaInsured, aiResult.getSeverity(), coveragePerHectare, totalAmountOfCover,
-                    stageAdjustmentFactor * 100, claimAmount);
+            log.info("PCIC Hybrid Claim Calculation (Option 1 - Multiplicative) - Crop: {}, Variety: {}, "
+                            + "Area Insured: {} ha, Area Damaged: {} ha, Manual Loss: {}%, AI Severity: {}%, "
+                            + "Hybrid Loss: {}%, Coverage/ha: ₱{}, Total Cover: ₱{}, Stage Adjustment: {}%, Final Claim: ₱{}",
+                    cropType, varietyPlanted,
+                    areaInsured, areaDamaged,
+                    manualYieldLoss * 100,
+                    aiResult.getSeverity(),
+                    hybridYieldLoss * 100,
+                    coveragePerHectare,
+                    totalAmountOfCover,
+                    stageAdjustmentFactor * 100,
+                    claimAmount
+            );
 
             return claimAmount;
 
         } catch (Exception e) {
-            log.error("Error calculating AI claim amount", e);
+            log.error("Error calculating hybrid AI claim amount", e);
             throw ApiException.badRequest("Failed to calculate AI claim amount: " + e.getMessage());
         }
     }
+
 
     private JsonNode createAIFieldValues(AIResultDTO aiResult) {
         try {

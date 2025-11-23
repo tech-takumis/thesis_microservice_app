@@ -20,6 +20,7 @@ public class ClaimMapper {
                 .insuranceId(claim.getInsurance().getId())
                 .filedAt(claim.getFiledAt())
                 .farmerId(claim.getInsurance().getFarmerId())
+                .isFinalized(claim.isFinalized())
                 .farmerName(claim.getInsurance().getFarmerName())
                 .damageAssessment(claim.getDamageAssessment())
                 .claimAmount(claim.getClaimAmount())

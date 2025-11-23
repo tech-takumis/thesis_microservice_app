@@ -40,7 +40,6 @@ export const useRoleStore = defineStore("role", () => {
       loading.value = false
     }
   }
-
   async function createRole(roleData) {
     try {
       loading.value = true

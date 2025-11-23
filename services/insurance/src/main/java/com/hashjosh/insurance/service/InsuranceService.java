@@ -106,4 +106,10 @@ public class InsuranceService {
                 .map(obj -> new InsuranceStatusStatisticDTO(String.valueOf(obj[0]), (Long) obj[1]))
                 .toList();
     }
+
+    public String getInsuranceStatusBySubmissionId(UUID submissionId) {
+        return insuranceRepository.findBySubmissionId(submissionId)
+                .map(insurance -> insurance.getCurrentStatus().name())
+                .orElseThrow(() -> ApiException.notFound("Insurance not found"));
+    }
 }

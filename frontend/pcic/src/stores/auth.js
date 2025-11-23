@@ -72,6 +72,27 @@ export const useAuthStore = defineStore("auth", () => {
     }
   }
 
+  async function register (form, setErrors, processing) {
+    try {
+      processing.value = true
+      const response = await axios.post('/api/v1/pcic/auth/registration', form.value)
+      if(response.status >= 201 && response.status < 300) {
+        this.router.push({ name: "login" })
+        return
+      }
+
+      setErrors.value = ["Registration failed. Please try again."]
+    } catch (error) {
+      if (error.response?.status === 422) {
+        setErrors.value = Object.values(error.response.data.errors).flat()
+      } else {
+        setErrors.value = ["Registration failed. Please try again."]
+      }
+    } finally {
+      processing.value = false
+    }
+  }
+
   // Fetch authenticated user on browser refresh
   async function getAuthenticated() {
     try {
@@ -129,6 +150,7 @@ export const useAuthStore = defineStore("auth", () => {
     // actions
     login,
     getAuthenticated,
+    register,
     hasPermission,
     hasRole,
     logout,

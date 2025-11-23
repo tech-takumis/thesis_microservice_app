@@ -23,12 +23,12 @@ export const useClaimStore = defineStore("claimStore",() => {
 
             // Create FormData for multipart request
             const formData = new FormData()
-            
-            // Add claim data as JSON blob
+
+            // Add claim data as JSON blob (isFinalized should be part of claimData)
             formData.append('claim', new Blob([JSON.stringify(claimData)], {
                 type: 'application/json'
             }))
-            
+
             // Add supporting files if provided
             if (supportingFiles && supportingFiles.length > 0) {
                 supportingFiles.forEach((file) => {
@@ -78,12 +78,12 @@ export const useClaimStore = defineStore("claimStore",() => {
 
             // Create FormData for multipart request
             const formData = new FormData()
-            
-            // Add claim AI data as JSON blob
+
+            // Add claim AI data as JSON blob (isFinalized should be part of claimAIData)
             formData.append('claim', new Blob([JSON.stringify(claimAIData)], {
                 type: 'application/json'
             }))
-            
+
             // Add supporting files if provided
             if (supportingFiles && supportingFiles.length > 0) {
                 supportingFiles.forEach((file) => {
@@ -228,12 +228,12 @@ export const useClaimStore = defineStore("claimStore",() => {
 
             // Create FormData for multipart request
             const formData = new FormData()
-            
-            // Add claim data as JSON blob
+
+            // Add claim data as JSON blob (isFinalized should be part of claimData)
             formData.append('claim', new Blob([JSON.stringify(claimData)], {
                 type: 'application/json'
             }))
-            
+
             // Add supporting files if provided
             if (supportingFiles && supportingFiles.length > 0) {
                 supportingFiles.forEach((file) => {

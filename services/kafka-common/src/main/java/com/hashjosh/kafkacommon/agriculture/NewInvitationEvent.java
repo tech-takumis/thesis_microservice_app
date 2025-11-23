@@ -12,5 +12,6 @@ import java.time.LocalDateTime;
 public class NewInvitationEvent {
     private String email;
     private String token;
+    private String registrationLink;
     private LocalDateTime expiryDate;
 }

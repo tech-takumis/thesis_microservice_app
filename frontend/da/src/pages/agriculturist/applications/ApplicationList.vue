@@ -152,7 +152,7 @@
                             Address
                         </th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Farm Location
+                            Status
                         </th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Submitted Date
@@ -183,7 +183,7 @@
                             <div class="text-sm text-gray-900">{{ application.address }}</div>
                         </td>
                         <td class="px-6 py-4">
-                            <div class="text-sm text-gray-900">{{ application.location }}</div>
+                            <StatusBadge :status="application.status" />
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm text-gray-900">{{ formatDate(application.submittedAt) }}</div>
@@ -573,6 +573,7 @@ import { useAuthStore } from '@/stores/auth'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
 import ApplicationFilterModal from '@/components/modals/ApplicationFilterModal.vue'
 import CreateBatchModal from '@/components/modals/CreateBatchModal.vue'
+import StatusBadge from '@/components/others/StatusBadge.vue'
 import { Filter, Trash2, FileText, Printer, Plus } from 'lucide-vue-next'
 import {
   HomeIcon,

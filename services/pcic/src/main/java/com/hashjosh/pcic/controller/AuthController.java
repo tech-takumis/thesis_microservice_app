@@ -34,12 +34,20 @@ public class AuthController {
     private final JwtService jwtService;
     private final RefreshTokenService refreshTokenService;
 
+    @PostMapping("/invite/{email}")
+    public ResponseEntity<String> generateRegistrationToken(
+            @PathVariable String email
+    ) {
+        String token = authService.generateRegistrationToken(email);
+        return ResponseEntity.ok(token);
+    }
+
     @PostMapping("/registration")
     public ResponseEntity<RegistrationResponse> register(
             @RequestBody @Valid RegistrationRequest request
     ){
 
-        Pcic pcic = authService.register(request);
+        Pcic  pcic = authService.register(request);
 
         return ResponseEntity.ok(
                 RegistrationResponse.builder()

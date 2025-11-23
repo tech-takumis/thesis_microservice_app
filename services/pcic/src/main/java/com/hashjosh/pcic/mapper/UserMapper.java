@@ -1,13 +1,13 @@
 package com.hashjosh.pcic.mapper;
 
 
-import com.hashjosh.pcic.dto.auth.AuthenticatedResponse;
 import com.hashjosh.pcic.dto.auth.AuthenticatedUser;
-import com.hashjosh.pcic.dto.auth.LoginResponse;
 import com.hashjosh.pcic.dto.auth.RegistrationRequest;
 import com.hashjosh.pcic.dto.role.AuthenticatedRoleResponse;
-import com.hashjosh.pcic.dto.role.RoleResponse;
-import com.hashjosh.pcic.entity.*;
+import com.hashjosh.pcic.entity.Pcic;
+import com.hashjosh.pcic.entity.PcicProfile;
+import com.hashjosh.pcic.entity.Permission;
+import com.hashjosh.pcic.entity.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -22,18 +22,9 @@ import java.util.stream.Collectors;
 public class UserMapper {
 
     private final PasswordEncoder passwordEncoder;
-    private final RoleMapper roleMapper;
 
     public PcicProfile toPcicProfileEntity(RegistrationRequest request) {
         return PcicProfile.builder()
-                .mandate(request.getMandate())
-                .mission(request.getMission())
-                .vision(request.getVision())
-                .coreValues(request.getCoreValues())
-                .headOfficeAddress(request.getHeadOfficeAddress())
-                .phone(request.getPhone())
-                .pcicEmail(request.getPcicEmail())
-                .website(request.getWebsite())
                 .build();
     }
     public Pcic toUserEntity(

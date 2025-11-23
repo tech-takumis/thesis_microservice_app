@@ -161,24 +161,36 @@ export const useAuthStore = defineStore('auth', () => {
         } catch (err) {
             console.error('Login error:', err);
             console.log('[Auth Store] Setting isAuthenticated to false after login error');
-            const errorMessage = null;
-            if(err.response.status === 503){
+
+            let errorMessage = 'Login failed. Please check your credentials.';
+
+            // Handle different error response formats
+            if (err.response?.status === 503) {
                 errorMessage = 'Service is currently unavailable. Please try again later.';
-                error.value = errorMessage;
-                isAuthenticated.value = false;
-                userData.value = { roles: [], permissions: [] };
-                return { success: false, message: 'Service is currently unavailable. Please try again later.' };
+            } else if (err.response?.data) {
+                // Handle backend exception response format
+                // {success: false, message: "...", status: 401, details: null, timestamp: "..."}
+                errorMessage = err.response.data.message || errorMessage;
+            } else if (err.message) {
+                errorMessage = err.message;
             }
-            errorMessage = err.response?.data?.message || err.message || 'Login failed. Please check your credentials.';
+
             error.value = errorMessage;
             isAuthenticated.value = false;
             userData.value = { roles: [], permissions: [] }; // Reset user data
             normalizedRoles.value.clear();
             normalizedPermissions.value.clear();
+
             if (setErrors) {
                 setErrors.value = [errorMessage];
             }
-            return { success: false, message: errorMessage };
+
+            return {
+                success: false,
+                message: errorMessage,
+                status: err.response?.status || err.response?.data?.status,
+                details: err.response?.data?.details || null
+            };
         } finally {
             loading.value = false;
             if (processing) {

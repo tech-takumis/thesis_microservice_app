@@ -7,7 +7,7 @@ import LoadingSpinner from '@/components/others/LoadingSpinner.vue'
 import { MUNICIPAL_AGRICULTURIST_NAVIGATION } from '@/lib/navigation'
 import { useApplicationStore, useApplicationTypeStore } from '@/stores/applications'
 import { useVerificationStore } from '@/stores/verification'
-import { PencilIcon, HomeIcon, ChevronRightIcon, TrashIcon, PlusIcon, DocumentIcon } from '@heroicons/vue/24/outline'
+import { PencilIcon, HomeIcon, ChevronRightIcon, TrashIcon, PlusIcon, DocumentIcon, FolderIcon, ArrowUpTrayIcon } from '@heroicons/vue/24/outline'
 
 const navigation = MUNICIPAL_AGRICULTURIST_NAVIGATION
 const route = useRoute()
@@ -80,8 +80,17 @@ const fetchData = async () => {
   }
 }
 
+// Check if field is CIC No (non-editable)
+const isCicNoField = (fieldKey) => {
+  return fieldKey.toLowerCase().includes('cic') && fieldKey.toLowerCase().includes('no')
+}
+
 // Handle field editing
 const startEdit = (fieldKey, currentValue) => {
+  // Prevent editing CIC No field
+  if (isCicNoField(fieldKey)) {
+    return
+  }
   editingField.value = fieldKey
   editValue.value = currentValue
 }
@@ -441,91 +450,116 @@ onMounted(async () => {
 
      <!-- CONTENT -->
 <div v-else-if="applicationData" class="flex-1 overflow-hidden">
-  <div class="h-full overflow-y-auto space-y-5 px-1 py-1">
+  <div class="h-full overflow-y-auto space-y-4 px-1 py-1">
 
     <!-- Dynamic Fields -->
-    <BaseCard class="shadow-sm rounded-xl border border-gray-200">
-      <template #header>
-        <div class="flex items-center gap-2 bg-gray-100">
-          <DocumentIcon class="h-5 w-5 text-green-600" />
-          <h3 class="text-lg font-semibold text-gray-800">
-            Dynamic Fields
-          </h3>
-        </div>
-      </template>
-
-      <div class="space-y-5">
+    <div class="bg-gray-100 rounded-xl border border-gray-300 shadow-sm">
+      <div class="px-4 py-4">
         <div
-          v-for="(value, key) in getFilteredDynamicFields()"
-          :key="key"
-          class="pb-4 border-b border-gray-300 last:border-none last:pb-0"
+          v-if="Object.keys(getFilteredDynamicFields()).length > 0"
+          class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-x-6 gap-y-3"
         >
-          <div class="flex items-start justify-between">
-            <!-- Field label & value -->
-            <div class="flex-1 min-w-0">
-              <label class="block text-sm font-medium text-gray-700 mb-1">
-                {{ formatFieldKey(key) }}
-              </label>
+          <div
+            v-for="(value, key) in getFilteredDynamicFields()"
+            :key="key"
+            class="flex flex-col"
+          >
+            <!-- Label -->
+            <span class="text-[10px] font-semibold text-green-600 uppercase tracking-wider mb-1">
+              {{ formatFieldKey(key) }}
+            </span>
 
-              <!-- Edit Mode -->
-              <div v-if="editingField === key" class="space-y-3">
-                <!-- JSON/Object -->
-                <textarea
-                  v-if="typeof value === 'object'"
-                  v-model="editValue"
-                  class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-green-500 focus:border-green-500"
-                  rows="4"
-                ></textarea>
+            <!-- Edit Mode -->
+            <div v-if="editingField === key" class="space-y-2">
+              <!-- JSON/Object -->
+              <textarea
+                v-if="typeof value === 'object'"
+                v-model="editValue"
+                class="w-full px-3 py-2 rounded-md border border-gray-300 focus:ring-green-500 focus:border-green-500 text-sm"
+                rows="4"
+              ></textarea>
 
-                <!-- Normal text -->
-                <input
-                  v-else
-                  v-model="editValue"
-                  class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-green-500 focus:border-green-500"
-                />
+              <!-- Normal text -->
+              <input
+                v-else
+                v-model="editValue"
+                class="w-full px-3 py-2 rounded-md border border-gray-300 focus:ring-green-500 focus:border-green-500 text-sm"
+              />
 
-                <!-- Action Buttons -->
-                <div class="flex gap-2">
-                  <button
-                    class="px-3 py-1.5 bg-green-600 text-white rounded-md hover:bg-green-700"
-                    @click="saveEdit"
-                  >
-                    Save
-                  </button>
-                  <button
-                    class="px-3 py-1.5 bg-red-600 text-white rounded-md hover:bg-red-700"
-                    @click="cancelEdit"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-
-              <!-- Display Mode -->
-              <div v-else>
-                <pre
-                  v-if="typeof value === 'object'"
-                  class="text-sm text-gray-800 bg-gray-50 p-3 border rounded-lg whitespace-pre-wrap font-mono"
-                >{{ formatFieldValue(value) }}</pre>
-
-                <p v-else class="text-sm text-gray-900">
-                  {{ formatFieldValue(value) }}
-                </p>
+              <!-- Action Buttons -->
+              <div class="flex gap-2">
+                <button
+                  class="px-3 py-1.5 bg-green-600 text-white text-xs rounded-md hover:bg-green-700"
+                  @click="saveEdit"
+                >
+                  Save
+                </button>
+                <button
+                  class="px-3 py-1.5 bg-gray-600 text-white text-xs rounded-md hover:bg-gray-700"
+                  @click="cancelEdit"
+                >
+                  Cancel
+                </button>
               </div>
             </div>
 
-            <!-- Edit Button -->
-            <button
-              v-if="editingField !== key"
-              class="ml-3 p-2 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-700"
-              @click="startEdit(key, value)"
+            <!-- Display Mode (VALUE BOX) -->
+            <div
+              v-else
+              class="group relative w-full bg-white rounded-md px-3 py-2.5 border border-gray-200 shadow-sm hover:shadow transition-all duration-150"
             >
-              <PencilIcon class="h-4 w-4" />
-            </button>
+              <div class="flex items-center justify-between gap-2">
+                <pre
+                  v-if="typeof value === 'object'"
+                  class="text-sm text-gray-900 font-medium break-words whitespace-pre-wrap font-mono flex-1"
+                >{{ formatFieldValue(value) }}</pre>
+
+                <span
+                  v-else
+                  class="text-sm text-gray-900 font-medium break-words flex-1"
+                >
+                  {{ formatFieldValue(value) }}
+                </span>
+
+                <!-- Edit Button - Only show if not CIC No field -->
+                <button
+                  v-if="!isCicNoField(key)"
+                  class="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-700"
+                  @click="startEdit(key, value)"
+                  title="Edit field"
+                >
+                  <PencilIcon class="h-3.5 w-3.5" />
+                </button>
+
+                <!-- Lock icon for CIC No field -->
+                <div
+                  v-else
+                  class="p-1.5 text-gray-400"
+                  title="This field cannot be edited"
+                >
+                  <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                  </svg>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
+
+        <!-- Empty State -->
+        <div v-else class="flex flex-col items-center justify-center py-12">
+          <div class="h-14 w-14 rounded-full bg-gray-200 flex items-center justify-center shadow-inner">
+            <DocumentIcon class="h-7 w-7 text-gray-400" />
+          </div>
+          <h3 class="mt-3 text-sm font-semibold text-gray-700">
+            No Information Available
+          </h3>
+          <p class="text-xs text-gray-500 text-center max-w-xs mt-1">
+            No fields were found for this application.
+          </p>
+        </div>
       </div>
-    </BaseCard>
+    </div>
 
 
     <!-- File Uploads -->

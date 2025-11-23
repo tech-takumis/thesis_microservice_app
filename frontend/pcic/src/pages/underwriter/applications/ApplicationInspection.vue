@@ -10,7 +10,7 @@
           <ol class="flex items-center space-x-1.5">
             <li>
               <router-link
-                :to="{ name: 'underwriter-dashboard' }"
+                :to="{ name: 'dashboard' }"
                 class="text-slate-400 hover:text-slate-700 transition-colors duration-200"
               >
                 <HomeIcon class="h-4 w-4" />

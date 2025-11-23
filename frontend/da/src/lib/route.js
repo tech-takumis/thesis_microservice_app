@@ -251,24 +251,24 @@ export const MUNICIPALITY_ROUTES = [
 ];
 
 export const AGRICULTURAL_EXTENSION_WORKER_ROUTES = [
-    {
-        path: '/extension-worker/submit-crop-data',
-        name: 'extension-worker-submit-crop-data',
-        component: () => import('@/pages/extension-worker/ExtensionWorkerSubmitCropData.vue'),
-        meta: {
-            title: 'Submit Crop Data',
-            guard: 'auth',
-            permissions: ['CAN_SUBMIT_CROP_DATA']
-        }
-    },
-    {
-        path: '/extension-worker/conduct-training',
-        name: 'extension-worker-conduct-training',
-        component: () => import('@/pages/extension-worker/ExtensionWorkerConductTraining.vue'),
-        meta: {
-            title: 'Conduct Training',
-            guard: 'auth',
-            role: 'AGRICULTURAL EXTENSION WORKER'
-        }
-    }
+    // {
+    //     path: '/extension-worker/submit-crop-data',
+    //     name: 'extension-worker-submit-crop-data',
+    //     component: () => import('@/pages/extension-worker/ExtensionWorkerSubmitCropData.vue'),
+    //     meta: {
+    //         title: 'Submit Crop Data',
+    //         guard: 'auth',
+    //         permissions: ['CAN_SUBMIT_CROP_DATA']
+    //     }
+    // }
+    // {
+    //     path: '/extension-worker/conduct-training',
+    //     name: 'extension-worker-conduct-training',
+    //     component: () => import('@/pages/extension-worker/ExtensionWorkerConductTraining.vue'),
+    //     meta: {
+    //         title: 'Conduct Training',
+    //         guard: 'auth',
+    //         role: 'AGRICULTURAL EXTENSION WORKER'
+    //     }
+    // }
 ];

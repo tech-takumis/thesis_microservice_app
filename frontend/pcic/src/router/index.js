@@ -20,6 +20,16 @@ const routes = [
       guard: "guest",
     },
   },
+   {
+    path: "/register",
+    name: "register",
+    component: () => import("@/pages/auth/Registration.vue"),
+    meta: {
+      title: "PCIC Staff Register",
+      guard: "guest",
+      hasToken: true,
+    },
+  },
 
   // Error Pages
   {

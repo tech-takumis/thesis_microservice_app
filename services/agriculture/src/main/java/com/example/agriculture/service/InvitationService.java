@@ -28,6 +28,7 @@ public class InvitationService {
         // Publish an email new invitation to consume by our notification service
         NewInvitationEvent event = NewInvitationEvent.builder()
                 .token(savedToken.getToken())
+                .registrationLink("http://localhost:5174/register?token=" + savedToken.getToken())
                 .email(savedToken.getEmail())
                 .expiryDate(savedToken.getExpiryDate())
                 .build();

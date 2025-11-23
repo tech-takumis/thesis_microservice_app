@@ -18,7 +18,7 @@
     <!-- Main Content -->
     <div class="h-full flex flex-col space-y-4">
       <!-- Risk Overview Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <!-- <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <div class="bg-gray-100 rounded-xl p-6 border border-gray-300">
           <div class="flex items-center">
             <div class="flex-shrink-0">
@@ -63,7 +63,7 @@
             </div>
           </div>
         </div>
-      </div>
+      </div> -->
 
       <!-- Main Content Grid -->
       <div class="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6">

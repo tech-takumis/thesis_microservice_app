@@ -360,6 +360,7 @@
                         View
                       </router-link>
                       <router-link
+                        v-if="!insuranceData.claim.finalized"
                         :to="{
                           name: 'applications-claim',
                           params: { insuranceId: route.params.insuranceId, submissionId: route.params.submissionId },
@@ -369,6 +370,13 @@
                       >
                         Update
                       </router-link>
+                      <span
+                        v-else
+                        class="text-xs text-slate-400 font-medium px-2 py-1"
+                        title="This claim has been finalized and cannot be updated"
+                      >
+                        Finalized
+                      </span>
                     </div>
                   </div>
                   <div class="space-y-2 text-xs ml-7">
@@ -390,7 +398,7 @@
                     <router-link
                       v-if="insuranceData?.inspection && insuranceData.inspection.inspected === true"
                       :to="{
-                        name: 'underwriter-applications-claim',
+                        name: 'applications-claim',
                         params: { insuranceId: route.params.insuranceId, submissionId: route.params.submissionId },
                         query: { action: 'file_claim' }
                       }"
@@ -490,27 +498,12 @@
               <dd class="mt-1.5 text-sm text-gray-800">{{ insuranceData.batch.description }}</dd>
             </div>
             <div>
-              <dt class="text-xs font-medium text-green-600 uppercase tracking-wide">Total Applications</dt>
-              <dd class="mt-1.5 text-sm text-gray-800">{{ insuranceData.batch.totalApplications }} / {{ insuranceData.batch.maxApplications }}</dd>
-            </div>
-            <div>
               <dt class="text-xs font-medium text-green-600 uppercase tracking-wide">Start Date</dt>
               <dd class="mt-1.5 text-sm text-gray-800">{{ formatDate(insuranceData.batch.startDate) }}</dd>
             </div>
             <div>
               <dt class="text-xs font-medium text-green-600 uppercase tracking-wide">End Date</dt>
               <dd class="mt-1.5 text-sm text-slate-900">{{ formatDate(insuranceData.batch.endDate) }}</dd>
-            </div>
-            <div>
-              <dt class="text-xs font-medium text-green-600 uppercase tracking-wide">Status</dt>
-              <dd class="mt-1.5 text-sm">
-                <span :class="[
-                  'inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium',
-                  insuranceData.batch.available ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
-                ]">
-                  {{ insuranceData.batch.available ? 'Available' : 'Closed' }}
-                </span>
-              </dd>
             </div>
           </div>
         </div>

@@ -1,4 +1,4 @@
-import { FileBarChart2, FileCheck, LayoutDashboard, MessageCircle, Sprout, Users, ClipboardList, CheckSquare, BarChart, BookOpen, Stethoscope, ShoppingCart, Leaf, PawPrint } from 'lucide-vue-next'
+import { FileBarChart2, FileCheck, LayoutDashboard, MessageCircle, Sprout, Users, ClipboardList, CheckSquare, BarChart, BookOpen, Stethoscope, ShoppingCart, Leaf, PawPrint, Wallet, Receipt, QrCode, ScanLine } from 'lucide-vue-next'
 
 /**
  * Unified navigation for all users
@@ -48,17 +48,48 @@ export const UNIFIED_NAVIGATION = [
         icon: CheckSquare,
         to: { name: 'admin-approvals' },
         roles: ['ADMIN']
-    }, 
+    },
+    {
+        title: 'Manage Applications',
+        icon: ClipboardList,
+        to: { name: 'agriculturist-submit-crop-data' },
+        permissions: ['CAN_SUBMIT_CROP_DATA']
+    },
+    {
+        title: 'Vouchers',
+        icon: Receipt,
+        permissions: ['CAN_SUBMIT_CROP_DATA'],
+        children: [
+            {
+                title: 'Generate Voucher',
+                to: { name: 'agriculturist-voucher-generate' }
+            },
+            {
+                title: 'All Vouchers',
+                to: { name: 'agriculturist-voucher-all' }
+            },
+            {
+                title: 'Scan Voucher',
+                to: { name: 'agriculturist-voucher-scanner' }
+            }
+        ]
+    },
+    {
+        title: 'Transactions',
+        icon: Wallet,
+        to: { name: 'agriculturist-transaction' }
+    },
+    {
+        title: 'Monitor Programs',
+        icon: BarChart,
+        to: { name: 'agriculturist-monitor-programs' },
+        permissions: ['CAN_MONITOR_PROGRAMS']
+    },
     {
         title: 'Claims',
         icon: FileCheck,
-        children: [
-            {
-                title: 'Process Claims',
-                to: { name: 'agriculturist-process-claims' },
-                permissions: ['CAN_PROCESS_CLAIM']
-            }
-        ]
+        to: { name: 'agriculturist-process-claims' },
+        permissions: ['CAN_PROCESS_CLAIM']
     },
     {
         title: 'Extension Services',

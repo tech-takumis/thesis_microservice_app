@@ -56,11 +56,12 @@ Copy `.env.example` to `.env` and configure for your environment.
   - User data includes nested roles and permissions structure
   - `hasRole(roleName)` method for role checks (case-insensitive)
   - `hasPermission(permissionName)` method for permission checks (supports arrays)
-  - `defaultRoute` computed property provides role-based landing page
+  - `defaultRoute` computed property returns unified dashboard (`/agriculturist/dashboard`) for all authenticated users
 - **Route guards** in `src/router/index.js` enforce authentication and role-based access
-  - Authenticated users redirected from login to their `defaultRoute`
+  - Authenticated users redirected from login to unified dashboard (`/agriculturist/dashboard`)
   - Protected routes require authentication initialization
   - Registration route requires valid token in query parameter
+  - Guest routes (login/register) redirect authenticated users to dashboard
 
 ### State Management (Pinia)
 All stores are in `src/stores/`:
@@ -74,11 +75,12 @@ All stores are in `src/stores/`:
 
 ### Routing Structure
 Routes are organized by role in `src/lib/route.js`:
+- `DASHBOARD_ROUTE`: Unified dashboard for all authenticated users (`/agriculturist/dashboard`)
 - `ADMIN_ROUTES`: User management, roles, applications, approvals, analytics, reports
 - `MUNICIPALITY_ROUTES`: Agricultural operations, vouchers, claims, messaging, AI damage analysis
 - `AGRICULTURAL_EXTENSION_WORKER_ROUTES`: Field operations, training, diagnostics
 
-Navigation configs are in `src/lib/navigation.js` with corresponding sidebar items per role.
+Navigation config in `src/lib/navigation.js` provides `UNIFIED_NAVIGATION` - a single navigation structure where access is controlled by roles and permissions rather than separate navigations per role.
 
 Key route patterns:
 - Application detail pages: `/role/submit-crop-data/application-type/submission-detail/:id/:applicationTypeId`

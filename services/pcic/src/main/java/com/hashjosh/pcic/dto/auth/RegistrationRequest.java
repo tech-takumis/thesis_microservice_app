@@ -11,8 +11,11 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class RegistrationRequest {
-    @NotBlank(message = "Username is required")
-    @Size(max = 100,message = "Username must not exceed to 100 character")
+
+    @NotBlank(message = "Token is required")
+    private String token;
+
+    // No need we will generate username automatically
     private String username;
 
     @NotBlank(message = "Firstname is required")
@@ -43,38 +46,6 @@ public class RegistrationRequest {
     private String address;
 
     @NotEmpty(message = "PCIC must have at least one associated  role")
-    private Set<UUID> rolesId;
+    private Set<String> roleNames;
 
-    // Profile section
-    @NotBlank(message = "Mandate is required")
-    @Size(max = 100,message = "Mandate must not exceed to 100 character")
-    private String mandate;
-
-    @NotBlank(message = "Vision is required")
-    @Size(max = 100,message = "Vision must not exceed to 100 character")
-    private String vision;
-
-    @NotBlank(message = "Mission is required")
-    @Size(max = 100,message = "Mission must not exceed to 100 character")
-    private String mission;
-
-    @NotBlank(message = "Core values is required")
-    @Size(max = 100,message = "Core values must not exceed to 100 character")
-    private String coreValues;
-
-    @NotBlank(message = "head office address is required")
-    @Size(max = 100,message = "head office address must not exceed to 100 character")
-    private String headOfficeAddress;
-
-    @NotBlank(message = "Office phone number is required")
-    @Size(max = 100,message = "Office phone number must not exceed to 100 character")
-    private String phone;
-
-    @NotBlank(message = "Official number is required")
-    @Size(max = 100,message = "Official number must not exceed to 100 character")
-    private String pcicEmail;
-
-    @NotBlank(message = "Official website is required")
-    @Size(max = 100,message = "Official website must not exceed to 100 character")
-    private String website;
 }

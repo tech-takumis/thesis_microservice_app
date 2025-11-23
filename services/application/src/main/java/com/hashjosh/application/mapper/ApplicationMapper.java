@@ -3,6 +3,7 @@ package com.hashjosh.application.mapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hashjosh.application.clients.DocumentServiceClient;
+import com.hashjosh.application.clients.InsuranceClient;
 import com.hashjosh.application.dto.submission.ApplicationSubmissionDto;
 import com.hashjosh.application.model.Application;
 import com.hashjosh.application.model.ApplicationType;
@@ -19,6 +20,7 @@ import java.util.List;
 @Slf4j
 public class ApplicationMapper {
     private final DocumentServiceClient documentServiceClient;
+    private final InsuranceClient insuranceClient;
 
     public ApplicationResponseDto toApplicationResponseDto(
             Application entity
@@ -28,11 +30,14 @@ public class ApplicationMapper {
                 .map(document -> documentServiceClient.generatePresignedUrl(entity.getUserId(), document.getDocumentId(), 60))
                 .toList();
 
+        String applicationStatus = insuranceClient.getInsuranceStatus(entity.getId(), entity.getUserId());
+
 
         ApplicationResponseDto.ApplicationResponseDtoBuilder builder = ApplicationResponseDto.builder()
                 .id(entity.getId())
                 .applicationTypeId(entity.getType().getId())
                 .applicationTypeName(entity.getType().getName())
+                .status(applicationStatus)
                 .coordinates(entity.getCoordinates())
                 .submittedAt(entity.getSubmittedAt())
                 .fileUploads(documentUrls)

@@ -23,6 +23,7 @@ public class ApplicationResponseDto{
     UUID id;
     UUID applicationTypeId;
     String applicationTypeName;
+    String status;
     String coordinates;
     List<String> fileUploads;
     @JsonProperty("dynamicFields")

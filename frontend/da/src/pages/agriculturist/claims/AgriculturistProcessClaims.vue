@@ -187,28 +187,59 @@ onMounted(async () => {
                             v-model="searchQuery"
                             type="text"
                             placeholder="Search claims..."
-                            class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm" />
+                            class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-green-500 focus:border-transparent text-sm" />
                     </div>
 
-                    <!-- Filter Toggle Button -->
-                    <BaseButton
-                        variant="secondary"
-                        :class="{ 'bg-green-50 border-green-200 text-green-700': showFilters || hasActiveFilters }"
-                        @click="showFilters = !showFilters">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z"></path>
-                        </svg>
-                        Filters
-                        <span v-if="hasActiveFilters" class="ml-1 px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
-                            Active
-                        </span>
-                    </BaseButton>
+<!-- Filter Toggle Button -->
+<BaseButton
+  variant="secondary"
+  class="bg-green-600 border-green-600 text-white hover:bg-green-700 hover:border-green-700"
+  @click="showFilters = !showFilters"
+>
+  <svg
+    class="w-4 h-4 mr-2"
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z"
+    ></path>
+  </svg>
+
+  Filters
+
+  <span
+    v-if="hasActiveFilters"
+    class="ml-1 px-2 py-0.5 bg-white/20 text-white text-xs rounded-full"
+  >
+    Active
+  </span>
+</BaseButton>
+
                 </div>
             </div>
 
             <!-- Loading State -->
-            <div v-if="claimStore.isLoading" class="flex justify-center items-center flex-1">
-                <LoadingSpinner />
+            <div
+                v-if="claimStore.isLoading"
+                class="flex flex-col items-center justify-center flex-1 space-y-4 min-h-[60vh]"
+            >
+                <!-- Spinner -->
+                <div class="relative">
+                    <div
+                        class="h-14 w-14 rounded-full border-4 border-gray-200"></div>
+                    <div
+                        class="absolute top-0 left-0 h-14 w-14 rounded-full border-4 border-green-600 border-t-transparent animate-spin"></div>
+                </div>
+
+                <!-- Loading Label -->
+                <p class="text-gray-600 font-medium tracking-wide">
+                    Loading data…
+                </p>
             </div>
 
             <!-- Error State -->
@@ -230,7 +261,7 @@ onMounted(async () => {
             <!-- Claims Table -->
             <div v-else class="bg-white rounded-lg border border-gray-200 shadow-sm flex flex-col flex-1 min-h-0 overflow-hidden">
                 <!-- Filter Panel -->
-                <div v-if="showFilters" class="p-4 bg-gray-50 border-b border-gray-200">
+                <div v-if="showFilters" class="p-4 bg-gray-50 border-b border-gray-300">
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-1">Farmer Name</label>

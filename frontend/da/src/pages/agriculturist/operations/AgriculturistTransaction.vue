@@ -8,8 +8,9 @@ import NotificationToast from '@/components/others/NotificationToast.vue'
 import { MUNICIPAL_AGRICULTURIST_NAVIGATION } from '@/lib/navigation'
 import { useTransactionStore } from '@/stores/transaction.js'
 import { useNotificationStore } from '@/stores/notification.js'
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
+import { FileText, X } from 'lucide-vue-next'
 
 const navigation = MUNICIPAL_AGRICULTURIST_NAVIGATION
 const transactionStore = useTransactionStore()
@@ -226,9 +227,307 @@ const navigateToTransactionDetail = (transactionId) => {
     })
 }
 
+// Filter dropdown options
+const typeOptions = [
+    { label: 'All Types', value: '' },
+    { label: 'Income', value: 'INCOME' },
+    { label: 'Expense', value: 'EXPENSE' }
+]
+
+const statusOptions = [
+    { label: 'All Status', value: '' },
+    { label: 'Pending', value: 'PENDING' },
+    { label: 'Scheduled', value: 'SCHEDULED' },
+    { label: 'Completed', value: 'COMPLETED' },
+    { label: 'Cancelled', value: 'CANCELLED' }
+]
+
+const positiveOptions = [
+    { label: 'All', value: '' },
+    { label: 'Positive', value: 'true' },
+    { label: 'Negative', value: 'false' }
+]
+
+const transactionTypeOptions = [
+    { label: 'Income', value: 'INCOME' },
+    { label: 'Expense', value: 'EXPENSE' }
+]
+
+const transactionStatusOptions = [
+    { label: 'Pending', value: 'PENDING' },
+    { label: 'Scheduled', value: 'SCHEDULED' },
+    { label: 'Completed', value: 'COMPLETED' },
+    { label: 'Cancelled', value: 'CANCELLED' }
+]
+
+// Filter Type dropdown state
+const isFilterTypeDropdownOpen = ref(false)
+const highlightedFilterTypeIndex = ref(-1)
+
+const toggleFilterTypeDropdown = () => {
+    isFilterTypeDropdownOpen.value = !isFilterTypeDropdownOpen.value
+    if (isFilterTypeDropdownOpen.value) {
+        highlightedFilterTypeIndex.value = typeOptions.findIndex(opt => opt.value === filters.value.type)
+    }
+}
+
+const closeFilterTypeDropdown = () => {
+    isFilterTypeDropdownOpen.value = false
+    highlightedFilterTypeIndex.value = -1
+}
+
+const selectFilterType = (value) => {
+    filters.value.type = value
+    closeFilterTypeDropdown()
+}
+
+const onFilterTypeKeyDown = (e) => {
+    if (!isFilterTypeDropdownOpen.value && (e.key === 'Enter' || e.key === ' ')) {
+        e.preventDefault()
+        toggleFilterTypeDropdown()
+        return
+    }
+    if (isFilterTypeDropdownOpen.value) {
+        if (e.key === 'ArrowDown') {
+            e.preventDefault()
+            highlightedFilterTypeIndex.value = Math.min(highlightedFilterTypeIndex.value + 1, typeOptions.length - 1)
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault()
+            highlightedFilterTypeIndex.value = Math.max(highlightedFilterTypeIndex.value - 1, 0)
+        } else if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            if (highlightedFilterTypeIndex.value >= 0) selectFilterType(typeOptions[highlightedFilterTypeIndex.value].value)
+        } else if (e.key === 'Escape') {
+            e.preventDefault()
+            closeFilterTypeDropdown()
+        }
+    }
+}
+
+const selectedFilterTypeDisplay = computed(() => {
+    const option = typeOptions.find(opt => opt.value === filters.value.type)
+    return option ? option.label : 'All Types'
+})
+
+// Filter Status dropdown state
+const isFilterStatusDropdownOpen = ref(false)
+const highlightedFilterStatusIndex = ref(-1)
+
+const toggleFilterStatusDropdown = () => {
+    isFilterStatusDropdownOpen.value = !isFilterStatusDropdownOpen.value
+    if (isFilterStatusDropdownOpen.value) {
+        highlightedFilterStatusIndex.value = statusOptions.findIndex(opt => opt.value === filters.value.status)
+    }
+}
+
+const closeFilterStatusDropdown = () => {
+    isFilterStatusDropdownOpen.value = false
+    highlightedFilterStatusIndex.value = -1
+}
+
+const selectFilterStatus = (value) => {
+    filters.value.status = value
+    closeFilterStatusDropdown()
+}
+
+const onFilterStatusKeyDown = (e) => {
+    if (!isFilterStatusDropdownOpen.value && (e.key === 'Enter' || e.key === ' ')) {
+        e.preventDefault()
+        toggleFilterStatusDropdown()
+        return
+    }
+    if (isFilterStatusDropdownOpen.value) {
+        if (e.key === 'ArrowDown') {
+            e.preventDefault()
+            highlightedFilterStatusIndex.value = Math.min(highlightedFilterStatusIndex.value + 1, statusOptions.length - 1)
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault()
+            highlightedFilterStatusIndex.value = Math.max(highlightedFilterStatusIndex.value - 1, 0)
+        } else if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            if (highlightedFilterStatusIndex.value >= 0) selectFilterStatus(statusOptions[highlightedFilterStatusIndex.value].value)
+        } else if (e.key === 'Escape') {
+            e.preventDefault()
+            closeFilterStatusDropdown()
+        }
+    }
+}
+
+const selectedFilterStatusDisplay = computed(() => {
+    const option = statusOptions.find(opt => opt.value === filters.value.status)
+    return option ? option.label : 'All Status'
+})
+
+// Filter Positive dropdown state
+const isFilterPositiveDropdownOpen = ref(false)
+const highlightedFilterPositiveIndex = ref(-1)
+
+const toggleFilterPositiveDropdown = () => {
+    isFilterPositiveDropdownOpen.value = !isFilterPositiveDropdownOpen.value
+    if (isFilterPositiveDropdownOpen.value) {
+        highlightedFilterPositiveIndex.value = positiveOptions.findIndex(opt => opt.value === filters.value.positive)
+    }
+}
+
+const closeFilterPositiveDropdown = () => {
+    isFilterPositiveDropdownOpen.value = false
+    highlightedFilterPositiveIndex.value = -1
+}
+
+const selectFilterPositive = (value) => {
+    filters.value.positive = value
+    closeFilterPositiveDropdown()
+}
+
+const onFilterPositiveKeyDown = (e) => {
+    if (!isFilterPositiveDropdownOpen.value && (e.key === 'Enter' || e.key === ' ')) {
+        e.preventDefault()
+        toggleFilterPositiveDropdown()
+        return
+    }
+    if (isFilterPositiveDropdownOpen.value) {
+        if (e.key === 'ArrowDown') {
+            e.preventDefault()
+            highlightedFilterPositiveIndex.value = Math.min(highlightedFilterPositiveIndex.value + 1, positiveOptions.length - 1)
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault()
+            highlightedFilterPositiveIndex.value = Math.max(highlightedFilterPositiveIndex.value - 1, 0)
+        } else if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            if (highlightedFilterPositiveIndex.value >= 0) selectFilterPositive(positiveOptions[highlightedFilterPositiveIndex.value].value)
+        } else if (e.key === 'Escape') {
+            e.preventDefault()
+            closeFilterPositiveDropdown()
+        }
+    }
+}
+
+const selectedFilterPositiveDisplay = computed(() => {
+    const option = positiveOptions.find(opt => opt.value === filters.value.positive)
+    return option ? option.label : 'All'
+})
+
+// Transaction Type dropdown state (in create modal)
+const isTransactionTypeDropdownOpen = ref(false)
+const highlightedTransactionTypeIndex = ref(-1)
+
+const toggleTransactionTypeDropdown = () => {
+    isTransactionTypeDropdownOpen.value = !isTransactionTypeDropdownOpen.value
+    if (isTransactionTypeDropdownOpen.value) {
+        highlightedTransactionTypeIndex.value = transactionTypeOptions.findIndex(opt => opt.value === newTransaction.value.type)
+    }
+}
+
+const closeTransactionTypeDropdown = () => {
+    isTransactionTypeDropdownOpen.value = false
+    highlightedTransactionTypeIndex.value = -1
+}
+
+const selectTransactionType = (value) => {
+    newTransaction.value.type = value
+    closeTransactionTypeDropdown()
+}
+
+const onTransactionTypeKeyDown = (e) => {
+    if (!isTransactionTypeDropdownOpen.value && (e.key === 'Enter' || e.key === ' ')) {
+        e.preventDefault()
+        toggleTransactionTypeDropdown()
+        return
+    }
+    if (isTransactionTypeDropdownOpen.value) {
+        if (e.key === 'ArrowDown') {
+            e.preventDefault()
+            highlightedTransactionTypeIndex.value = Math.min(highlightedTransactionTypeIndex.value + 1, transactionTypeOptions.length - 1)
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault()
+            highlightedTransactionTypeIndex.value = Math.max(highlightedTransactionTypeIndex.value - 1, 0)
+        } else if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            if (highlightedTransactionTypeIndex.value >= 0) selectTransactionType(transactionTypeOptions[highlightedTransactionTypeIndex.value].value)
+        } else if (e.key === 'Escape') {
+            e.preventDefault()
+            closeTransactionTypeDropdown()
+        }
+    }
+}
+
+const selectedTransactionTypeDisplay = computed(() => {
+    const option = transactionTypeOptions.find(opt => opt.value === newTransaction.value.type)
+    return option ? option.label : '💸 Expense'
+})
+
+// Transaction Status dropdown state (in create modal)
+const isTransactionStatusDropdownOpen = ref(false)
+const highlightedTransactionStatusIndex = ref(-1)
+
+const toggleTransactionStatusDropdown = () => {
+    isTransactionStatusDropdownOpen.value = !isTransactionStatusDropdownOpen.value
+    if (isTransactionStatusDropdownOpen.value) {
+        highlightedTransactionStatusIndex.value = transactionStatusOptions.findIndex(opt => opt.value === newTransaction.value.status)
+    }
+}
+
+const closeTransactionStatusDropdown = () => {
+    isTransactionStatusDropdownOpen.value = false
+    highlightedTransactionStatusIndex.value = -1
+}
+
+const selectTransactionStatus = (value) => {
+    newTransaction.value.status = value
+    closeTransactionStatusDropdown()
+}
+
+const onTransactionStatusKeyDown = (e) => {
+    if (!isTransactionStatusDropdownOpen.value && (e.key === 'Enter' || e.key === ' ')) {
+        e.preventDefault()
+        toggleTransactionStatusDropdown()
+        return
+    }
+    if (isTransactionStatusDropdownOpen.value) {
+        if (e.key === 'ArrowDown') {
+            e.preventDefault()
+            highlightedTransactionStatusIndex.value = Math.min(highlightedTransactionStatusIndex.value + 1, transactionStatusOptions.length - 1)
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault()
+            highlightedTransactionStatusIndex.value = Math.max(highlightedTransactionStatusIndex.value - 1, 0)
+        } else if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            if (highlightedTransactionStatusIndex.value >= 0) selectTransactionStatus(transactionStatusOptions[highlightedTransactionStatusIndex.value].value)
+        } else if (e.key === 'Escape') {
+            e.preventDefault()
+            closeTransactionStatusDropdown()
+        }
+    }
+}
+
+const selectedTransactionStatusDisplay = computed(() => {
+    const option = transactionStatusOptions.find(opt => opt.value === newTransaction.value.status)
+    return option ? option.label : '⏳ Pending'
+})
+
+// Close on outside click
+const onClickOutside = (e) => {
+    const filterTypeEl = document.querySelector('#filter-type-dropdown')
+    const filterStatusEl = document.querySelector('#filter-status-dropdown')
+    const filterPositiveEl = document.querySelector('#filter-positive-dropdown')
+    const transactionTypeEl = document.querySelector('#transaction-type-dropdown')
+    const transactionStatusEl = document.querySelector('#transaction-status-dropdown')
+    
+    if (filterTypeEl && !filterTypeEl.contains(e.target)) closeFilterTypeDropdown()
+    if (filterStatusEl && !filterStatusEl.contains(e.target)) closeFilterStatusDropdown()
+    if (filterPositiveEl && !filterPositiveEl.contains(e.target)) closeFilterPositiveDropdown()
+    if (transactionTypeEl && !transactionTypeEl.contains(e.target)) closeTransactionTypeDropdown()
+    if (transactionStatusEl && !transactionStatusEl.contains(e.target)) closeTransactionStatusDropdown()
+}
+
 // Lifecycle
 onMounted(async () => {
     await fetchTransactions()
+    document.addEventListener('click', onClickOutside)
+})
+
+onBeforeUnmount(() => {
+    document.removeEventListener('click', onClickOutside)
 })
 </script>
 
@@ -239,15 +538,20 @@ onMounted(async () => {
         page-title="Transaction Management">
 
         <div class="flex flex-col h-full space-y-4">
-            <!-- Header -->
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
-                    <h1 class="text-2xl font-bold text-gray-900">Transaction Management</h1>
-                    <p class="text-sm text-gray-600">
-                        {{ filteredTransactions.length }} transaction{{ filteredTransactions.length !== 1 ? 's' : '' }}
-                        {{ searchQuery || hasActiveFilters ? '(filtered)' : '' }}
-                    </p>
-                </div>
+<!-- Header -->
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-200 pb-3 ml-4">
+    <div class="flex items-center gap-2">
+        <div>
+            <h1 class="text-3xl font-bold text-green-600">
+                Application Workspace
+            </h1>
+
+            <p class="mt-1 text-sm text-gray-600">
+                {{ filteredTransactions.length }} transaction{{ filteredTransactions.length !== 1 ? 's' : '' }}
+                {{ searchQuery || hasActiveFilters ? '(filtered)' : '' }}
+            </p>
+        </div>
+    </div>
                 <BaseButton
                     class="bg-green-600 hover:bg-green-700"
                     @click="showCreateModal = true">
@@ -259,8 +563,22 @@ onMounted(async () => {
             </div>
 
             <!-- Loading State -->
-            <div v-if="transactionStore.isLoading" class="flex justify-center items-center flex-1">
-                <LoadingSpinner />
+            <div
+                v-if="transactionStore.isLoading"
+                class="flex flex-col items-center justify-center flex-1 space-y-4 min-h-[60vh]"
+            >
+                <!-- Spinner -->
+                <div class="relative">
+                    <div
+                        class="h-14 w-14 rounded-full border-4 border-gray-200"></div>
+                    <div
+                        class="absolute top-0 left-0 h-14 w-14 rounded-full border-4 border-green-600 border-t-transparent animate-spin"></div>
+                </div>
+
+                <!-- Loading Label -->
+                <p class="text-gray-600 font-medium tracking-wide">
+                    Loading data…
+                </p>
             </div>
 
             <!-- Error State -->
@@ -280,9 +598,9 @@ onMounted(async () => {
             </BaseCard>
 
             <!-- Transactions Table -->
-            <div v-else class="bg-white rounded-lg border border-gray-200 shadow-sm flex flex-col flex-1 min-h-0 overflow-hidden">
+            <div v-else class="bg-gray-100 rounded-xl border border-gray-300 flex flex-col flex-1 min-h-0 overflow-hidden">
                 <!-- Table Header with Search and Filters -->
-                <div class="p-4 border-b border-gray-200 space-y-4 flex-shrink-0">
+                <div class="p-4 border-b border-gray-300 space-y-4 flex-shrink-0 bg-gray-100">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div class="flex items-center gap-3 flex-1 max-w-lg">
                             <!-- Search Input -->
@@ -294,22 +612,41 @@ onMounted(async () => {
                                     v-model="searchQuery"
                                     type="text"
                                     placeholder="Search transactions..."
-                                    class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm" />
+                                    class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg  focus:ring-1 focus:ring-green-500 focus:border-transparent text-sm" />
                             </div>
 
                             <!-- Filter Toggle Button -->
-                            <BaseButton
-                                variant="secondary"
-                                :class="{ 'bg-green-50 border-green-200 text-green-700': showFilters || hasActiveFilters }"
-                                @click="showFilters = !showFilters">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z"></path>
-                                </svg>
-                                Filters
-                                <span v-if="hasActiveFilters" class="ml-1 px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
-                                    Active
-                                </span>
-                            </BaseButton>
+                        <BaseButton
+                        class="bg-green-600 border-green-600 text-white hover:bg-green-700 hover:border-green-700"
+                        :class="{
+                            'bg-gray-600 border-gray-600 hover:bg-gray-700 hover:border-gray-700':
+                            showFilters || hasActiveFilters
+                        }"
+                        @click="showFilters = !showFilters"
+                        >
+                        <svg
+                            class="w-4 h-4 mr-2"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z"
+                            ></path>
+                        </svg>
+
+                        Filters
+
+                        <span
+                            v-if="hasActiveFilters"
+                            class="ml-1 px-2 py-0.5 bg-white/20 text-white text-xs rounded-full"
+                        >
+                            Active
+                        </span>
+                        </BaseButton>
                         </div>
 
                         <!-- Bulk Delete Button -->
@@ -338,31 +675,152 @@ onMounted(async () => {
 
                             <div>
                                 <label class="block text-xs font-medium text-gray-700 mb-1">Type</label>
-                                <select v-model="filters.type" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-green-500 focus:border-transparent">
-                                    <option value="">All Types</option>
-                                    <option value="INCOME">Income</option>
-                                    <option value="EXPENSE">Expense</option>
-                                </select>
+                                <div id="filter-type-dropdown" class="relative">
+                                    <button
+                                        type="button"
+                                        @click="toggleFilterTypeDropdown"
+                                        @keydown.stop.prevent="onFilterTypeKeyDown"
+                                        :aria-expanded="isFilterTypeDropdownOpen"
+                                        aria-haspopup="listbox"
+                                        class="w-full flex items-center justify-between px-3 py-2 text-sm border border-gray-300 rounded-xl bg-white shadow-sm focus:ring-1 focus:ring-green-500 focus:border-transparent"
+                                    >
+                                        <span class="text-gray-900">{{ selectedFilterTypeDisplay }}</span>
+                                        <svg
+                                            class="w-4 h-4 text-green-600 transform transition-transform duration-200"
+                                            :class="isFilterTypeDropdownOpen ? 'rotate-180' : ''"
+                                            viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"
+                                            aria-hidden="true"
+                                        >
+                                            <path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                    </button>
+                                    <ul
+                                        v-show="isFilterTypeDropdownOpen"
+                                        role="listbox"
+                                        tabindex="-1"
+                                        class="origin-top-right absolute right-0 left-0 mt-2 bg-white rounded-xl shadow-lg ring-1 ring-black ring-opacity-5 overflow-auto max-h-56 py-1 focus:outline-none z-50 transition-transform duration-150"
+                                    >
+                                        <li
+                                            v-for="(option, idx) in typeOptions"
+                                            :key="option.value"
+                                            role="option"
+                                            :aria-selected="option.value === filters.type"
+                                            @mouseenter="highlightedFilterTypeIndex = idx"
+                                            @mouseleave="highlightedFilterTypeIndex = -1"
+                                            @click="selectFilterType(option.value)"
+                                            :class=" [
+                                                'px-3 py-2 cursor-pointer flex items-center justify-between text-sm',
+                                                highlightedFilterTypeIndex === idx ? 'bg-green-50' : 'hover:bg-green-50',
+                                                option.value === filters.type ? 'font-semibold text-green-700' : 'text-gray-700'
+                                            ]"
+                                        >
+                                            <span>{{ option.label }}</span>
+                                            <svg v-if="option.value === filters.type" class="w-4 h-4 text-green-600" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                            </svg>
+                                        </li>
+                                    </ul>
+                                </div>
                             </div>
 
                             <div>
                                 <label class="block text-xs font-medium text-gray-700 mb-1">Status</label>
-                                <select v-model="filters.status" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-green-500 focus:border-transparent">
-                                    <option value="">All Status</option>
-                                    <option value="PENDING">Pending</option>
-                                    <option value="SCHEDULED">Scheduled</option>
-                                    <option value="COMPLETED">Completed</option>
-                                    <option value="CANCELLED">Cancelled</option>
-                                </select>
+                                <div id="filter-status-dropdown" class="relative">
+                                    <button
+                                        type="button"
+                                        @click="toggleFilterStatusDropdown"
+                                        @keydown.stop.prevent="onFilterStatusKeyDown"
+                                        :aria-expanded="isFilterStatusDropdownOpen"
+                                        aria-haspopup="listbox"
+                                        class="w-full flex items-center justify-between px-3 py-2 text-sm border border-gray-300 rounded-xl bg-white shadow-sm focus:ring-1 focus:ring-green-500 focus:border-transparent"
+                                    >
+                                        <span class="text-gray-900">{{ selectedFilterStatusDisplay }}</span>
+                                        <svg
+                                            class="w-4 h-4 text-green-600 transform transition-transform duration-200"
+                                            :class="isFilterStatusDropdownOpen ? 'rotate-180' : ''"
+                                            viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"
+                                            aria-hidden="true"
+                                        >
+                                            <path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                    </button>
+                                    <ul
+                                        v-show="isFilterStatusDropdownOpen"
+                                        role="listbox"
+                                        tabindex="-1"
+                                        class="origin-top-right absolute right-0 left-0 mt-2 bg-white rounded-xl shadow-lg ring-1 ring-black ring-opacity-5 overflow-auto max-h-56 py-1 focus:outline-none z-50 transition-transform duration-150"
+                                    >
+                                        <li
+                                            v-for="(option, idx) in statusOptions"
+                                            :key="option.value"
+                                            role="option"
+                                            :aria-selected="option.value === filters.status"
+                                            @mouseenter="highlightedFilterStatusIndex = idx"
+                                            @mouseleave="highlightedFilterStatusIndex = -1"
+                                            @click="selectFilterStatus(option.value)"
+                                            :class=" [
+                                                'px-3 py-2 cursor-pointer flex items-center justify-between text-sm',
+                                                highlightedFilterStatusIndex === idx ? 'bg-green-50' : 'hover:bg-green-50',
+                                                option.value === filters.status ? 'font-semibold text-green-700' : 'text-gray-700'
+                                            ]"
+                                        >
+                                            <span>{{ option.label }}</span>
+                                            <svg v-if="option.value === filters.status" class="w-4 h-4 text-green-600" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                            </svg>
+                                        </li>
+                                    </ul>
+                                </div>
                             </div>
 
                             <div>
                                 <label class="block text-xs font-medium text-gray-700 mb-1">Positive</label>
-                                <select v-model="filters.positive" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-green-500 focus:border-transparent">
-                                    <option value="">All</option>
-                                    <option value="true">Positive</option>
-                                    <option value="false">Negative</option>
-                                </select>
+                                <div id="filter-positive-dropdown" class="relative">
+                                    <button
+                                        type="button"
+                                        @click="toggleFilterPositiveDropdown"
+                                        @keydown.stop.prevent="onFilterPositiveKeyDown"
+                                        :aria-expanded="isFilterPositiveDropdownOpen"
+                                        aria-haspopup="listbox"
+                                        class="w-full flex items-center justify-between px-3 py-2 text-sm border border-gray-300 rounded-xl bg-white shadow-sm focus:ring-1 focus:ring-green-500 focus:border-transparent"
+                                    >
+                                        <span class="text-gray-900">{{ selectedFilterPositiveDisplay }}</span>
+                                        <svg
+                                            class="w-4 h-4 text-green-600 transform transition-transform duration-200"
+                                            :class="isFilterPositiveDropdownOpen ? 'rotate-180' : ''"
+                                            viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"
+                                            aria-hidden="true"
+                                        >
+                                            <path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                    </button>
+                                    <ul
+                                        v-show="isFilterPositiveDropdownOpen"
+                                        role="listbox"
+                                        tabindex="-1"
+                                        class="origin-top-right absolute right-0 left-0 mt-2 bg-white rounded-xl shadow-lg ring-1 ring-black ring-opacity-5 overflow-auto max-h-56 py-1 focus:outline-none z-50 transition-transform duration-150"
+                                    >
+                                        <li
+                                            v-for="(option, idx) in positiveOptions"
+                                            :key="option.value"
+                                            role="option"
+                                            :aria-selected="option.value === filters.positive"
+                                            @mouseenter="highlightedFilterPositiveIndex = idx"
+                                            @mouseleave="highlightedFilterPositiveIndex = -1"
+                                            @click="selectFilterPositive(option.value)"
+                                            :class=" [
+                                                'px-3 py-2 cursor-pointer flex items-center justify-between text-sm',
+                                                highlightedFilterPositiveIndex === idx ? 'bg-green-50' : 'hover:bg-green-50',
+                                                option.value === filters.positive ? 'font-semibold text-green-700' : 'text-gray-700'
+                                            ]"
+                                        >
+                                            <span>{{ option.label }}</span>
+                                            <svg v-if="option.value === filters.positive" class="w-4 h-4 text-green-600" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                            </svg>
+                                        </li>
+                                    </ul>
+                                </div>
                             </div>
 
                             <div>
@@ -405,7 +863,7 @@ onMounted(async () => {
                 <!-- Desktop Table -->
                 <div class="hidden md:flex flex-col flex-1 min-h-0">
                     <div class="flex-1 overflow-y-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
+                        <table class="min-w-full divide-y divide-gray-300">
                             <thead class="bg-gray-50 sticky top-0 z-10">
                                 <tr>
                                     <th scope="col" class="w-12 px-4 py-3">
@@ -423,8 +881,8 @@ onMounted(async () => {
                                     <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                <tr v-for="transaction in filteredTransactions" :key="transaction.id" class="hover:bg-gray-50 cursor-pointer transition-colors" @click="navigateToTransactionDetail(transaction.id)">
+                            <tbody class="bg-white divide-y divide-gray-300">
+                                <tr v-for="transaction in filteredTransactions" :key="transaction.id" class="hover:bg-green-50 cursor-pointer transition-colors" @click="navigateToTransactionDetail(transaction.id)">
                                     <td class="px-4 py-4 whitespace-nowrap" @click.stop>
                                         <input
                                             type="checkbox"
@@ -526,115 +984,183 @@ onMounted(async () => {
         </div>
 
         <!-- Create Transaction Modal -->
-        <div v-if="showCreateModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 modal-backdrop flex items-center justify-center z-50 p-4">
-            <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-auto modal-content">
+        <div v-if="showCreateModal" class="fixed inset-0 z-50 flex justify-end bg-white/10 backdrop-blur-sm transition-all" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+            <div class="bg-white h-full w-full max-w-2xl border border-gray-300 transform transition-all translate-x-0 overflow-y-auto">
                 <!-- Modal Header -->
-                <div class="px-8 py-6 border-b border-gray-200 bg-gradient-to-r from-green-50 to-emerald-50">
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <h3 class="text-2xl font-bold text-gray-900">Add New Transaction</h3>
-                            <p class="text-gray-600 mt-1">Create a new agricultural transaction record</p>
-                        </div>
-                        <button
-                            class="text-gray-400 hover:text-gray-600 transition-colors"
-                            @click="showCreateModal = false">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
+                <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800">Add New Transaction</h3>
+                        <p class="text-sm text-gray-600 mt-1">Create a new agricultural transaction record</p>
                     </div>
+                    <button
+                        class="text-gray-400 hover:text-gray-600 transition"
+                        @click="showCreateModal = false">
+                        <X class="h-5 w-5" />
+                    </button>
                 </div>
 
                 <!-- Modal Body -->
-                <div class="px-8 py-6">
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        <!-- Left Column -->
-                        <div class="space-y-6">
-                            <!-- Transaction Type & Status -->
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Transaction Type</label>
-                                    <select
-                                        v-model="newTransaction.type"
-                                        class="w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 bg-white">
-                                        <option value="INCOME">💰 Income</option>
-                                        <option value="EXPENSE">💸 Expense</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Status</label>
-                                    <select
-                                        v-model="newTransaction.status"
-                                        class="w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 bg-white">
-                                        <option value="PENDING">⏳ Pending</option>
-                                        <option value="SCHEDULED">📅 Scheduled</option>
-                                        <option value="COMPLETED">✅ Completed</option>
-                                        <option value="CANCELLED">❌ Cancelled</option>
-                                    </select>
+                <div class="px-6 py-5">
+                    <div class="space-y-4">
+                        <!-- Transaction Type & Status -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Transaction Type</label>
+                                <div id="transaction-type-dropdown" class="relative">
+                                    <button
+                                        type="button"
+                                        @click="toggleTransactionTypeDropdown"
+                                        @keydown.stop.prevent="onTransactionTypeKeyDown"
+                                        :aria-expanded="isTransactionTypeDropdownOpen"
+                                        aria-haspopup="listbox"
+                                        class="w-full flex items-center justify-between px-3 py-2.5 text-sm border border-gray-300 rounded-xl bg-white shadow-sm focus:ring-1 focus:ring-green-500 focus:border-transparent"
+                                    >
+                                        <span class="text-gray-900">{{ selectedTransactionTypeDisplay }}</span>
+                                        <svg
+                                            class="w-4 h-4 text-green-600 transform transition-transform duration-200"
+                                            :class="isTransactionTypeDropdownOpen ? 'rotate-180' : ''"
+                                            viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"
+                                            aria-hidden="true"
+                                        >
+                                            <path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                    </button>
+                                    <ul
+                                        v-show="isTransactionTypeDropdownOpen"
+                                        role="listbox"
+                                        tabindex="-1"
+                                        class="origin-top-right absolute right-0 left-0 mt-2 bg-white rounded-xl shadow-lg ring-1 ring-black ring-opacity-5 overflow-auto max-h-56 py-1 focus:outline-none z-50 transition-transform duration-150"
+                                    >
+                                        <li
+                                            v-for="(option, idx) in transactionTypeOptions"
+                                            :key="option.value"
+                                            role="option"
+                                            :aria-selected="option.value === newTransaction.type"
+                                            @mouseenter="highlightedTransactionTypeIndex = idx"
+                                            @mouseleave="highlightedTransactionTypeIndex = -1"
+                                            @click="selectTransactionType(option.value)"
+                                            :class=" [
+                                                'px-3 py-2 cursor-pointer flex items-center justify-between text-sm',
+                                                highlightedTransactionTypeIndex === idx ? 'bg-green-50' : 'hover:bg-green-50',
+                                                option.value === newTransaction.type ? 'font-semibold text-green-700' : 'text-gray-700'
+                                            ]"
+                                        >
+                                            <span>{{ option.label }}</span>
+                                            <svg v-if="option.value === newTransaction.type" class="w-4 h-4 text-green-600" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                            </svg>
+                                        </li>
+                                    </ul>
                                 </div>
                             </div>
-
-                            <!-- Amount -->
                             <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Amount (PHP)</label>
-                                <div class="relative">
-                                    <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium">₱</span>
-                                    <TextInput
-                                        v-model="newTransaction.amount"
-                                        type="number"
-                                        step="0.01"
-                                        placeholder="0.00"
-                                        class="w-full pl-8 rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" />
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                                <div id="transaction-status-dropdown" class="relative">
+                                    <button
+                                        type="button"
+                                        @click="toggleTransactionStatusDropdown"
+                                        @keydown.stop.prevent="onTransactionStatusKeyDown"
+                                        :aria-expanded="isTransactionStatusDropdownOpen"
+                                        aria-haspopup="listbox"
+                                        class="w-full flex items-center justify-between px-3 py-2.5 text-sm border border-gray-300 rounded-xl bg-white shadow-sm focus:ring-1 focus:ring-green-500 focus:border-transparent"
+                                    >
+                                        <span class="text-gray-900">{{ selectedTransactionStatusDisplay }}</span>
+                                        <svg
+                                            class="w-4 h-4 text-green-600 transform transition-transform duration-200"
+                                            :class="isTransactionStatusDropdownOpen ? 'rotate-180' : ''"
+                                            viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"
+                                            aria-hidden="true"
+                                        >
+                                            <path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                    </button>
+                                    <ul
+                                        v-show="isTransactionStatusDropdownOpen"
+                                        role="listbox"
+                                        tabindex="-1"
+                                        class="origin-top-right absolute right-0 left-0 mt-2 bg-white rounded-xl shadow-lg ring-1 ring-black ring-opacity-5 overflow-auto max-h-56 py-1 focus:outline-none z-50 transition-transform duration-150"
+                                    >
+                                        <li
+                                            v-for="(option, idx) in transactionStatusOptions"
+                                            :key="option.value"
+                                            role="option"
+                                            :aria-selected="option.value === newTransaction.status"
+                                            @mouseenter="highlightedTransactionStatusIndex = idx"
+                                            @mouseleave="highlightedTransactionStatusIndex = -1"
+                                            @click="selectTransactionStatus(option.value)"
+                                            :class=" [
+                                                'px-3 py-2 cursor-pointer flex items-center justify-between text-sm',
+                                                highlightedTransactionStatusIndex === idx ? 'bg-green-50' : 'hover:bg-green-50',
+                                                option.value === newTransaction.status ? 'font-semibold text-green-700' : 'text-gray-700'
+                                            ]"
+                                        >
+                                            <span>{{ option.label }}</span>
+                                            <svg v-if="option.value === newTransaction.status" class="w-4 h-4 text-green-600" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                            </svg>
+                                        </li>
+                                    </ul>
                                 </div>
-                            </div>
-
-                            <!-- Date -->
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Transaction Date</label>
-                                <input
-                                    v-model="newTransaction.date"
-                                    type="date"
-                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" />
                             </div>
                         </div>
 
-                        <!-- Right Column -->
-                        <div class="space-y-6">
-                            <!-- Description -->
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Description</label>
-                                <textarea
-                                    v-model="newTransaction.description"
-                                    rows="6"
-                                    placeholder="Enter detailed description of the transaction..."
-                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 resize-none">
-                </textarea>
+                        <!-- Amount -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Amount (PHP)</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium">₱</span>
+                                <TextInput
+                                    v-model="newTransaction.amount"
+                                    type="number"
+                                    step="0.01"
+                                    placeholder="0.00"
+                                    class="w-full pl-8 rounded-xl border-gray-300 shadow-sm focus:ring-1 focus:ring-green-500 focus:border-transparent" />
                             </div>
+                        </div>
 
-                            <!-- Transaction Preview Card -->
-                            <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                                <h4 class="text-sm font-semibold text-gray-700 mb-3">Transaction Preview</h4>
-                                <div class="space-y-2 text-sm">
-                                    <div class="flex justify-between">
-                                        <span class="text-gray-600">Type:</span>
-                                        <span :class="newTransaction.type === 'INCOME' ? 'text-green-600' : 'text-red-600'" class="font-medium">
-                      {{ newTransaction.type || 'Not selected' }}
-                    </span>
-                                    </div>
-                                    <div class="flex justify-between">
-                                        <span class="text-gray-600">Amount:</span>
-                                        <span class="font-medium text-gray-900">
-                      {{ newTransaction.amount ? formatCurrency(parseFloat(newTransaction.amount)) : '₱0.00' }}
-                    </span>
-                                    </div>
-                                    <div class="flex justify-between">
-                                        <span class="text-gray-600">Status:</span>
-                                        <span class="font-medium text-gray-900">{{ newTransaction.status || 'Not selected' }}</span>
-                                    </div>
-                                    <div class="flex justify-between">
-                                        <span class="text-gray-600">Date:</span>
-                                        <span class="font-medium text-gray-900">{{ newTransaction.date || 'Not selected' }}</span>
-                                    </div>
+                        <!-- Date -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Transaction Date</label>
+                            <input
+                                v-model="newTransaction.date"
+                                type="date"
+                                class="w-full rounded-xl border-gray-300 shadow-sm focus:ring-1 focus:ring-green-500 focus:border-transparent px-3 py-2.5" />
+                        </div>
+
+                        <!-- Description -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                            <textarea
+                                v-model="newTransaction.description"
+                                rows="4"
+                                placeholder="Enter detailed description of the transaction..."
+                                class="w-full rounded-xl border-gray-300 shadow-sm focus:ring-1 focus:ring-green-500 focus:border-transparent resize-none px-3 py-2.5">
+                            </textarea>
+                        </div>
+
+                        <!-- Transaction Preview Card -->
+                        <div class="bg-green-100 rounded-lg p-4 border border-green-300">
+                            <h4 class="text-sm font-semibold text-gray-700 mb-3">Transaction Preview</h4>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Type:</span>
+                                    <span :class="newTransaction.type === 'INCOME' ? 'text-green-600' : 'text-red-600'" class="font-medium">
+                                        {{ newTransaction.type || 'Not selected' }}
+                                    </span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Amount:</span>
+                                    <span class="font-medium text-gray-900">
+                                        {{ newTransaction.amount ? formatCurrency(parseFloat(newTransaction.amount)) : '₱0.00' }}
+                                    </span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Status:</span>
+                                    <span class="font-medium text-gray-900">{{ newTransaction.status || 'Not selected' }}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Date:</span>
+                                    <span class="font-medium text-gray-900">{{ newTransaction.date || 'Not selected' }}</span>
                                 </div>
                             </div>
                         </div>
@@ -642,15 +1168,14 @@ onMounted(async () => {
                 </div>
 
                 <!-- Modal Footer -->
-                <div class="px-8 py-6 border-t border-gray-200 bg-gray-50 flex justify-end space-x-4">
+                <div class="bg-white px-6 py-4 flex justify-end gap-3 border-t border-gray-200">
                     <BaseButton
                         variant="secondary"
-                        class="px-6 py-2.5"
                         @click="showCreateModal = false">
                         Cancel
                     </BaseButton>
                     <BaseButton
-                        class="bg-green-600 hover:bg-green-700 px-6 py-2.5"
+                        class="bg-green-600 hover:bg-green-700"
                         @click="handleCreateTransaction">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -724,5 +1249,42 @@ onMounted(async () => {
 /* Ensure minimum width for mobile layout */
 .min-w-0 {
     min-width: 0;
+}
+
+/* Custom dropdown & UI polish */
+::selection {
+  background-color: rgba(16, 185, 129, 0.12); /* soft green selection */
+}
+
+#filter-type-dropdown button,
+#filter-status-dropdown button,
+#filter-positive-dropdown button,
+#transaction-type-dropdown button,
+#transaction-status-dropdown button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+#filter-type-dropdown ul,
+#filter-status-dropdown ul,
+#filter-positive-dropdown ul,
+#transaction-type-dropdown ul,
+#transaction-status-dropdown ul {
+  -webkit-overflow-scrolling: touch;
+}
+
+#filter-type-dropdown li,
+#filter-status-dropdown li,
+#filter-positive-dropdown li,
+#transaction-type-dropdown li,
+#transaction-status-dropdown li {
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+#filter-type-dropdown svg,
+#filter-status-dropdown svg,
+#filter-positive-dropdown svg,
+#transaction-type-dropdown svg,
+#transaction-status-dropdown svg {
+  transition: transform 200ms ease;
 }
 </style>

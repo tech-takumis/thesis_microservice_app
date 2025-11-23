@@ -1,10 +1,11 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useVoucherStore } from '@/stores/voucher'
 import { useNotificationStore } from '@/stores/notification'
 import AuthenticatedLayout from '../../../layouts/AuthenticatedLayout.vue'
 import LoadingSpinner from '@/components/others/LoadingSpinner.vue'
+import BaseButton from '@/components/buttons/BaseButton.vue'
 import {
     MagnifyingGlassIcon,
     FunnelIcon,
@@ -21,7 +22,7 @@ const notificationStore = useNotificationStore()
 // State
 const loading = ref(false)
 const searchQuery = ref('')
-const showFilterModal = ref(false)
+const showFilters = ref(false)
 const showBulkDeleteModal = ref(false)
 const selectedVouchers = ref(new Set())
 
@@ -150,18 +151,6 @@ const navigateToGenerateVoucher = () => {
     router.push({ name: 'agriculturist-voucher-generate' })
 }
 
-const openFilterModal = () => {
-    showFilterModal.value = true
-}
-
-const closeFilterModal = () => {
-    showFilterModal.value = false
-}
-
-const applyFilters = () => {
-    closeFilterModal()
-}
-
 const clearFilters = () => {
     filters.value = {
         title: '',
@@ -169,6 +158,134 @@ const clearFilters = () => {
         status: '',
         code: ''
     }
+    closeVoucherTypeDropdown()
+    closeStatusDropdown()
+}
+
+// Voucher Type dropdown options
+const voucherTypeOptions = [
+    { label: 'All Types', value: '' },
+    { label: 'Seeds', value: 'SEEDS' },
+    { label: 'Fertilizer', value: 'FERTILIZER' },
+    { label: 'Equipment', value: 'EQUIPMENT' },
+    { label: 'Cash', value: 'CASH' },
+    { label: 'Other', value: 'OTHER' }
+]
+
+// Status dropdown options
+const statusOptions = [
+    { label: 'All Statuses', value: '' },
+    { label: 'Issued', value: 'ISSUED' },
+    { label: 'Claimed', value: 'CLAIMED' },
+    { label: 'Expired', value: 'EXPIRED' },
+    { label: 'Cancelled', value: 'CANCELLED' }
+]
+
+// Custom dropdown state for voucher type
+const isVoucherTypeDropdownOpen = ref(false)
+const highlightedVoucherTypeIndex = ref(-1)
+
+const toggleVoucherTypeDropdown = () => {
+    isVoucherTypeDropdownOpen.value = !isVoucherTypeDropdownOpen.value
+    if (isVoucherTypeDropdownOpen.value) {
+        highlightedVoucherTypeIndex.value = voucherTypeOptions.findIndex(opt => opt.value === filters.value.voucherType)
+    }
+}
+
+const closeVoucherTypeDropdown = () => {
+    isVoucherTypeDropdownOpen.value = false
+    highlightedVoucherTypeIndex.value = -1
+}
+
+const selectVoucherType = (value) => {
+    filters.value.voucherType = value
+    closeVoucherTypeDropdown()
+}
+
+const onVoucherTypeKeyDown = (e) => {
+    if (!isVoucherTypeDropdownOpen.value && (e.key === 'Enter' || e.key === ' ')) {
+        e.preventDefault()
+        toggleVoucherTypeDropdown()
+        return
+    }
+    if (isVoucherTypeDropdownOpen.value) {
+        if (e.key === 'ArrowDown') {
+            e.preventDefault()
+            highlightedVoucherTypeIndex.value = Math.min(highlightedVoucherTypeIndex.value + 1, voucherTypeOptions.length - 1)
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault()
+            highlightedVoucherTypeIndex.value = Math.max(highlightedVoucherTypeIndex.value - 1, 0)
+        } else if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            if (highlightedVoucherTypeIndex.value >= 0) selectVoucherType(voucherTypeOptions[highlightedVoucherTypeIndex.value].value)
+        } else if (e.key === 'Escape') {
+            e.preventDefault()
+            closeVoucherTypeDropdown()
+        }
+    }
+}
+
+const selectedVoucherTypeDisplay = computed(() => {
+    const option = voucherTypeOptions.find(opt => opt.value === filters.value.voucherType)
+    return option ? option.label : 'All Types'
+})
+
+// Custom dropdown state for status
+const isStatusDropdownOpen = ref(false)
+const highlightedStatusIndex = ref(-1)
+
+const toggleStatusDropdown = () => {
+    isStatusDropdownOpen.value = !isStatusDropdownOpen.value
+    if (isStatusDropdownOpen.value) {
+        highlightedStatusIndex.value = statusOptions.findIndex(opt => opt.value === filters.value.status)
+    }
+}
+
+const closeStatusDropdown = () => {
+    isStatusDropdownOpen.value = false
+    highlightedStatusIndex.value = -1
+}
+
+const selectStatus = (value) => {
+    filters.value.status = value
+    closeStatusDropdown()
+}
+
+const onStatusKeyDown = (e) => {
+    if (!isStatusDropdownOpen.value && (e.key === 'Enter' || e.key === ' ')) {
+        e.preventDefault()
+        toggleStatusDropdown()
+        return
+    }
+    if (isStatusDropdownOpen.value) {
+        if (e.key === 'ArrowDown') {
+            e.preventDefault()
+            highlightedStatusIndex.value = Math.min(highlightedStatusIndex.value + 1, statusOptions.length - 1)
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault()
+            highlightedStatusIndex.value = Math.max(highlightedStatusIndex.value - 1, 0)
+        } else if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            if (highlightedStatusIndex.value >= 0) selectStatus(statusOptions[highlightedStatusIndex.value].value)
+        } else if (e.key === 'Escape') {
+            e.preventDefault()
+            closeStatusDropdown()
+        }
+    }
+}
+
+const selectedStatusDisplay = computed(() => {
+    const option = statusOptions.find(opt => opt.value === filters.value.status)
+    return option ? option.label : 'All Statuses'
+})
+
+// Close on outside click
+const onClickOutside = (e) => {
+    const voucherTypeEl = document.querySelector('#voucher-type-dropdown')
+    const statusEl = document.querySelector('#status-dropdown')
+    
+    if (voucherTypeEl && !voucherTypeEl.contains(e.target)) closeVoucherTypeDropdown()
+    if (statusEl && !statusEl.contains(e.target)) closeStatusDropdown()
 }
 
 const formatDate = (dateString) => {
@@ -186,9 +303,9 @@ const formatDate = (dateString) => {
 
 const getStatusColor = (status) => {
     const colors = {
-        ISSUED: 'bg-blue-100 text-blue-800',
+        ISSUED: 'bg-yellow-100 text-yellow-800',
         CLAIMED: 'bg-green-100 text-green-800',
-        EXPIRED: 'bg-gray-100 text-gray-800',
+        EXPIRED: 'bg-red-100 text-red-800',
         CANCELLED: 'bg-red-100 text-red-800'
     }
     return colors[status] || 'bg-gray-100 text-gray-800'
@@ -198,8 +315,8 @@ const getVoucherTypeColor = (type) => {
     const colors = {
         SEEDS: 'bg-green-100 text-green-800',
         FERTILIZER: 'bg-yellow-100 text-yellow-800',
-        EQUIPMENT: 'bg-purple-100 text-purple-800',
-        CASH: 'bg-blue-100 text-blue-800',
+        EQUIPMENT: 'bg-gray-200 text-green-600',
+        CASH: 'bg-green-100 text-green-800',
         OTHER: 'bg-gray-100 text-gray-800'
     }
     return colors[type] || 'bg-gray-100 text-gray-800'
@@ -208,20 +325,22 @@ const getVoucherTypeColor = (type) => {
 // Lifecycle
 onMounted(() => {
     fetchVouchers()
+    document.addEventListener('click', onClickOutside)
+})
+
+onBeforeUnmount(() => {
+    document.removeEventListener('click', onClickOutside)
 })
 </script>
 
 <template>
     <AuthenticatedLayout>
         <!-- Header -->
-        <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div class="mb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 ml-4">
             <div class="flex items-center gap-3">
-                <div class="p-2 bg-green-100 rounded-lg">
-                    <TicketIcon class="w-6 h-6 text-green-600" />
-                </div>
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-900">All Vouchers</h1>
-                    <p class="text-sm text-gray-500 mt-1">
+                    <h1 class="text-3xl font-bold text-green-600">All Vouchers</h1>
+                    <p class="mt-1 text-sm text-gray-600">
                         Manage and track all vouchers
                     </p>
                 </div>
@@ -237,22 +356,28 @@ onMounted(() => {
                         v-model="searchQuery"
                         type="text"
                         placeholder="Search vouchers..."
-                        class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
+                        class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-1 focus:ring-green-500 focus:border-transparent text-sm"
                     />
                 </div>
 
                 <!-- Filter Button -->
-                <button
-                    @click="openFilterModal"
-                    class="inline-flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500"
-                    :class="{ 'ring-2 ring-green-500': hasActiveFilters }"
+                <BaseButton
+                    class="bg-green-600 border-green-600 text-white hover:bg-green-700 hover:border-green-700"
+                    :class="{
+                        'bg-gray-600 border-gray-600 hover:bg-gray-700 hover:border-gray-700':
+                        showFilters || hasActiveFilters
+                    }"
+                    @click="showFilters = !showFilters"
                 >
-                    <FunnelIcon class="w-5 h-5" />
-                    <span class="hidden sm:inline">Filter</span>
-                    <span v-if="hasActiveFilters" class="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-green-600 rounded-full">
-                        !
+                    <FunnelIcon class="w-5 h-5 mr-2" />
+                    Filters
+                    <span
+                        v-if="hasActiveFilters"
+                        class="ml-1 px-2 py-0.5 bg-white/20 text-white text-xs rounded-full"
+                    >
+                        Active
                     </span>
-                </button>
+                </BaseButton>
 
                 <!-- Generate Voucher Button -->
                 <button
@@ -266,16 +391,163 @@ onMounted(() => {
         </div>
 
         <!-- Loading State -->
-        <div v-if="loading" class="flex justify-center items-center py-12">
-            <LoadingSpinner />
+        <div
+            v-if="loading"
+            class="flex flex-col items-center justify-center flex-1 space-y-4 min-h-[60vh]"
+        >
+            <!-- Spinner -->
+            <div class="relative">
+                <div
+                    class="h-14 w-14 rounded-full border-4 border-gray-200"></div>
+                <div
+                    class="absolute top-0 left-0 h-14 w-14 rounded-full border-4 border-green-600 border-t-transparent animate-spin"></div>
+            </div>
+
+            <!-- Loading Label -->
+            <p class="text-gray-600 font-medium tracking-wide">
+                Loading data…
+            </p>
         </div>
 
         <!-- Vouchers Table -->
-        <div v-else class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div v-else class="bg-gray-100 rounded-lg border border-gray-200 shadow-sm flex flex-col flex-1 min-h-0 overflow-hidden">
+            <!-- Filter Panel -->
+            <div v-if="showFilters" class="p-4 bg-gray-50 border-b border-gray-300">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Title Filter -->
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Title</label>
+                        <input
+                            v-model="filters.title"
+                            type="text"
+                            placeholder="Search by title"
+                            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-green-500 focus:border-transparent"
+                        />
+                    </div>
+
+                    <!-- Voucher Code Filter -->
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Voucher Code</label>
+                        <input
+                            v-model="filters.code"
+                            type="text"
+                            placeholder="Search by code"
+                            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-green-500 focus:border-transparent"
+                        />
+                    </div>
+
+                    <!-- Voucher Type Filter -->
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Voucher Type</label>
+                        <div id="voucher-type-dropdown" class="relative">
+                            <button
+                                type="button"
+                                @click="toggleVoucherTypeDropdown"
+                                @keydown.stop.prevent="onVoucherTypeKeyDown"
+                                :aria-expanded="isVoucherTypeDropdownOpen"
+                                aria-haspopup="listbox"
+                                class="w-full flex items-center justify-between px-3 py-2 text-sm border border-gray-300 rounded-xl bg-white shadow-sm focus:ring-1 focus:ring-green-500 focus:border-transparent"
+                            >
+                                <span class="text-gray-900">{{ selectedVoucherTypeDisplay }}</span>
+                                <svg
+                                    class="w-4 h-4 text-green-600 transform transition-transform duration-200"
+                                    :class="isVoucherTypeDropdownOpen ? 'rotate-180' : ''"
+                                    viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"
+                                    aria-hidden="true"
+                                >
+                                    <path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </button>
+                            <ul
+                                v-show="isVoucherTypeDropdownOpen"
+                                role="listbox"
+                                tabindex="-1"
+                                class="origin-top-right absolute right-0 left-0 mt-2 bg-white rounded-xl shadow-lg ring-1 ring-black ring-opacity-5 overflow-auto max-h-56 py-1 focus:outline-none z-50 transition-transform duration-150"
+                            >
+                                <li
+                                    v-for="(option, idx) in voucherTypeOptions"
+                                    :key="option.value"
+                                    role="option"
+                                    :aria-selected="option.value === filters.voucherType"
+                                    @mouseenter="highlightedVoucherTypeIndex = idx"
+                                    @mouseleave="highlightedVoucherTypeIndex = -1"
+                                    @click="selectVoucherType(option.value)"
+                                    :class=" [
+                                        'px-3 py-2 cursor-pointer flex items-center justify-between text-sm',
+                                        highlightedVoucherTypeIndex === idx ? 'bg-green-50' : 'hover:bg-green-50',
+                                        option.value === filters.voucherType ? 'font-semibold text-green-700' : 'text-gray-700'
+                                    ]"
+                                >
+                                    <span>{{ option.label }}</span>
+                                    <svg v-if="option.value === filters.voucherType" class="w-4 h-4 text-green-600" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Status Filter -->
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Status</label>
+                        <div id="status-dropdown" class="relative">
+                            <button
+                                type="button"
+                                @click="toggleStatusDropdown"
+                                @keydown.stop.prevent="onStatusKeyDown"
+                                :aria-expanded="isStatusDropdownOpen"
+                                aria-haspopup="listbox"
+                                class="w-full flex items-center justify-between px-3 py-2 text-sm border border-gray-300 rounded-xl bg-white shadow-sm focus:ring-1 focus:ring-green-500 focus:border-transparent"
+                            >
+                                <span class="text-gray-900">{{ selectedStatusDisplay }}</span>
+                                <svg
+                                    class="w-4 h-4 text-green-600 transform transition-transform duration-200"
+                                    :class="isStatusDropdownOpen ? 'rotate-180' : ''"
+                                    viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"
+                                    aria-hidden="true"
+                                >
+                                    <path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </button>
+                            <ul
+                                v-show="isStatusDropdownOpen"
+                                role="listbox"
+                                tabindex="-1"
+                                class="origin-top-right absolute right-0 left-0 mt-2 bg-white rounded-xl shadow-lg ring-1 ring-black ring-opacity-5 overflow-auto max-h-56 py-1 focus:outline-none z-50 transition-transform duration-150"
+                            >
+                                <li
+                                    v-for="(option, idx) in statusOptions"
+                                    :key="option.value"
+                                    role="option"
+                                    :aria-selected="option.value === filters.status"
+                                    @mouseenter="highlightedStatusIndex = idx"
+                                    @mouseleave="highlightedStatusIndex = -1"
+                                    @click="selectStatus(option.value)"
+                                    :class=" [
+                                        'px-3 py-2 cursor-pointer flex items-center justify-between text-sm',
+                                        highlightedStatusIndex === idx ? 'bg-green-50' : 'hover:bg-green-50',
+                                        option.value === filters.status ? 'font-semibold text-green-700' : 'text-gray-700'
+                                    ]"
+                                >
+                                    <span>{{ option.label }}</span>
+                                    <svg v-if="option.value === filters.status" class="w-4 h-4 text-green-600" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 flex justify-end gap-2">
+                    <BaseButton variant="secondary" @click="clearFilters">Clear Filters</BaseButton>
+                </div>
+            </div>
+
             <!-- Table Header with Bulk Actions -->
-            <div class="px-4 py-3 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+            <div class="px-4 py-3 border-b border-gray-300 bg-gray-100 flex items-center justify-between">
                 <div class="flex items-center gap-3">
-                    <span class="text-sm font-medium text-gray-700">
+                    <span class="text-sm font-medium text-green-600">
                         {{ filteredVouchers.length }} voucher{{ filteredVouchers.length !== 1 ? 's' : '' }}
                     </span>
                     <span v-if="selectedVouchers.size > 0" class="text-sm text-gray-500">
@@ -295,8 +567,8 @@ onMounted(() => {
             </div>
 
             <!-- Desktop Table View -->
-            <div class="hidden md:block overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
+            <div class="hidden md:block overflow-x-auto flex-1 min-h-0">
+                <table class="min-w-full divide-y divide-gray-300">
                     <thead class="bg-gray-50">
                         <tr>
                             <th scope="col" class="px-4 py-3 text-left">
@@ -327,7 +599,7 @@ onMounted(() => {
                             </th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
+                    <tbody class="bg-white divide-y divide-gray-300">
                         <tr
                             v-if="filteredVouchers.length === 0"
                             class="hover:bg-gray-50"
@@ -339,7 +611,7 @@ onMounted(() => {
                         <tr
                             v-for="voucher in filteredVouchers"
                             :key="voucher.id"
-                            class="hover:bg-gray-50 cursor-pointer transition-colors"
+                            class="hover:bg-green-50 cursor-pointer transition-colors"
                             @click="navigateToVoucherDetail(voucher.id)"
                         >
                             <td class="px-4 py-4 whitespace-nowrap" @click.stop>
@@ -445,107 +717,6 @@ onMounted(() => {
             </div>
         </div>
 
-        <!-- Filter Modal -->
-        <Teleport to="body">
-            <div
-                v-if="showFilterModal"
-                class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity z-50"
-                @click="closeFilterModal"
-            >
-                <div class="fixed inset-0 z-50 overflow-y-auto">
-                    <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-                        <div
-                            class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg"
-                            @click.stop
-                        >
-                            <!-- Modal Header -->
-                            <div class="bg-gray-50 px-4 py-3 border-b border-gray-200 flex items-center justify-between">
-                                <h3 class="text-lg font-semibold text-gray-900">Filter Vouchers</h3>
-                                <button
-                                    @click="closeFilterModal"
-                                    class="text-gray-400 hover:text-gray-500 focus:outline-none"
-                                >
-                                    <XMarkIcon class="h-6 w-6" />
-                                </button>
-                            </div>
-
-                            <!-- Modal Body -->
-                            <div class="bg-white px-4 py-5 sm:p-6 space-y-4">
-                                <!-- Title Filter -->
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                                    <input
-                                        v-model="filters.title"
-                                        type="text"
-                                        placeholder="Search by title"
-                                        class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
-                                    />
-                                </div>
-
-                                <!-- Voucher Code Filter -->
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Voucher Code</label>
-                                    <input
-                                        v-model="filters.code"
-                                        type="text"
-                                        placeholder="Search by code"
-                                        class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
-                                    />
-                                </div>
-
-                                <!-- Voucher Type Filter -->
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Voucher Type</label>
-                                    <select
-                                        v-model="filters.voucherType"
-                                        class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
-                                    >
-                                        <option value="">All Types</option>
-                                        <option value="SEEDS">Seeds</option>
-                                        <option value="FERTILIZER">Fertilizer</option>
-                                        <option value="EQUIPMENT">Equipment</option>
-                                        <option value="CASH">Cash</option>
-                                        <option value="OTHER">Other</option>
-                                    </select>
-                                </div>
-
-                                <!-- Status Filter -->
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                                    <select
-                                        v-model="filters.status"
-                                        class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
-                                    >
-                                        <option value="">All Statuses</option>
-                                        <option value="ISSUED">Issued</option>
-                                        <option value="CLAIMED">Claimed</option>
-                                        <option value="EXPIRED">Expired</option>
-                                        <option value="CANCELLED">Cancelled</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <!-- Modal Footer -->
-                            <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse gap-3">
-                                <button
-                                    @click="applyFilters"
-                                    class="inline-flex w-full justify-center rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 sm:w-auto"
-                                >
-                                    Apply Filters
-                                </button>
-                                <button
-                                    @click="clearFilters"
-                                    class="mt-3 inline-flex w-full justify-center rounded-lg bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
-                                >
-                                    Clear All
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </Teleport>
-
         <!-- Bulk Delete Confirmation Modal -->
         <Teleport to="body">
             <div
@@ -618,5 +789,30 @@ onMounted(() => {
 
 ::-webkit-scrollbar-thumb:hover {
     background: #a0aec0;
+}
+
+/* Custom dropdown & UI polish */
+::selection {
+  background-color: rgba(16, 185, 129, 0.12); /* soft green selection */
+}
+
+#voucher-type-dropdown button,
+#status-dropdown button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+#voucher-type-dropdown ul,
+#status-dropdown ul {
+  -webkit-overflow-scrolling: touch;
+}
+
+#voucher-type-dropdown li,
+#status-dropdown li {
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+#voucher-type-dropdown svg,
+#status-dropdown svg {
+  transition: transform 200ms ease;
 }
 </style>

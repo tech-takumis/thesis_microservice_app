@@ -35,10 +35,10 @@ const props = defineProps({
 })
 
 const cardClasses = computed(() => [
-    'bg-white rounded-lg overflow-hidden',
+    'bg-gray-100 rounded-xl overflow-hidden',
     {
         // Variants
-        'border border-gray-200': props.variant === 'default' || props.variant === 'bordered',
+        'border border-gray-300': props.variant === 'default' || props.variant === 'bordered',
         'shadow-sm': props.variant === 'default',
         'shadow-md': props.variant === 'elevated',
         'shadow-none border-0': props.variant === 'flat',
@@ -49,7 +49,7 @@ const cardClasses = computed(() => [
 ])
 
 const headerClasses = computed(() => [
-    'border-b border-gray-200',
+    'border-b border-gray-300',
     {
         'p-3': props.padding === 'small',
         'p-4': props.padding === 'normal',
@@ -67,7 +67,7 @@ const contentClasses = computed(() => [
 ])
 
 const footerClasses = computed(() => [
-    'border-t border-gray-200 bg-gray-50',
+    'border-t border-gray-300 bg-gray-50',
     {
         'p-3': props.padding === 'small',
         'p-4': props.padding === 'normal',

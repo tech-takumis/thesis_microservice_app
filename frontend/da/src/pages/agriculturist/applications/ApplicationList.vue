@@ -51,7 +51,7 @@
               </ol>
             </nav>
 
-            <div class="flex items-center justify-between gap-4">
+            <div class="flex items-center justify-between ml-5">
               <!-- Title -->
               <h1 class="text-2xl font-semibold text-green-600 flex-shrink-0">
                 Farmer Applications
@@ -94,46 +94,145 @@
                   </button>
 
                   <!-- Filter -->
-                  <button
-                    class="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium text-gray-700 bg-white border border-gray-300 shadow-sm hover:bg-green-600 hover:text-white focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-300 ease-in-out flex-shrink-0"
-                    @click="showFilterModal = true"
+                  <BaseButton
+                    class="bg-green-600 border-green-600 text-white hover:bg-green-700 hover:border-green-700"
+                    :class="{
+                        'bg-gray-600 border-gray-600 hover:bg-gray-700 hover:border-gray-700':
+                        showFilters || hasActiveFilters
+                    }"
+                    @click="showFilters = !showFilters"
                   >
                     <Filter class="h-4 w-4 mr-1" />
-                    Filter
-                  </button>
+                    Filters
+                    <span
+                        v-if="hasActiveFilters"
+                        class="ml-1 px-2 py-0.5 bg-white/20 text-white text-xs rounded-full"
+                    >
+                        Active
+                    </span>
+                  </BaseButton>
                 </div>
               </div>
             </div>
         </div>
 
-        <!-- Main Content Area - Flex and Scrollable -->
-        <div class="flex-1 min-h-0 overflow-y-auto border bg-gray-100 rounded-lg">
-            <!-- Loading state -->
-            <div
-              v-if="loading"
-              class="flex flex-col items-center justify-center flex-1 space-y-4 print:hidden"
-            >
-            <!-- Spinner -->
-            <div class="relative">
-                <div class="h-14 w-14 rounded-full border-4 border-gray-200"></div>
-                <div class="absolute top-0 left-0 h-14 w-14 rounded-full border-4 border-green-600 border-t-transparent animate-spin"></div>
-            </div>
+                        <!-- Main Content Area - Flex and Scrollable -->
+                        <div class="flex-1 min-h-0 overflow-y-auto border bg-gray-100 rounded-lg">
+                            <!-- Loading state -->
+                            <div
+                            v-if="loading"
+                            class="flex flex-col items-center justify-center flex-1 space-y-4 print:hidden min-h-[60vh]"
+                            >
+                                <!-- Spinner -->
+                                <div class="relative">
+                                    <div
+                                        class="h-14 w-14 rounded-full border-4 border-gray-200"></div>
+                                    <div
+                                        class="absolute top-0 left-0 h-14 w-14 rounded-full border-4 border-green-600 border-t-transparent animate-spin"></div>
+                                </div>
 
-            <!-- Loading Label -->
-              <p class="text-gray-600 font-medium tracking-wide">
-                Loading data…
-              </p>
-            </div>
-
-
+                                <!-- Loading Label -->
+                                <p class="text-gray-600 font-medium tracking-wide">
+                                    Loading data…
+                                </p>
+                            </div>
             <!-- Error state -->
             <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4 print:hidden">
                 <p class="text-red-800">{{ error.message }}</p>
             </div>
 
             <!-- Applications table -->
-                <div v-else :key="route.params.id" class="bg-gray-100 shadow-sm rounded-lg overflow-hidden mb-4 print:hidden flex-1 min-h-0">
-                <div class="overflow-x-auto overflow-y-auto max-h-full">
+                <div v-else :key="route.params.id" class="bg-white rounded-lg border border-gray-200 shadow-sm flex flex-col flex-1 min-h-0 overflow-hidden print:hidden">
+                    <!-- Filter Panel -->
+                    <div v-if="showFilters" class="p-4 bg-gray-50 border-b border-gray-300">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <!-- Batch Name -->
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Batch Name</label>
+                                <div id="batch-dropdown" class="relative">
+                                    <button
+                                        type="button"
+                                        @click="toggleBatchDropdown"
+                                        @keydown.stop.prevent="onBatchKeyDown"
+                                        :aria-expanded="isBatchDropdownOpen"
+                                        aria-haspopup="listbox"
+                                        class="w-full flex items-center justify-between px-3 py-2 text-sm border border-gray-300 rounded-xl bg-white shadow-sm focus:ring-1 focus:ring-green-500 focus:border-transparent"
+                                    >
+                                        <span class="text-gray-900">{{ selectedBatchDisplay }}</span>
+                                        <svg
+                                            class="w-4 h-4 text-green-600 transform transition-transform duration-200"
+                                            :class="isBatchDropdownOpen ? 'rotate-180' : ''"
+                                            viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"
+                                            aria-hidden="true"
+                                        >
+                                            <path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                    </button>
+                                    <ul
+                                        v-show="isBatchDropdownOpen"
+                                        role="listbox"
+                                        tabindex="-1"
+                                        class="origin-top-right absolute right-0 left-0 mt-2 bg-white rounded-xl shadow-lg ring-1 ring-black ring-opacity-5 overflow-auto max-h-56 py-1 focus:outline-none z-50 transition-transform duration-150"
+                                    >
+                                        <li
+                                            v-for="(batch, idx) in batchOptions"
+                                            :key="batch.id || 'all'"
+                                            role="option"
+                                            :aria-selected="(batch.name === 'All Batches' && !filters.batchName) || batch.name === filters.batchName"
+                                            @mouseenter="highlightedBatchIndex = idx"
+                                            @mouseleave="highlightedBatchIndex = -1"
+                                            @click="selectBatch(batch)"
+                                            :class=" [
+                                                'px-3 py-2 cursor-pointer flex items-center justify-between text-sm',
+                                                highlightedBatchIndex === idx ? 'bg-green-50' : 'hover:bg-green-50',
+                                                ((batch.name === 'All Batches' && !filters.batchName) || batch.name === filters.batchName) ? 'font-semibold text-green-700' : 'text-gray-700'
+                                            ]"
+                                        >
+                                            <span>{{ batch.name }}</span>
+                                            <svg v-if="(batch.name === 'All Batches' && !filters.batchName) || batch.name === filters.batchName" class="w-4 h-4 text-green-600" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                            </svg>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Location -->
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Location</label>
+                                <input
+                                    v-model="filters.location"
+                                    type="text"
+                                    placeholder="Search by barangay, city, or province"
+                                    class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-green-500 focus:border-transparent"
+                                />
+                            </div>
+
+                            <!-- Submitted Date Range -->
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Date From</label>
+                                <input
+                                    v-model="filters.dateFrom"
+                                    type="date"
+                                    class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-green-500 focus:border-transparent"
+                                />
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Date To</label>
+                                <input
+                                    v-model="filters.dateTo"
+                                    type="date"
+                                    class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-green-500 focus:border-transparent"
+                                />
+                            </div>
+                        </div>
+
+                        <div class="mt-4 flex justify-end gap-2">
+                            <BaseButton variant="secondary" @click="resetFilters">Clear Filters</BaseButton>
+                        </div>
+                    </div>
+
+                <div class="overflow-x-auto overflow-y-auto max-h-full flex-1 min-h-0">
                     <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                     <tr>
@@ -201,16 +300,6 @@
                 </div>
             </div>
         </div>
-        <!-- Filter Modal -->
-        <ApplicationFilterModal
-            v-model:show="showFilterModal"
-            :filters="filters"
-            :batches="batches"
-            class="print:hidden"
-            @apply-filters="applyFilters"
-            @reset-filters="resetFilters"
-        />
-
         <!-- Create Batch Modal -->
         <CreateBatchModal
             :show="showCreateBatchModal"
@@ -567,13 +656,13 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
-import ApplicationFilterModal from '@/components/modals/ApplicationFilterModal.vue'
 import CreateBatchModal from '@/components/modals/CreateBatchModal.vue'
-import { Filter, Trash2, FileText, Printer, Plus } from 'lucide-vue-next'
+import { Filter, Trash2, FileText, Printer, Plus, X } from 'lucide-vue-next'
+import BaseButton from '@/components/buttons/BaseButton.vue'
 import {
   HomeIcon,
   ChevronRightIcon
@@ -600,7 +689,7 @@ const insuranceBatchStore = useBatchStore()
 const loading = ref(false)
 const error = ref(null)
 const selectedApplications = ref([])
-const showFilterModal = ref(false)
+const showFilters = ref(false)
 const showCreateBatchModal = ref(false)
 const filters = ref({
     batchName: '',
@@ -652,6 +741,80 @@ const filteredApplications = computed(() => {
 
     return apps
 })
+
+const hasActiveFilters = computed(() => {
+    return filters.value.batchName ||
+           filters.value.location ||
+           filters.value.dateFrom ||
+           filters.value.dateTo
+})
+
+// Batch options with "All Batches" option
+const batchOptions = computed(() => {
+    return [
+        { id: '', name: 'All Batches' },
+        ...batches.value
+    ]
+})
+
+// Custom dropdown state for batch name
+const isBatchDropdownOpen = ref(false)
+const highlightedBatchIndex = ref(-1)
+
+const toggleBatchDropdown = () => {
+    isBatchDropdownOpen.value = !isBatchDropdownOpen.value
+    if (isBatchDropdownOpen.value) {
+        const currentIndex = batchOptions.value.findIndex(b => b.name === filters.value.batchName || (b.name === 'All Batches' && !filters.value.batchName))
+        highlightedBatchIndex.value = currentIndex >= 0 ? currentIndex : 0
+    }
+}
+
+const closeBatchDropdown = () => {
+    isBatchDropdownOpen.value = false
+    highlightedBatchIndex.value = -1
+}
+
+const selectBatch = (batch) => {
+    filters.value.batchName = batch.name === 'All Batches' ? '' : batch.name
+    closeBatchDropdown()
+}
+
+const onBatchKeyDown = (e) => {
+    if (!isBatchDropdownOpen.value && (e.key === 'Enter' || e.key === ' ')) {
+        e.preventDefault()
+        toggleBatchDropdown()
+        return
+    }
+
+    if (isBatchDropdownOpen.value) {
+        if (e.key === 'ArrowDown') {
+            e.preventDefault()
+            highlightedBatchIndex.value = Math.min(highlightedBatchIndex.value + 1, batchOptions.value.length - 1)
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault()
+            highlightedBatchIndex.value = Math.max(highlightedBatchIndex.value - 1, 0)
+        } else if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            if (highlightedBatchIndex.value >= 0) selectBatch(batchOptions.value[highlightedBatchIndex.value])
+        } else if (e.key === 'Escape') {
+            e.preventDefault()
+            closeBatchDropdown()
+        }
+    }
+}
+
+// Get display text for selected batch
+const selectedBatchDisplay = computed(() => {
+    if (!filters.value.batchName) return 'All Batches'
+    return filters.value.batchName
+})
+
+// Close on outside click
+const onClickOutside = (e) => {
+    const el = document.querySelector('#batch-dropdown')
+    if (!el) return
+    if (!el.contains(e.target)) closeBatchDropdown()
+}
 
 const farmerChunks = computed(() => {
     const chunks = []
@@ -901,11 +1064,6 @@ const handleDelete = async () => {
     await fetchApplicationsList()
 }
 
-const applyFilters = (newFilters) => {
-    filters.value = { ...newFilters }
-    showFilterModal.value = false
-}
-
 const resetFilters = () => {
     filters.value = {
         batchName: '',
@@ -913,7 +1071,7 @@ const resetFilters = () => {
         dateFrom: '',
         dateTo: ''
     }
-    showFilterModal.value = false
+    closeBatchDropdown()
 }
 
 
@@ -963,6 +1121,11 @@ watch(() => route.fullPath, (newPath, oldPath) => {
 onMounted(() => {
     fetchBatches()
     fetchApplicationsList()
+    document.addEventListener('click', onClickOutside)
+})
+
+onBeforeUnmount(() => {
+    document.removeEventListener('click', onClickOutside)
 })
 </script>
 <style>
@@ -1103,5 +1266,26 @@ onMounted(() => {
     size: letter landscape;
     margin: 0.4in 0.2in;
   }
+}
+
+/* Custom dropdown & UI polish */
+::selection {
+  background-color: rgba(16, 185, 129, 0.12); /* soft green selection */
+}
+
+#batch-dropdown button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+#batch-dropdown ul {
+  -webkit-overflow-scrolling: touch;
+}
+
+#batch-dropdown li {
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+#batch-dropdown svg {
+  transition: transform 200ms ease;
 }
 </style>

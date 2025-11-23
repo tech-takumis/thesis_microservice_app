@@ -64,8 +64,22 @@
       <!-- Main Content Area - Scrollable -->
       <div class="flex-1 min-h-0 overflow-y-auto">
         <!-- Loading State -->
-        <div v-if="loading" class="flex justify-center items-center h-64">
-          <div class="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+        <div
+          v-if="loading"
+          class="flex flex-col items-center justify-center flex-1 space-y-4 min-h-[60vh]"
+        >
+          <!-- Spinner -->
+          <div class="relative">
+            <div
+              class="h-14 w-14 rounded-full border-4 border-gray-200"></div>
+            <div
+              class="absolute top-0 left-0 h-14 w-14 rounded-full border-4 border-green-600 border-t-transparent animate-spin"></div>
+          </div>
+
+          <!-- Loading Label -->
+          <p class="text-gray-600 font-medium tracking-wide">
+            Loading data…
+          </p>
         </div>
 
         <!-- Error State -->

@@ -7,8 +7,9 @@ import NotificationToast from '@/components/others/NotificationToast.vue'
 import { MUNICIPAL_AGRICULTURIST_NAVIGATION } from '@/lib/navigation'
 import { useProgramStore } from '@/stores/program.js'
 import { useNotificationStore } from '@/stores/notification.js'
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
+import { X } from 'lucide-vue-next'
 
 const navigation = MUNICIPAL_AGRICULTURIST_NAVIGATION
 const programStore = useProgramStore()
@@ -97,6 +98,8 @@ const fetchPrograms = async () => {
 
 const closeModal = () => {
     showCreateModal.value = false
+    closeProgramTypeDropdown()
+    closeProgramStatusDropdown()
     resetForm()
 }
 
@@ -223,9 +226,260 @@ const navigateToProgramDetail = (programId) => {
     })
 }
 
+// Filter dropdown options
+const filterTypeOptions = [
+    { label: 'All Types', value: '' },
+    { label: 'Training', value: 'TRAINING' },
+    { label: 'Workshop', value: 'WORKSHOP' },
+    { label: 'Research', value: 'RESEARCH' },
+    { label: 'Distribution', value: 'DISTRIBUTION' },
+    { label: 'Monitoring', value: 'MONITORING' },
+    { label: 'Consultation', value: 'CONSULTATION' }
+]
+
+const filterStatusOptions = [
+    { label: 'All Status', value: '' },
+    { label: 'Pending', value: 'PENDING' },
+    { label: 'Active', value: 'ACTIVE' },
+    { label: 'Completed', value: 'COMPLETED' },
+    { label: 'Inactive', value: 'INACTIVE' },
+    { label: 'Cancelled', value: 'CANCELLED' }
+]
+
+const programTypeOptions = [
+    { label: 'Training', value: 'TRAINING' },
+    { label: 'Workshop', value: 'WORKSHOP' },
+    { label: 'Research', value: 'RESEARCH' },
+    { label: 'Distribution', value: 'DISTRIBUTION' },
+    { label: 'Monitoring', value: 'MONITORING' },
+    { label: 'Consultation', value: 'CONSULTATION' }
+]
+
+const programStatusOptions = [
+    { label: 'Pending', value: 'PENDING' },
+    { label: 'Active', value: 'ACTIVE' },
+    { label: 'Completed', value: 'COMPLETED' },
+    { label: 'Inactive', value: 'INACTIVE' },
+    { label: 'Cancelled', value: 'CANCELLED' }
+]
+
+// Filter Type dropdown state
+const isFilterTypeDropdownOpen = ref(false)
+const highlightedFilterTypeIndex = ref(-1)
+
+const toggleFilterTypeDropdown = () => {
+    isFilterTypeDropdownOpen.value = !isFilterTypeDropdownOpen.value
+    if (isFilterTypeDropdownOpen.value) {
+        highlightedFilterTypeIndex.value = filterTypeOptions.findIndex(opt => opt.value === filters.value.type)
+    }
+}
+
+const closeFilterTypeDropdown = () => {
+    isFilterTypeDropdownOpen.value = false
+    highlightedFilterTypeIndex.value = -1
+}
+
+const selectFilterType = (value) => {
+    filters.value.type = value
+    closeFilterTypeDropdown()
+}
+
+const onFilterTypeKeyDown = (e) => {
+    if (!isFilterTypeDropdownOpen.value && (e.key === 'Enter' || e.key === ' ')) {
+        e.preventDefault()
+        toggleFilterTypeDropdown()
+        return
+    }
+    if (isFilterTypeDropdownOpen.value) {
+        if (e.key === 'ArrowDown') {
+            e.preventDefault()
+            highlightedFilterTypeIndex.value = Math.min(highlightedFilterTypeIndex.value + 1, filterTypeOptions.length - 1)
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault()
+            highlightedFilterTypeIndex.value = Math.max(highlightedFilterTypeIndex.value - 1, 0)
+        } else if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            if (highlightedFilterTypeIndex.value >= 0) selectFilterType(filterTypeOptions[highlightedFilterTypeIndex.value].value)
+        } else if (e.key === 'Escape') {
+            e.preventDefault()
+            closeFilterTypeDropdown()
+        }
+    }
+}
+
+const selectedFilterTypeDisplay = computed(() => {
+    const option = filterTypeOptions.find(opt => opt.value === filters.value.type)
+    return option ? option.label : 'All Types'
+})
+
+// Filter Status dropdown state
+const isFilterStatusDropdownOpen = ref(false)
+const highlightedFilterStatusIndex = ref(-1)
+
+const toggleFilterStatusDropdown = () => {
+    isFilterStatusDropdownOpen.value = !isFilterStatusDropdownOpen.value
+    if (isFilterStatusDropdownOpen.value) {
+        highlightedFilterStatusIndex.value = filterStatusOptions.findIndex(opt => opt.value === filters.value.status)
+    }
+}
+
+const closeFilterStatusDropdown = () => {
+    isFilterStatusDropdownOpen.value = false
+    highlightedFilterStatusIndex.value = -1
+}
+
+const selectFilterStatus = (value) => {
+    filters.value.status = value
+    closeFilterStatusDropdown()
+}
+
+const onFilterStatusKeyDown = (e) => {
+    if (!isFilterStatusDropdownOpen.value && (e.key === 'Enter' || e.key === ' ')) {
+        e.preventDefault()
+        toggleFilterStatusDropdown()
+        return
+    }
+    if (isFilterStatusDropdownOpen.value) {
+        if (e.key === 'ArrowDown') {
+            e.preventDefault()
+            highlightedFilterStatusIndex.value = Math.min(highlightedFilterStatusIndex.value + 1, filterStatusOptions.length - 1)
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault()
+            highlightedFilterStatusIndex.value = Math.max(highlightedFilterStatusIndex.value - 1, 0)
+        } else if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            if (highlightedFilterStatusIndex.value >= 0) selectFilterStatus(filterStatusOptions[highlightedFilterStatusIndex.value].value)
+        } else if (e.key === 'Escape') {
+            e.preventDefault()
+            closeFilterStatusDropdown()
+        }
+    }
+}
+
+const selectedFilterStatusDisplay = computed(() => {
+    const option = filterStatusOptions.find(opt => opt.value === filters.value.status)
+    return option ? option.label : 'All Status'
+})
+
+// Program Type dropdown state (in create modal)
+const isProgramTypeDropdownOpen = ref(false)
+const highlightedProgramTypeIndex = ref(-1)
+
+const toggleProgramTypeDropdown = () => {
+    isProgramTypeDropdownOpen.value = !isProgramTypeDropdownOpen.value
+    if (isProgramTypeDropdownOpen.value) {
+        highlightedProgramTypeIndex.value = programTypeOptions.findIndex(opt => opt.value === newProgram.value.type)
+    }
+}
+
+const closeProgramTypeDropdown = () => {
+    isProgramTypeDropdownOpen.value = false
+    highlightedProgramTypeIndex.value = -1
+}
+
+const selectProgramType = (value) => {
+    newProgram.value.type = value
+    closeProgramTypeDropdown()
+}
+
+const onProgramTypeKeyDown = (e) => {
+    if (!isProgramTypeDropdownOpen.value && (e.key === 'Enter' || e.key === ' ')) {
+        e.preventDefault()
+        toggleProgramTypeDropdown()
+        return
+    }
+    if (isProgramTypeDropdownOpen.value) {
+        if (e.key === 'ArrowDown') {
+            e.preventDefault()
+            highlightedProgramTypeIndex.value = Math.min(highlightedProgramTypeIndex.value + 1, programTypeOptions.length - 1)
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault()
+            highlightedProgramTypeIndex.value = Math.max(highlightedProgramTypeIndex.value - 1, 0)
+        } else if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            if (highlightedProgramTypeIndex.value >= 0) selectProgramType(programTypeOptions[highlightedProgramTypeIndex.value].value)
+        } else if (e.key === 'Escape') {
+            e.preventDefault()
+            closeProgramTypeDropdown()
+        }
+    }
+}
+
+const selectedProgramTypeDisplay = computed(() => {
+    const option = programTypeOptions.find(opt => opt.value === newProgram.value.type)
+    return option ? option.label : 'Training'
+})
+
+// Program Status dropdown state (in create modal)
+const isProgramStatusDropdownOpen = ref(false)
+const highlightedProgramStatusIndex = ref(-1)
+
+const toggleProgramStatusDropdown = () => {
+    isProgramStatusDropdownOpen.value = !isProgramStatusDropdownOpen.value
+    if (isProgramStatusDropdownOpen.value) {
+        highlightedProgramStatusIndex.value = programStatusOptions.findIndex(opt => opt.value === newProgram.value.status)
+    }
+}
+
+const closeProgramStatusDropdown = () => {
+    isProgramStatusDropdownOpen.value = false
+    highlightedProgramStatusIndex.value = -1
+}
+
+const selectProgramStatus = (value) => {
+    newProgram.value.status = value
+    closeProgramStatusDropdown()
+}
+
+const onProgramStatusKeyDown = (e) => {
+    if (!isProgramStatusDropdownOpen.value && (e.key === 'Enter' || e.key === ' ')) {
+        e.preventDefault()
+        toggleProgramStatusDropdown()
+        return
+    }
+    if (isProgramStatusDropdownOpen.value) {
+        if (e.key === 'ArrowDown') {
+            e.preventDefault()
+            highlightedProgramStatusIndex.value = Math.min(highlightedProgramStatusIndex.value + 1, programStatusOptions.length - 1)
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault()
+            highlightedProgramStatusIndex.value = Math.max(highlightedProgramStatusIndex.value - 1, 0)
+        } else if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            if (highlightedProgramStatusIndex.value >= 0) selectProgramStatus(programStatusOptions[highlightedProgramStatusIndex.value].value)
+        } else if (e.key === 'Escape') {
+            e.preventDefault()
+            closeProgramStatusDropdown()
+        }
+    }
+}
+
+const selectedProgramStatusDisplay = computed(() => {
+    const option = programStatusOptions.find(opt => opt.value === newProgram.value.status)
+    return option ? option.label : 'Pending'
+})
+
+// Close on outside click
+const onClickOutside = (e) => {
+    const filterTypeEl = document.querySelector('#filter-type-dropdown')
+    const filterStatusEl = document.querySelector('#filter-status-dropdown')
+    const programTypeEl = document.querySelector('#program-type-dropdown')
+    const programStatusEl = document.querySelector('#program-status-dropdown')
+    
+    if (filterTypeEl && !filterTypeEl.contains(e.target)) closeFilterTypeDropdown()
+    if (filterStatusEl && !filterStatusEl.contains(e.target)) closeFilterStatusDropdown()
+    if (programTypeEl && !programTypeEl.contains(e.target)) closeProgramTypeDropdown()
+    if (programStatusEl && !programStatusEl.contains(e.target)) closeProgramStatusDropdown()
+}
+
 // Lifecycle
 onMounted(async () => {
     await fetchPrograms()
+    document.addEventListener('click', onClickOutside)
+})
+
+onBeforeUnmount(() => {
+    document.removeEventListener('click', onClickOutside)
 })
 </script>
 
@@ -237,9 +491,9 @@ onMounted(async () => {
 
         <div class="flex flex-col h-full space-y-4">
             <!-- Header -->
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div class="mb-3 mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 ml-4">
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-900">Program Monitoring</h1>
+                    <h1 class="text-3xl font-bold text-green-600">Program Monitoring</h1>
                 </div>
                 <BaseButton
                     class="bg-green-600 hover:bg-green-700"
@@ -252,8 +506,22 @@ onMounted(async () => {
             </div>
 
             <!-- Loading State -->
-            <div v-if="programStore.isLoading" class="flex justify-center items-center flex-1">
-                <LoadingSpinner />
+            <div
+                v-if="programStore.isLoading"
+                class="flex flex-col items-center justify-center flex-1 space-y-4 min-h-[60vh]"
+            >
+                <!-- Spinner -->
+                <div class="relative">
+                    <div
+                        class="h-14 w-14 rounded-full border-4 border-gray-200"></div>
+                    <div
+                        class="absolute top-0 left-0 h-14 w-14 rounded-full border-4 border-green-600 border-t-transparent animate-spin"></div>
+                </div>
+
+                <!-- Loading Label -->
+                <p class="text-gray-600 font-medium tracking-wide">
+                    Loading data…
+                </p>
             </div>
 
             <!-- Error State -->
@@ -273,9 +541,9 @@ onMounted(async () => {
             </BaseCard>
 
             <!-- Programs Table -->
-            <div v-else class="bg-white rounded-lg border border-gray-200 shadow-sm flex flex-col flex-1 min-h-0 overflow-hidden">
+            <div v-else class="bg-gray-100 rounded-xl border border-gray-300 shadow-sm flex flex-col flex-1 min-h-0 overflow-hidden">
                 <!-- Table Header with Search and Filters -->
-                <div class="p-4 border-b border-gray-200 space-y-4 flex-shrink-0">
+                <div class="p-4 border-b border-gray-300 space-y-4 flex-shrink-0">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div class="flex items-center gap-3 flex-1 max-w-lg">
                             <!-- Search Input -->
@@ -287,22 +555,38 @@ onMounted(async () => {
                                     v-model="searchQuery"
                                     type="text"
                                     placeholder="Search programs..."
-                                    class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm" />
+                                    class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl focus:ring-1 focus:ring-green-500 focus:border-transparent text-sm" />
                             </div>
 
-                            <!-- Filter Toggle Button -->
-                            <BaseButton
-                                variant="secondary"
-                                :class="{ 'bg-green-50 border-green-200 text-green-700': showFilters || hasActiveFilters }"
-                                @click="showFilters = !showFilters">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z"></path>
-                                </svg>
-                                Filters
-                                <span v-if="hasActiveFilters" class="ml-1 px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
-                                    Active
-                                </span>
-                            </BaseButton>
+<!-- Filter Toggle Button -->
+<BaseButton
+  class="bg-green-600 border-green-600 text-white hover:bg-green-700 hover:border-green-700"
+  @click="showFilters = !showFilters"
+>
+  <svg
+    class="w-4 h-4 mr-2"
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z"
+    ></path>
+  </svg>
+
+  Filters
+
+  <span
+    v-if="hasActiveFilters"
+    class="ml-1 px-2 py-0.5 bg-white/20 text-white text-xs rounded-full"
+  >
+    Active
+  </span>
+</BaseButton>
+
                         </div>
                     </div>
 
@@ -320,27 +604,102 @@ onMounted(async () => {
 
                             <div>
                                 <label class="block text-xs font-medium text-gray-700 mb-1">Type</label>
-                                <select v-model="filters.type" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-green-500 focus:border-transparent">
-                                    <option value="">All Types</option>
-                                    <option value="TRAINING">Training</option>
-                                    <option value="WORKSHOP">Workshop</option>
-                                    <option value="RESEARCH">Research</option>
-                                    <option value="DISTRIBUTION">Distribution</option>
-                                    <option value="MONITORING">Monitoring</option>
-                                    <option value="CONSULTATION">Consultation</option>
-                                </select>
+                                <div id="filter-type-dropdown" class="relative">
+                                    <button
+                                        type="button"
+                                        @click="toggleFilterTypeDropdown"
+                                        @keydown.stop.prevent="onFilterTypeKeyDown"
+                                        :aria-expanded="isFilterTypeDropdownOpen"
+                                        aria-haspopup="listbox"
+                                        class="w-full flex items-center justify-between px-3 py-2 text-sm border border-gray-300 rounded-xl bg-white shadow-sm focus:ring-1 focus:ring-green-500 focus:border-transparent"
+                                    >
+                                        <span class="text-gray-900">{{ selectedFilterTypeDisplay }}</span>
+                                        <svg
+                                            class="w-4 h-4 text-green-600 transform transition-transform duration-200"
+                                            :class="isFilterTypeDropdownOpen ? 'rotate-180' : ''"
+                                            viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"
+                                            aria-hidden="true"
+                                        >
+                                            <path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                    </button>
+                                    <ul
+                                        v-show="isFilterTypeDropdownOpen"
+                                        role="listbox"
+                                        tabindex="-1"
+                                        class="origin-top-right absolute right-0 left-0 mt-2 bg-white rounded-xl shadow-lg ring-1 ring-black ring-opacity-5 overflow-auto max-h-56 py-1 focus:outline-none z-50 transition-transform duration-150"
+                                    >
+                                        <li
+                                            v-for="(option, idx) in filterTypeOptions"
+                                            :key="option.value"
+                                            role="option"
+                                            :aria-selected="option.value === filters.type"
+                                            @mouseenter="highlightedFilterTypeIndex = idx"
+                                            @mouseleave="highlightedFilterTypeIndex = -1"
+                                            @click="selectFilterType(option.value)"
+                                            :class=" [
+                                                'px-3 py-2 cursor-pointer flex items-center justify-between text-sm',
+                                                highlightedFilterTypeIndex === idx ? 'bg-green-50' : 'hover:bg-green-50',
+                                                option.value === filters.type ? 'font-semibold text-green-700' : 'text-gray-700'
+                                            ]"
+                                        >
+                                            <span>{{ option.label }}</span>
+                                            <svg v-if="option.value === filters.type" class="w-4 h-4 text-green-600" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                            </svg>
+                                        </li>
+                                    </ul>
+                                </div>
                             </div>
 
                             <div>
                                 <label class="block text-xs font-medium text-gray-700 mb-1">Status</label>
-                                <select v-model="filters.status" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-green-500 focus:border-transparent">
-                                    <option value="">All Status</option>
-                                    <option value="PENDING">Pending</option>
-                                    <option value="ACTIVE">Active</option>
-                                    <option value="COMPLETED">Completed</option>
-                                    <option value="INACTIVE">Inactive</option>
-                                    <option value="CANCELLED">Cancelled</option>
-                                </select>
+                                <div id="filter-status-dropdown" class="relative">
+                                    <button
+                                        type="button"
+                                        @click="toggleFilterStatusDropdown"
+                                        @keydown.stop.prevent="onFilterStatusKeyDown"
+                                        :aria-expanded="isFilterStatusDropdownOpen"
+                                        aria-haspopup="listbox"
+                                        class="w-full flex items-center justify-between px-3 py-2 text-sm border border-gray-300 rounded-xl bg-white shadow-sm focus:ring-1 focus:ring-green-500 focus:border-transparent"
+                                    >
+                                        <span class="text-gray-900">{{ selectedFilterStatusDisplay }}</span>
+                                        <svg
+                                            class="w-4 h-4 text-green-600 transform transition-transform duration-200"
+                                            :class="isFilterStatusDropdownOpen ? 'rotate-180' : ''"
+                                            viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"
+                                            aria-hidden="true"
+                                        >
+                                            <path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                    </button>
+                                    <ul
+                                        v-show="isFilterStatusDropdownOpen"
+                                        role="listbox"
+                                        tabindex="-1"
+                                        class="origin-top-right absolute right-0 left-0 mt-2 bg-white rounded-xl shadow-lg ring-1 ring-black ring-opacity-5 overflow-auto max-h-56 py-1 focus:outline-none z-50 transition-transform duration-150"
+                                    >
+                                        <li
+                                            v-for="(option, idx) in filterStatusOptions"
+                                            :key="option.value"
+                                            role="option"
+                                            :aria-selected="option.value === filters.status"
+                                            @mouseenter="highlightedFilterStatusIndex = idx"
+                                            @mouseleave="highlightedFilterStatusIndex = -1"
+                                            @click="selectFilterStatus(option.value)"
+                                            :class=" [
+                                                'px-3 py-2 cursor-pointer flex items-center justify-between text-sm',
+                                                highlightedFilterStatusIndex === idx ? 'bg-green-50' : 'hover:bg-green-50',
+                                                option.value === filters.status ? 'font-semibold text-green-700' : 'text-gray-700'
+                                            ]"
+                                        >
+                                            <span>{{ option.label }}</span>
+                                            <svg v-if="option.value === filters.status" class="w-4 h-4 text-green-600" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                            </svg>
+                                        </li>
+                                    </ul>
+                                </div>
                             </div>
 
                             <div>
@@ -391,8 +750,8 @@ onMounted(async () => {
                                     <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                <tr v-for="program in filteredPrograms" :key="program.id" class="hover:bg-gray-50 cursor-pointer transition-colors" @click="navigateToProgramDetail(program.id)">
+                            <tbody class="bg-white divide-y divide-gray-300">
+                                <tr v-for="program in filteredPrograms" :key="program.id" class="hover:bg-green-50 cursor-pointer transition-colors" @click="navigateToProgramDetail(program.id)">
                                     <td class="px-4 py-4 whitespace-nowrap" @click.stop>
                                         <input
                                             type="checkbox"
@@ -518,9 +877,7 @@ onMounted(async () => {
                             <button
                                 @click="closeModal"
                                 class="text-gray-400 hover:text-gray-600 transition-colors">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                </svg>
+                                <X class="h-5 w-5" />
                             </button>
                         </div>
 
@@ -537,7 +894,7 @@ onMounted(async () => {
                                         v-model="newProgram.name"
                                         type="text"
                                         required
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-green-500 focus:border-transparent"
                                         placeholder="Enter program name" />
                                 </div>
 
@@ -546,18 +903,52 @@ onMounted(async () => {
                                     <label for="type" class="block text-sm font-medium text-gray-700 mb-2">
                                         Program Type <span class="text-red-500">*</span>
                                     </label>
-                                    <select
-                                        id="type"
-                                        v-model="newProgram.type"
-                                        required
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent">
-                                        <option value="TRAINING">Training</option>
-                                        <option value="WORKSHOP">Workshop</option>
-                                        <option value="RESEARCH">Research</option>
-                                        <option value="DISTRIBUTION">Distribution</option>
-                                        <option value="MONITORING">Monitoring</option>
-                                        <option value="CONSULTATION">Consultation</option>
-                                    </select>
+                                    <div id="program-type-dropdown" class="relative">
+                                        <button
+                                            type="button"
+                                            @click="toggleProgramTypeDropdown"
+                                            @keydown.stop.prevent="onProgramTypeKeyDown"
+                                            :aria-expanded="isProgramTypeDropdownOpen"
+                                            aria-haspopup="listbox"
+                                            class="w-full flex items-center justify-between px-3 py-2.5 text-sm border border-gray-300 rounded-xl bg-white shadow-sm focus:ring-1 focus:ring-green-500 focus:border-transparent"
+                                        >
+                                            <span class="text-gray-900">{{ selectedProgramTypeDisplay }}</span>
+                                            <svg
+                                                class="w-4 h-4 text-green-600 transform transition-transform duration-200"
+                                                :class="isProgramTypeDropdownOpen ? 'rotate-180' : ''"
+                                                viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"
+                                                aria-hidden="true"
+                                            >
+                                                <path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+                                            </svg>
+                                        </button>
+                                        <ul
+                                            v-show="isProgramTypeDropdownOpen"
+                                            role="listbox"
+                                            tabindex="-1"
+                                            class="origin-top-right absolute right-0 left-0 mt-2 bg-white rounded-xl shadow-lg ring-1 ring-black ring-opacity-5 overflow-auto max-h-56 py-1 focus:outline-none z-50 transition-transform duration-150"
+                                        >
+                                            <li
+                                                v-for="(option, idx) in programTypeOptions"
+                                                :key="option.value"
+                                                role="option"
+                                                :aria-selected="option.value === newProgram.type"
+                                                @mouseenter="highlightedProgramTypeIndex = idx"
+                                                @mouseleave="highlightedProgramTypeIndex = -1"
+                                                @click="selectProgramType(option.value)"
+                                                :class=" [
+                                                    'px-3 py-2 cursor-pointer flex items-center justify-between text-sm',
+                                                    highlightedProgramTypeIndex === idx ? 'bg-green-50' : 'hover:bg-green-50',
+                                                    option.value === newProgram.type ? 'font-semibold text-green-700' : 'text-gray-700'
+                                                ]"
+                                            >
+                                                <span>{{ option.label }}</span>
+                                                <svg v-if="option.value === newProgram.type" class="w-4 h-4 text-green-600" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                                </svg>
+                                            </li>
+                                        </ul>
+                                    </div>
                                 </div>
 
                                 <!-- Status -->
@@ -565,17 +956,52 @@ onMounted(async () => {
                                     <label for="status" class="block text-sm font-medium text-gray-700 mb-2">
                                         Status <span class="text-red-500">*</span>
                                     </label>
-                                    <select
-                                        id="status"
-                                        v-model="newProgram.status"
-                                        required
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent">
-                                        <option value="PENDING">Pending</option>
-                                        <option value="ACTIVE">Active</option>
-                                        <option value="COMPLETED">Completed</option>
-                                        <option value="INACTIVE">Inactive</option>
-                                        <option value="CANCELLED">Cancelled</option>
-                                    </select>
+                                    <div id="program-status-dropdown" class="relative">
+                                        <button
+                                            type="button"
+                                            @click="toggleProgramStatusDropdown"
+                                            @keydown.stop.prevent="onProgramStatusKeyDown"
+                                            :aria-expanded="isProgramStatusDropdownOpen"
+                                            aria-haspopup="listbox"
+                                            class="w-full flex items-center justify-between px-3 py-2.5 text-sm border border-gray-300 rounded-xl bg-white shadow-sm focus:ring-1 focus:ring-green-500 focus:border-transparent"
+                                        >
+                                            <span class="text-gray-900">{{ selectedProgramStatusDisplay }}</span>
+                                            <svg
+                                                class="w-4 h-4 text-green-600 transform transition-transform duration-200"
+                                                :class="isProgramStatusDropdownOpen ? 'rotate-180' : ''"
+                                                viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"
+                                                aria-hidden="true"
+                                            >
+                                                <path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+                                            </svg>
+                                        </button>
+                                        <ul
+                                            v-show="isProgramStatusDropdownOpen"
+                                            role="listbox"
+                                            tabindex="-1"
+                                            class="origin-top-right absolute right-0 left-0 mt-2 bg-white rounded-xl shadow-lg ring-1 ring-black ring-opacity-5 overflow-auto max-h-56 py-1 focus:outline-none z-50 transition-transform duration-150"
+                                        >
+                                            <li
+                                                v-for="(option, idx) in programStatusOptions"
+                                                :key="option.value"
+                                                role="option"
+                                                :aria-selected="option.value === newProgram.status"
+                                                @mouseenter="highlightedProgramStatusIndex = idx"
+                                                @mouseleave="highlightedProgramStatusIndex = -1"
+                                                @click="selectProgramStatus(option.value)"
+                                                :class=" [
+                                                    'px-3 py-2 cursor-pointer flex items-center justify-between text-sm',
+                                                    highlightedProgramStatusIndex === idx ? 'bg-green-50' : 'hover:bg-green-50',
+                                                    option.value === newProgram.status ? 'font-semibold text-green-700' : 'text-gray-700'
+                                                ]"
+                                            >
+                                                <span>{{ option.label }}</span>
+                                                <svg v-if="option.value === newProgram.status" class="w-4 h-4 text-green-600" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                                </svg>
+                                            </li>
+                                        </ul>
+                                    </div>
                                 </div>
 
                                 <!-- Completion Percentage -->
@@ -589,7 +1015,7 @@ onMounted(async () => {
                                         type="number"
                                         min="0"
                                         max="100"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-green-500 focus:border-transparent"
                                         placeholder="0" />
                                 </div>
 
@@ -602,7 +1028,7 @@ onMounted(async () => {
                                         id="notes"
                                         v-model="newProgram.notes"
                                         rows="4"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-green-500 focus:border-transparent"
                                         placeholder="Enter program notes (optional)"></textarea>
                                 </div>
                             </form>
@@ -700,5 +1126,38 @@ onMounted(async () => {
 
 .slide-leave-to {
     transform: translateX(100%);
+}
+
+/* Custom dropdown & UI polish */
+::selection {
+  background-color: rgba(16, 185, 129, 0.12); /* soft green selection */
+}
+
+#filter-type-dropdown button,
+#filter-status-dropdown button,
+#program-type-dropdown button,
+#program-status-dropdown button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+#filter-type-dropdown ul,
+#filter-status-dropdown ul,
+#program-type-dropdown ul,
+#program-status-dropdown ul {
+  -webkit-overflow-scrolling: touch;
+}
+
+#filter-type-dropdown li,
+#filter-status-dropdown li,
+#program-type-dropdown li,
+#program-status-dropdown li {
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+#filter-type-dropdown svg,
+#filter-status-dropdown svg,
+#program-type-dropdown svg,
+#program-status-dropdown svg {
+  transition: transform 200ms ease;
 }
 </style>

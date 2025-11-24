@@ -96,7 +96,7 @@
             <main class="flex-1 relative overflow-hidden print:overflow-visible print:bg-white border-none bg-white">
                 <div class="h-full flex flex-col">
                     <!-- Dashboard Content with proper flex layout -->
-                    <div class="flex-1 p-4 bg-gray-50 flex flex-col overflow-hidden">
+                    <div class="flex-1 p-4 bg-white flex flex-col overflow-hidden">
                         <slot />
                     </div>
                 </div>

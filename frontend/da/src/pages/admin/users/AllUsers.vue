@@ -36,14 +36,22 @@
 
 
       <!-- Loading State -->
-      <div v-if="userStore.isLoading && (!userStore.allAgricultureUsers || userStore.allAgricultureUsers.length === 0)" class="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div class="p-6">
-          <div class="text-center py-12">
-            <Loader2 class="mx-auto h-12 w-12 text-purple-600 animate-spin" />
-            <h3 class="mt-2 text-sm font-medium text-gray-900">Loading Users</h3>
-            <p class="mt-1 text-sm text-gray-500">Please wait while we fetch all users...</p>
-          </div>
+      <div
+        v-if="userStore.isLoading && (!userStore.allAgricultureUsers || userStore.allAgricultureUsers.length === 0)"
+        class="flex flex-col items-center justify-center flex-1 space-y-4 min-h-[60vh]"
+      >
+        <!-- Spinner -->
+        <div class="relative">
+          <div
+            class="h-14 w-14 rounded-full border-4 border-gray-200"></div>
+          <div
+            class="absolute top-0 left-0 h-14 w-14 rounded-full border-4 border-green-600 border-t-transparent animate-spin"></div>
         </div>
+
+        <!-- Loading Label -->
+        <p class="text-gray-600 font-medium tracking-wide">
+          Loading data…
+        </p>
       </div>
       <!-- Error State -->
       <div v-else-if="userStore.getError" class="bg-white rounded-lg shadow-sm border border-red-200">

@@ -44,7 +44,7 @@
         </nav>
 
         <!-- Header -->
-        <div class="flex items-center justify-between">
+        <div class="flex items-center justify-between ml-5">
           <div>
             <h1 class="text-3xl font-bold text-green-600">Application Location Map</h1>
             <p v-if="applicationData" class="mt-1 text-sm text-gray-600">
@@ -58,15 +58,20 @@
       <!-- Loading State -->
       <div
         v-if="loading"
-        class="flex-1 flex items-center justify-center bg-gray-50 rounded-lg"
+        class="flex flex-col items-center justify-center flex-1 space-y-4 min-h-[60vh] bg-gray-50 rounded-lg"
       >
-        <div class="text-center">
-          <div class="relative mb-4">
-            <div class="h-14 w-14 rounded-full border-4 border-gray-200 mx-auto"></div>
-            <div class="absolute top-0 left-1/2 transform -translate-x-1/2 h-14 w-14 rounded-full border-4 border-green-600 border-t-transparent animate-spin"></div>
-          </div>
-          <p class="text-gray-600 font-medium">Loading map data...</p>
+        <!-- Spinner -->
+        <div class="relative">
+          <div
+            class="h-14 w-14 rounded-full border-4 border-gray-200"></div>
+          <div
+            class="absolute top-0 left-0 h-14 w-14 rounded-full border-4 border-green-600 border-t-transparent animate-spin"></div>
         </div>
+
+        <!-- Loading Label -->
+        <p class="text-gray-600 font-medium tracking-wide">
+          Loading data…
+        </p>
       </div>
 
       <!-- Error State -->
@@ -99,32 +104,32 @@
           <h2 class="text-lg font-semibold text-gray-900 mb-4">Application Information</h2>
 
           <!-- Farmer Info -->
-          <div class="mb-4 pb-4 border-b border-gray-200">
-            <h3 class="text-sm font-medium text-gray-500 mb-2">Farmer Details</h3>
+          <div class="mb-4 pb-4 border-b border-gray-300">
+            <h3 class="text-sm font-medium text-green-600 mb-2">Farmer Details</h3>
             <p class="text-sm text-gray-900 font-medium">
               {{ applicationData.dynamicFields?.farmer_name || 'N/A' }}
             </p>
-            <p class="text-sm text-gray-600 mt-1">
+            <p class="text-sm text-gray-800 mt-1">
               {{ applicationData.dynamicFields?.cell_phone_number || 'No phone' }}
             </p>
-            <p class="text-sm text-gray-600 mt-1">
+            <p class="text-sm text-gray-800 mt-1">
               {{ applicationData.dynamicFields?.address || 'No address' }}
             </p>
           </div>
 
           <!-- Application Type -->
-          <div class="mb-4 pb-4 border-b border-gray-200">
-            <h3 class="text-sm font-medium text-gray-500 mb-2">Application Type</h3>
+          <div class="mb-4 pb-4 border-b border-gray-300">
+            <h3 class="text-sm font-medium text-green-600 mb-2">Application Type</h3>
             <p class="text-sm text-gray-900">{{ applicationData.applicationTypeName }}</p>
           </div>
 
           <!-- Farm Location -->
-          <div class="mb-4 pb-4 border-b border-gray-200">
-            <h3 class="text-sm font-medium text-gray-500 mb-2">Farm Location</h3>
+          <div class="mb-4 pb-4 border-b border-gray-300">
+            <h3 class="text-sm font-medium text-green-600 mb-2">Farm Location</h3>
             <p class="text-sm text-gray-900">
               {{ applicationData.dynamicFields?.farm_location || 'Not specified' }}
             </p>
-            <p class="text-xs text-gray-500 mt-1">
+            <p class="text-xs text-gray-800 mt-1">
               Coordinates: {{ coordinates.lat }}, {{ coordinates.lng }}
             </p>
           </div>
@@ -146,8 +151,8 @@
           </div>
 
           <!-- Area Details -->
-          <div v-if="applicationData.dynamicFields?.lot_1_area" class="mb-4 pb-4 border-b border-gray-200">
-            <h3 class="text-sm font-medium text-gray-500 mb-2">Area Information</h3>
+          <div v-if="applicationData.dynamicFields?.lot_1_area" class="mb-4 pb-4 border-b border-gray-300">
+            <h3 class="text-sm font-medium text-green-600 mb-2">Area Information</h3>
             <div class="space-y-1">
               <p v-if="applicationData.dynamicFields.lot_1_area" class="text-sm text-gray-900">
                 <span class="font-medium">Lot 1:</span> {{ applicationData.dynamicFields.lot_1_area }} ha
@@ -169,15 +174,15 @@
 
           <!-- Submitted Date -->
           <div class="mb-4">
-            <h3 class="text-sm font-medium text-gray-500 mb-2">Submission Date</h3>
-            <p class="text-sm text-gray-900">
+            <h3 class="text-sm font-medium text-green-600 mb-2">Submission Date</h3>
+            <p class="text-sm text-gray-800">
               {{ formatDate(applicationData.submittedAt) }}
             </p>
           </div>
 
           <!-- Images (if available) -->
           <div v-if="applicationData.fileUploads && applicationData.fileUploads.length > 0" class="mb-4">
-            <h3 class="text-sm font-medium text-gray-500 mb-2">Attached Images</h3>
+            <h3 class="text-sm font-medium text-green-600 mb-2">Attached Images</h3>
             <div class="grid grid-cols-2 gap-2">
               <img
                 v-for="(image, index) in applicationData.fileUploads.slice(0, 4)"

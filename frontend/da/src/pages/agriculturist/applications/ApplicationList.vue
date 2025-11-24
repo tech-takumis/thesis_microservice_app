@@ -95,11 +95,17 @@
 
                   <!-- Filter -->
                   <button
-                    class="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium text-gray-700 bg-white border border-gray-300 shadow-sm hover:bg-green-600 hover:text-white focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-300 ease-in-out flex-shrink-0"
-                    @click="showFilterModal = true"
+                    class="inline-flex items-center px-3 py-2 mr-2 rounded-lg text-sm font-medium text-gray-700 bg-white border border-gray-300 shadow-sm hover:bg-green-600 hover:text-white focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-300 ease-in-out flex-shrink-0"
+                    @click="showFilters = !showFilters"
                   >
                     <Filter class="h-4 w-4 mr-1" />
                     Filter
+                    <span
+                      v-if="hasActiveFilters"
+                      class="ml-1 px-2 py-0.5 bg-green-600 text-white text-xs rounded-full"
+                    >
+                      Active
+                    </span>
                   </button>
                 </div>
               </div>
@@ -107,11 +113,11 @@
         </div>
 
         <!-- Main Content Area - Flex and Scrollable -->
-        <div class="flex-1 min-h-0 overflow-y-auto border bg-gray-100 rounded-lg">
+        <div class="flex-1 min-h-0 overflow-y-auto border bg-gray-100 rounded-lg relative">
             <!-- Loading state -->
             <div
               v-if="loading"
-              class="flex flex-col items-center justify-center flex-1 space-y-4 print:hidden"
+              class="absolute inset-0 flex flex-col items-center justify-center space-y-4 print:hidden z-10 bg-gray-100"
             >
             <!-- Spinner -->
             <div class="relative">
@@ -132,8 +138,105 @@
             </div>
 
             <!-- Applications table -->
-                <div v-else :key="route.params.id" class="bg-gray-100 shadow-sm rounded-lg overflow-hidden mb-4 print:hidden flex-1 min-h-0">
-                <div class="overflow-x-auto overflow-y-auto max-h-full">
+                <div v-else :key="route.params.id" class="bg-white rounded-lg border border-gray-200 shadow-sm flex flex-col flex-1 min-h-0 overflow-hidden print:hidden">
+                <!-- Filter Panel -->
+                <div v-if="showFilters" class="p-4 bg-gray-50 border-b border-gray-300">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <!-- Batch Name -->
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Batch Name</label>
+                            <div id="batch-dropdown" class="relative">
+                                <button
+                                    type="button"
+                                    @click="toggleBatchDropdown"
+                                    @keydown.stop.prevent="onBatchKeyDown"
+                                    :aria-expanded="isBatchDropdownOpen"
+                                    aria-haspopup="listbox"
+                                    class="w-full flex items-center justify-between px-3 py-2 text-sm border border-gray-300 rounded-md bg-white focus:ring-1 focus:ring-green-500 focus:border-transparent"
+                                >
+                                    <span class="text-gray-900">{{ selectedBatchDisplay }}</span>
+                                    <svg
+                                        class="w-4 h-4 text-gray-400 transform transition-transform duration-200"
+                                        :class="isBatchDropdownOpen ? 'rotate-180' : ''"
+                                        viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"
+                                        aria-hidden="true"
+                                    >
+                                        <path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </button>
+                                <ul
+                                    v-show="isBatchDropdownOpen"
+                                    role="listbox"
+                                    tabindex="-1"
+                                    class="origin-top-right absolute right-0 left-0 mt-2 bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 overflow-auto max-h-56 py-1 focus:outline-none z-50"
+                                >
+                                    <li
+                                        v-for="(batch, idx) in batchOptions"
+                                        :key="batch.id || 'all'"
+                                        role="option"
+                                        :aria-selected="(batch.name === 'All Batches' && !filters.batchName) || batch.name === filters.batchName"
+                                        @mouseenter="highlightedBatchIndex = idx"
+                                        @mouseleave="highlightedBatchIndex = -1"
+                                        @click="selectBatch(batch)"
+                                        :class="[
+                                            'px-3 py-2 cursor-pointer flex items-center justify-between text-sm',
+                                            highlightedBatchIndex === idx ? 'bg-green-50' : 'hover:bg-green-50',
+                                            ((batch.name === 'All Batches' && !filters.batchName) || batch.name === filters.batchName) ? 'font-semibold text-green-700' : 'text-gray-700'
+                                        ]"
+                                    >
+                                        <span>{{ batch.name }}</span>
+                                        <svg v-if="(batch.name === 'All Batches' && !filters.batchName) || batch.name === filters.batchName" class="w-4 h-4 text-green-600" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Location -->
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Location</label>
+                            <input
+                                v-model="filters.location"
+                                type="text"
+                                placeholder="Search by barangay, city, or province"
+                                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-green-500 focus:border-transparent"
+                            />
+                        </div>
+
+                        <!-- Date From -->
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Date From</label>
+                            <input
+                                v-model="filters.dateFrom"
+                                type="date"
+                                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-green-500 focus:border-transparent"
+                            />
+                        </div>
+
+                        <!-- Date To -->
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Date To</label>
+                            <input
+                                v-model="filters.dateTo"
+                                type="date"
+                                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-green-500 focus:border-transparent"
+                            />
+                        </div>
+                    </div>
+
+                    <div class="mt-4 flex justify-end gap-2">
+                        <button
+                            @click="resetFilters"
+                            class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-red-600 hover:text-white transition"
+                        >
+                            Reset
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex-1 overflow-y-auto">
+                <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                     <tr>
@@ -152,7 +255,7 @@
                             Address
                         </th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Status
+                            Farm Location
                         </th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Submitted Date
@@ -183,7 +286,7 @@
                             <div class="text-sm text-gray-900">{{ application.address }}</div>
                         </td>
                         <td class="px-6 py-4">
-                            <StatusBadge :status="application.status" />
+                            <div class="text-sm text-gray-900">{{ application.location }}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm text-gray-900">{{ formatDate(application.submittedAt) }}</div>
@@ -199,17 +302,9 @@
                     <h3 class="mt-2 text-sm font-medium text-gray-900">No applications found</h3>
                     <p class="mt-1 text-sm text-gray-500">No farmer applications match your current filters.</p>
                 </div>
+                </div>
             </div>
         </div>
-        <!-- Filter Modal -->
-        <ApplicationFilterModal
-            v-model:show="showFilterModal"
-            :filters="filters"
-            :batches="batches"
-            class="print:hidden"
-            @apply-filters="applyFilters"
-            @reset-filters="resetFilters"
-        />
 
         <!-- Create Batch Modal -->
         <CreateBatchModal
@@ -567,13 +662,11 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
-import ApplicationFilterModal from '@/components/modals/ApplicationFilterModal.vue'
 import CreateBatchModal from '@/components/modals/CreateBatchModal.vue'
-import StatusBadge from '@/components/others/StatusBadge.vue'
 import { Filter, Trash2, FileText, Printer, Plus } from 'lucide-vue-next'
 import {
   HomeIcon,
@@ -601,7 +694,7 @@ const insuranceBatchStore = useBatchStore()
 const loading = ref(false)
 const error = ref(null)
 const selectedApplications = ref([])
-const showFilterModal = ref(false)
+const showFilters = ref(false)
 const showCreateBatchModal = ref(false)
 const filters = ref({
     batchName: '',
@@ -613,6 +706,24 @@ const filters = ref({
 const batches = ref([])
 const applicationTypeData = ref(null)
 const applications = ref([])
+
+// Batch dropdown state
+const isBatchDropdownOpen = ref(false)
+const highlightedBatchIndex = ref(-1)
+
+// Batch options with "All Batches" option
+const batchOptions = computed(() => {
+    return [
+        { id: '', name: 'All Batches' },
+        ...batches.value
+    ]
+})
+
+// Get display text for selected batch
+const selectedBatchDisplay = computed(() => {
+    if (!filters.value.batchName) return 'All Batches'
+    return filters.value.batchName
+})
 
 const navigation = computed(() => {
     const role = authStore.userData?.roles?.[0]?.name
@@ -651,10 +762,14 @@ const filteredApplications = computed(() => {
         apps = apps.filter(app => new Date(app.submittedAt) <= new Date(filters.value.dateTo))
     }
 
-    // Sort by submittedAt (earliest first)
-    apps = [...apps].sort((a, b) => new Date(a.submittedAt) - new Date(b.submittedAt))
-
     return apps
+})
+
+const hasActiveFilters = computed(() => {
+    return filters.value.batchName ||
+           filters.value.location ||
+           filters.value.dateFrom ||
+           filters.value.dateTo
 })
 
 const farmerChunks = computed(() => {
@@ -905,9 +1020,53 @@ const handleDelete = async () => {
     await fetchApplicationsList()
 }
 
-const applyFilters = (newFilters) => {
-    filters.value = { ...newFilters }
-    showFilterModal.value = false
+const toggleBatchDropdown = () => {
+    isBatchDropdownOpen.value = !isBatchDropdownOpen.value
+    if (isBatchDropdownOpen.value) {
+        const currentIndex = batchOptions.value.findIndex(b => b.name === filters.value.batchName || (b.name === 'All Batches' && !filters.value.batchName))
+        highlightedBatchIndex.value = currentIndex >= 0 ? currentIndex : 0
+    }
+}
+
+const closeBatchDropdown = () => {
+    isBatchDropdownOpen.value = false
+    highlightedBatchIndex.value = -1
+}
+
+const selectBatch = (batch) => {
+    filters.value.batchName = batch.name === 'All Batches' ? '' : batch.name
+    closeBatchDropdown()
+}
+
+const onBatchKeyDown = (e) => {
+    if (!isBatchDropdownOpen.value && (e.key === 'Enter' || e.key === ' ')) {
+        e.preventDefault()
+        toggleBatchDropdown()
+        return
+    }
+
+    if (isBatchDropdownOpen.value) {
+        if (e.key === 'ArrowDown') {
+            e.preventDefault()
+            highlightedBatchIndex.value = Math.min(highlightedBatchIndex.value + 1, batchOptions.value.length - 1)
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault()
+            highlightedBatchIndex.value = Math.max(highlightedBatchIndex.value - 1, 0)
+        } else if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            if (highlightedBatchIndex.value >= 0) selectBatch(batchOptions.value[highlightedBatchIndex.value])
+        } else if (e.key === 'Escape') {
+            e.preventDefault()
+            closeBatchDropdown()
+        }
+    }
+}
+
+// Close batch dropdown on outside click
+const onClickOutside = (e) => {
+    const el = document.querySelector('#batch-dropdown')
+    if (!el) return
+    if (!el.contains(e.target)) closeBatchDropdown()
 }
 
 const resetFilters = () => {
@@ -917,7 +1076,6 @@ const resetFilters = () => {
         dateFrom: '',
         dateTo: ''
     }
-    showFilterModal.value = false
 }
 
 
@@ -967,6 +1125,11 @@ watch(() => route.fullPath, (newPath, oldPath) => {
 onMounted(() => {
     fetchBatches()
     fetchApplicationsList()
+    document.addEventListener('click', onClickOutside)
+})
+
+onBeforeUnmount(() => {
+    document.removeEventListener('click', onClickOutside)
 })
 </script>
 <style>

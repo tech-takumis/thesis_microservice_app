@@ -162,11 +162,18 @@
                   @change="handleFileSelect" />
               </label>
 
-              <input v-model="messageInput" type="text" placeholder="Type a message..."
-                class="flex-1 px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition" />
+              <input
+                v-model="messageInput"
+                type="text"
+                placeholder="Type a message..."
+                class="flex-1 px-4 py-3 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-green-500 focus:border-transparent"
+              />
 
-              <button type="submit" :disabled="isSendDisabled"
-                class="px-5 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 flex items-center justify-center transition">
+              <button
+                type="submit"
+                :disabled="isSendDisabled"
+                class="px-5 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 flex items-center justify-center transition"
+              >
                 <Send class="h-5 w-5" />
               </button>
             </form>
@@ -180,16 +187,36 @@
         <!-- 🔍 Search Bar -->
         <div class="p-4 bg-gray-100 sticky top-0 z-10 ">
           <div class="relative">
-            <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <input v-model="searchQuery" type="text" placeholder="Search farmers..."
-              class="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition" />
+            <Search
+              class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
+            />
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="Search farmers..."
+              class="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-full focus:ring-1 focus:ring-green-500 focus:border-transparent"
+            />
           </div>
         </div>
 
         <!-- 👨‍🌾 Farmer List -->
         <div class="flex-1 overflow-y-auto">
-          <div v-if="farmerStore.isLoading" class="p-4 text-center text-gray-500">
-            Loading farmers...
+          <div
+            v-if="farmerStore.isLoading"
+            class="flex flex-col items-center justify-center py-12 space-y-4"
+          >
+            <!-- Spinner -->
+            <div class="relative">
+              <div
+                class="h-14 w-14 rounded-full border-4 border-gray-200"></div>
+              <div
+                class="absolute top-0 left-0 h-14 w-14 rounded-full border-4 border-green-600 border-t-transparent animate-spin"></div>
+            </div>
+
+            <!-- Loading Label -->
+            <p class="text-gray-600 font-medium tracking-wide">
+              Loading data…
+            </p>
           </div>
           <div v-else-if="filteredFarmers.length === 0" class="p-4 text-center text-gray-500">
             No farmers found

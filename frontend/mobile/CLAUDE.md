@@ -146,16 +146,17 @@ final appApi = getIt<ApplicationApiService>();
 - `StorageService` uses `registerSingletonAsync` and must be awaited during initialization
 - `AuthApiService` is attached to `StorageService` after registration to avoid circular dependencies
 - Different Dio instances are created for different services to isolate interceptor configurations:
-  - `authDio` - Used by `AuthApiService`, `PostApiService`, `NotificationApiService` (with auth interceptor)
+  - `authDio` - Used by `AuthApiService`, `PostApiService`, `NotificationApiService`, `InsuranceApiService`, `VoucherApiService` (with auth interceptor)
   - `appDio` - Used by `ApplicationApiService`
   - `psgcDio` - Used by `PSGCService` (external API)
+- Registered controllers: `ApplicationController`, `InsuranceController`, `VoucherController`
 
 ### Routing (go_router)
 
 Router configured in `lib/features/messages/providers/router_provider.dart`:
 - Auth-based redirection (logged-out users → `/login`)
 - Initial location determined by `authProvider.isLoggedIn`
-- Routes: `/login`, `/register`, `/home`, `/profile`
+- Routes: `/login`, `/register`, `/home`, `/profile`, `/my-vouchers`
 
 ## API Services & Backend Integration
 
@@ -175,9 +176,12 @@ All API services use `http://localhost:9001/api/v1` as the base URL. Update this
 | `WebSocketService` | STOMP WebSocket for real-time updates | `lib/data/services/websocket.dart` |
 | `StorageService` | Local Hive storage for tokens/credentials | `lib/data/services/storage_service.dart` |
 | `LocalNotificationService` | Phone notifications (notification tray) | `lib/data/services/local_notification_service.dart` |
+| `InsuranceApiService` | Insurance record management and retrieval | `lib/data/services/insurance_api_service.dart` |
+| `VoucherApiService` | Voucher management (fetch, delete by code/status) | `lib/data/services/voucher_api_service.dart` |
 | `PSGCService` | Philippine geographical data (provinces, cities, barangays) | `lib/data/services/psgc_service.dart` |
 | `LocationService` | GPS location fetching | `lib/data/services/location_service.dart` |
 | `DocumentService` | File picking and image processing | `lib/data/services/document_service.dart` |
+| `QRService` | QR code generation and handling | `lib/data/services/qr_service.dart` |
 
 ### HTTP Client (Dio)
 
@@ -282,6 +286,8 @@ Located in `lib/data/models/`:
 - `PostModels` - Social posts with pagination
 - `AuthResponse` / `RegistrationRequest` - Auth DTOs
 - `PsgcModels` - Philippine geographical hierarchy
+- `InsuranceModels` - Insurance records and responses
+- `VoucherModels` - Voucher DTOs with status enums
 
 ## Code Style & Linting
 
@@ -368,6 +374,7 @@ The app includes these main screens (in `lib/presentation/pages/`):
 - `contact_department_page.dart` - Messaging interface
 - `notification_page.dart` - In-app notifications
 - `profile_page.dart` - User profile
+- `my_voucher_page.dart` - User vouchers management
 
 ## Troubleshooting
 

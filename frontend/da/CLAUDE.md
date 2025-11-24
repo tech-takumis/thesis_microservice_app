@@ -37,6 +37,7 @@ Copy `.env.example` to `.env` and configure for your environment.
 
 - **QR Code**: `qrcode` for generation, `html5-qrcode` for scanning (used in voucher features)
 - **Animations**: `vue3-lottie` for Lottie animations
+- **PSGC**: `psgc` npm package for Philippine Standard Geographic Code utilities
 
 ## Architecture
 
@@ -55,7 +56,7 @@ Copy `.env.example` to `.env` and configure for your environment.
 - **Auth store** (`src/stores/auth.js`) manages user state, roles, and permissions
   - User data includes nested roles and permissions structure
   - `hasRole(roleName)` method for role checks (case-insensitive)
-  - `hasPermission(permissionName)` method for permission checks (supports arrays)
+  - `hasPermission(permissionName)` method for permission checks (supports string or array)
   - `defaultRoute` computed property returns unified dashboard (`/agriculturist/dashboard`) for all authenticated users
 - **Route guards** in `src/router/index.js` enforce authentication and role-based access
   - Authenticated users redirected from login to unified dashboard (`/agriculturist/dashboard`)
@@ -80,7 +81,10 @@ Routes are organized by role in `src/lib/route.js`:
 - `MUNICIPALITY_ROUTES`: Agricultural operations, vouchers, claims, messaging, AI damage analysis
 - `AGRICULTURAL_EXTENSION_WORKER_ROUTES`: Field operations, training, diagnostics
 
-Navigation config in `src/lib/navigation.js` provides `UNIFIED_NAVIGATION` - a single navigation structure where access is controlled by roles and permissions rather than separate navigations per role.
+Navigation config in `src/lib/navigation.js` provides `UNIFIED_NAVIGATION` - a single navigation structure where access is controlled by roles and permissions rather than separate navigations per role. Navigation items can specify:
+- `roles`: Array of role names that can see this navigation item
+- `permissions`: Array of permissions required to access this navigation item
+- Children items inherit parent constraints and can add additional restrictions
 
 Key route patterns:
 - Application detail pages: `/role/submit-crop-data/application-type/submission-detail/:id/:applicationTypeId`
@@ -147,7 +151,8 @@ WebSocket implementation using STOMP (`@stomp/stompjs`) in `src/stores/websocket
 - Auth store provides helper methods:
   - `hasRole(roleName)`: Case-insensitive role check
   - `hasPermission(permissionName)`: Permission check (accepts string or array)
-- Route meta includes `role` field for route-level access control
+- Route meta includes `permissions` field for route-level access control
+- Navigation items can specify `roles` and `permissions` arrays to control visibility
 - Role names are case-insensitive in checks but stored as-is from backend
 - Common roles: `ADMIN`, `PERSOR`
 - Check `src/lib/route.js` for role-specific route definitions
@@ -157,7 +162,7 @@ The router performs:
 1. Page title updates based on route meta
 2. Guest route handling (redirects if authenticated)
 3. Authentication initialization for protected routes
-4. Role-based access checks
+4. Permission-based access checks
 5. Token validation for registration routes
 
 ### API Communication Patterns

@@ -1,5 +1,6 @@
 package com.hashjosh.farmer.service;
 
+import com.hashjosh.farmer.clients.RsbsaServiceClient;
 import com.hashjosh.farmer.config.CustomUserDetails;
 import com.hashjosh.farmer.dto.*;
 import com.hashjosh.farmer.entity.*;
@@ -11,7 +12,6 @@ import com.hashjosh.jwtshareable.service.JwtService;
 import com.hashjosh.kafkacommon.farmer.FarmerRegistrationContract;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -36,11 +36,30 @@ public class AuthService {
     private final FarmerProducer farmerProducer;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final RsbsaServiceClient serviceClient;
+
+    private String extractUsernameFromRsbsaId(String rsbsaId) {
+        if (rsbsaId == null || rsbsaId.length() < 6) {
+            throw ApiException.badRequest("Invalid RSBSA ID format");
+        }
+        // Extract last 6 digits
+        String[] parts = rsbsaId.split("-");
+        String lastPart = parts[parts.length - 1];
+        if (lastPart.length() < 6) {
+            throw ApiException.badRequest("RSBSA ID does not contain a valid 6-digit username part");
+        }
+        return lastPart.substring(lastPart.length() - 6);
+    }
+
     @Transactional
     public Farmer register(RegistrationRequest request) {
 
         if (farmerRepository.existsByEmail(request.getEmail())) {
             throw ApiException.badRequest("Email already exists");
+        }
+
+        if(!serviceClient.existsById(request.getRsbsaId())){
+            throw ApiException.badRequest("RSBSA ID not found");
         }
 
         if (farmerRepository.existsByUsername(request.getRsbsaId())) {
@@ -49,9 +68,8 @@ public class AuthService {
 
         Set<Role> roles = Collections.singleton(roleRepository.findByName("FARMER")
                 .orElseThrow(() -> ApiException.badRequest("Role FARMER not found")));
-
-        // Create and save UserProfile first
-        Farmer farmer = userMapper.toUserEntity(request, roles);
+        String username = extractUsernameFromRsbsaId(request.getRsbsaId());
+        Farmer farmer = userMapper.toUserEntity(request, roles, username);
 
         // Verify password was properly encoded
         if (farmer.getPassword() == null || farmer.getPassword().trim().isEmpty()) {
@@ -65,16 +83,16 @@ public class AuthService {
                 registeredFarmer.getUsername(),
                 registeredFarmer.getPassword() != null && !registeredFarmer.getPassword().isEmpty());
 
-        publishUserRegistrationEvent(request, registeredFarmer);
+        publishUserRegistrationEvent(request, registeredFarmer, username);
 
         return registeredFarmer;
     }
 
-    private void publishUserRegistrationEvent(RegistrationRequest request, Farmer savedFarmer) {
+    private void publishUserRegistrationEvent(RegistrationRequest request, Farmer savedFarmer, String username) {
         FarmerRegistrationContract farmerRegistrationContract =
                 FarmerRegistrationContract.builder()
                         .userId(savedFarmer.getId())
-                        .username(savedFarmer.getUsername())
+                        .username(username)
                         .password(request.getPassword())
                         .firstName(savedFarmer.getFirstName())
                         .lastName(savedFarmer.getLastName())

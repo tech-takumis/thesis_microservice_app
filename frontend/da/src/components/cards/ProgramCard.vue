@@ -7,9 +7,9 @@
             <h3 class="text-lg font-semibold text-gray-800">Latest Programs</h3>
         </div>
 
-        <div class="space-y-3">
+        <div v-if="programs.length > 0" class="space-y-3">
             <div
-                v-for="program in latestPrograms"
+                v-for="program in programs"
                 :key="program.id"
                 class="border border-gray-300 rounded-lg p-3"
             >
@@ -30,45 +30,58 @@
 
                 <div class="grid grid-cols-2 gap-2 text-xs mb-2">
                     <div class="flex items-center space-x-1">
-                        <Users class="h-4 w-4 text-green-600" />
-                        <span class="font-semibold">{{ program.beneficiaries.length }}</span>
-                        <span class="text-gray-500">beneficiaries</span>
+                        <span class="font-semibold text-gray-700">Type:</span>
+                        <span class="text-gray-600">{{ program.type || 'N/A' }}</span>
                     </div>
                     <div class="flex items-center space-x-1">
-                        <Wallet class="h-4 w-4 text-yellow-400" />
-                        <span class="font-semibold">₱{{ program.budget }}K</span>
+                        <span :class="getStatusClass(program.status)" class="px-2 py-0.5 rounded-full text-[10px] font-medium">
+                            {{ program.status || 'N/A' }}
+                        </span>
                     </div>
                 </div>
 
                 <div class="mt-2">
                     <div class="w-full bg-gray-200 rounded-full h-1.5">
-                        <div class="bg-yellow-400 h-1.5 rounded-full" :style="{ width: program.progress + '%' }"></div>
+                        <div class="bg-yellow-400 h-1.5 rounded-full" :style="{ width: program.completion + '%' }"></div>
                     </div>
-                    <p class="text-xs text-gray-600 mt-1">{{ program.progress }}% Complete</p>
+                    <p class="text-xs text-gray-600 mt-1">{{ program.completion }}% Complete</p>
                 </div>
             </div>
+        </div>
+
+        <!-- Empty State -->
+        <div v-else class="text-center py-8">
+            <Briefcase class="h-12 w-12 text-gray-300 mx-auto mb-3" />
+            <p class="text-sm text-gray-500">No programs available</p>
         </div>
     </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { useDashboardStore } from '@/stores/dashboard'
-import { Briefcase, ClipboardList, Settings, Users, Wallet } from 'lucide-vue-next'
+import { Briefcase, ClipboardList, Settings } from 'lucide-vue-next'
 import PermissionGuard from '@/components/others/PermissionGuard.vue'
 
-const dashboardStore = useDashboardStore()
+defineProps({
+    programs: {
+        type: Array,
+        default: () => []
+    }
+})
 
-const latestPrograms = computed(() =>
-    (dashboardStore.municipalDashboard.programs || [])
-        .map(p => ({
-            id: p.programId,
-            name: p.programName,
-            beneficiaries: p.beneficiaries || 0,
-            budget: dashboardStore.formatCurrency(p.budget || 0),
-            progress: p.completedPercentage || 0,
-            status: p.status
-        }))
-        .slice(0, 4)
-)
+const getStatusClass = (status) => {
+    switch (status) {
+        case 'ACTIVE':
+            return 'bg-green-100 text-green-800'
+        case 'COMPLETED':
+            return 'bg-blue-100 text-blue-800'
+        case 'PENDING':
+            return 'bg-yellow-100 text-yellow-800'
+        case 'INACTIVE':
+            return 'bg-gray-100 text-gray-800'
+        case 'CANCELLED':
+            return 'bg-red-100 text-red-800'
+        default:
+            return 'bg-gray-100 text-gray-800'
+    }
+}
 </script>

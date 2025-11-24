@@ -25,6 +25,5 @@ public record RsbsaRequestDto(
         Integer householdSize,
         String educationLevel,
         boolean withDisability
-
 ) {
 }

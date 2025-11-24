@@ -64,18 +64,21 @@ class WebSocketService {
       callback: (frame) {
         try {
           final message = jsonDecode(frame.body!);
-          print('📩 [WebSocket] Message: $message');
+          print('📩 [WebSocket] Raw message: $message');
+
           // Normalize backend message keys to match frontend model
           final normalized = {
-            'messageId': message['id'] ?? message['messageId'],
+            'messageId': message['messageId'] ?? message['id'],
             'senderId': message['senderId'],
             'receiverId': message['receiverId'],
             'text': message['text'],
-            'type': message['type'] ?? message['conversationType'] ?? 'FARMER_AGRICULTURE',
-            'attachments': message['attachments'] ?? message['attachmentResponses'] ?? [],
-            'sentAt': message['sentAt'] ?? message['timestamp'],
+            'conversationType': message['conversationType'] ?? message['type'] ?? 'FARMER_AGRICULTURE',
+            'attachmentResponses': message['attachmentResponses'] ?? message['attachments'] ?? [],
+            'timestamp': message['timestamp'] ?? message['sentAt'] ?? DateTime.now().toIso8601String(),
             'isRead': message['isRead'] ?? false,
           };
+
+          print('📩 [WebSocket] Normalized message: $normalized');
 
           // Show local notification for new message
           final localNotificationService = getIt<LocalNotificationService>();
@@ -90,6 +93,7 @@ class WebSocketService {
           }
         } catch (e) {
           print('❌ [WebSocket] Parse error: $e');
+          print('❌ [WebSocket] Stack trace: $e');
         }
       },
     );

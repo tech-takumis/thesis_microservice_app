@@ -9,4 +9,6 @@ import java.util.UUID;
 public interface RsbsaRepository extends JpaRepository<Rsbsa, UUID> {
 
     Optional<Rsbsa> findByRsbsaIdEqualsIgnoreCase(String rsbsaId);
+
+    Boolean existsByRsbsaIdEqualsIgnoreCase(String rsbaId);
 }

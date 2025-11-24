@@ -1,7 +1,5 @@
 <template>
-    <AuthenticatedLayout
-        :navigation="navigation"
-        role-title="Municipal Agriculturist"
+    <AuthenticatedLayout :navigation="navigation" role-title="Municipal Agriculturist"
         :page-title="'Municipal Dashboard'">
         <!-- Flex container for navbar and scrollable content -->
         <div class="flex flex-col h-full">
@@ -9,11 +7,11 @@
             <nav
                 class="flex-shrink-0 bg-transparent border-0 shadow-none px-2 lg:px-4 py-3 mb-4 flex items-center justify-between">
                 <h4 class="text-2xl font-semibold text-green-600">Dashboard</h4>
-                
+
                 <!-- Right Side: Notifications + Profile -->
                 <div class="flex items-center space-x-6">
                     <!-- Notifications -->
-                    <!-- <div class="relative notifications-dropdown">
+                    <div class="relative notifications-dropdown">
                         <button
                             class="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
                             @click="toggleNotificationsDropdown">
@@ -23,22 +21,16 @@
                                 {{ notificationCount }}
                             </span>
                         </button>
-                    </div> -->
+                    </div>
 
                     <!-- Profile Dropdown -->
                     <div class="relative select-none">
                         <!-- Profile Button -->
-                        <button
-                            class="flex items-center space-x-3 p-2 rounded-lg"
-                            @click.stop="
-                                showProfileDropdown = !showProfileDropdown
+                        <button class="flex items-center space-x-3 p-2 rounded-lg" @click.stop="
+                            showProfileDropdown = !showProfileDropdown
                             ">
-                            <div
-                                class="h-8 w-8 rounded-full bg-green-600 flex items-center justify-center">
-                                <span
-                                    class="text-sm font-semibold text-white"
-                                    >{{ userInitials }}</span
-                                >
+                            <div class="h-8 w-8 rounded-full bg-green-600 flex items-center justify-center">
+                                <span class="text-sm font-semibold text-white">{{ userInitials }}</span>
                             </div>
                             <div class="hidden md:block text-left">
                                 <p class="text-sm font-medium text-gray-900">
@@ -48,31 +40,26 @@
                                     {{ userEmail }}
                                 </p>
                             </div>
-                            <ChevronDown
-                                class="h-4 w-4 text-gray-400 transition-transform duration-300"
-                                :class="{
-                                    'rotate-180': showProfileDropdown,
-                                }" />
+                            <ChevronDown class="h-4 w-4 text-gray-400 transition-transform duration-300" :class="{
+                                'rotate-180': showProfileDropdown,
+                            }" />
                         </button>
 
                         <!-- Dropdown Menu with Animation -->
-                        <transition
-                            enter-active-class="transition ease-out duration-200"
+                        <transition enter-active-class="transition ease-out duration-200"
                             enter-from-class="opacity-0 scale-95 -translate-y-2"
                             enter-to-class="opacity-100 scale-100 translate-y-0"
                             leave-active-class="transition ease-in duration-150"
                             leave-from-class="opacity-100 scale-100 translate-y-0"
                             leave-to-class="opacity-0 scale-95 -translate-y-2">
-                            <div
-                                v-if="showProfileDropdown"
+                            <div v-if="showProfileDropdown"
                                 class="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-lg border border-gray-100 z-50 overflow-hidden">
                                 <div class="py-2">
                                     <!-- Profile -->
                                     <button
                                         class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition"
                                         @click="handleProfileClick">
-                                        <User
-                                            class="h-4 w-4 mr-3 text-gray-400" />
+                                        <User class="h-4 w-4 mr-3 text-gray-400" />
                                         View Profile
                                     </button>
 
@@ -80,8 +67,7 @@
                                     <button
                                         class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition"
                                         @click="handleSettingsClick">
-                                        <Settings
-                                            class="h-4 w-4 mr-3 text-gray-400" />
+                                        <Settings class="h-4 w-4 mr-3 text-gray-400" />
                                         Settings
                                     </button>
 
@@ -89,14 +75,12 @@
                                     <button
                                         class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition"
                                         @click="handlePreferencesClick">
-                                        <Sliders
-                                            class="h-4 w-4 mr-3 text-gray-400" />
+                                        <Sliders class="h-4 w-4 mr-3 text-gray-400" />
                                         Preferences
                                     </button>
 
                                     <!-- Divider -->
-                                    <div
-                                        class="border-t border-gray-100 my-1"></div>
+                                    <div class="border-t border-gray-100 my-1"></div>
 
                                 </div>
                             </div>
@@ -107,18 +91,15 @@
 
             <!-- Content Area (fixed height, no scroll at this level) -->
             <div class="flex-1 flex flex-col min-h-0">
-                <div
-                    class="w-full space-y-6 pb-6 overflow-hidden flex flex-col">
+                <div class="w-full space-y-6 pb-6 overflow-hidden flex flex-col">
                     <!-- Stats Grid (fixed, no scroll) -->
 
                     <!-- New 12-column grid layout with Posts (col-8) and Financial/Program (col-4) -->
                     <!-- Posts has independent scroll, Financial/Program share unified scroll -->
-                    <div
-                        class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-2 min-h-0">
+                    <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-2 min-h-0">
                         <!-- Posts Card - 8 columns with independent scroll -->
                         <div class="lg:col-span-8 flex flex-col min-h-0">
-                            <div
-                                class="h-full overflow-y-auto overflow-x-hidden pr-2 custom-scrollbar">
+                            <div class="h-full overflow-y-auto overflow-x-hidden pr-2 custom-scrollbar">
                                 <PostCard :posts="posts" />
                             </div>
                         </div>
@@ -126,21 +107,16 @@
                         <!-- Financial & Program Cards - 4 columns with unified scroll container -->
                         <div class="lg:col-span-4 flex flex-col min-h-0 relative">
                             <!-- Notifications Modal Overlay -->
-                            <transition
-                                enter-active-class="transition ease-out duration-300"
-                                enter-from-class="opacity-0 scale-95"
-                                enter-to-class="opacity-100 scale-100"
+                            <transition enter-active-class="transition ease-out duration-300"
+                                enter-from-class="opacity-0 scale-95" enter-to-class="opacity-100 scale-100"
                                 leave-active-class="transition ease-in duration-200"
-                                leave-from-class="opacity-100 scale-100"
-                                leave-to-class="opacity-0 scale-95">
-                                <div
-                                    v-show="showNotificationsDropdown"
+                                leave-from-class="opacity-100 scale-100" leave-to-class="opacity-0 scale-95">
+                                <div v-show="showNotificationsDropdown"
                                     class="absolute inset-0 bg-white rounded-2xl shadow-xl border border-gray-200 z-50 flex flex-col">
                                     <!-- Header -->
                                     <div
                                         class="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50 rounded-t-2xl flex-shrink-0">
-                                        <h3
-                                            class="text-lg font-semibold text-gray-900 flex items-center space-x-2">
+                                        <h3 class="text-lg font-semibold text-gray-900 flex items-center space-x-2">
                                             <Bell class="h-5 w-5 text-green-600" />
                                             <span>Notifications</span>
                                         </h3>
@@ -153,57 +129,49 @@
 
                                     <!-- Notification List -->
                                     <div class="flex-1 overflow-y-auto">
-                                        <div
-                                            v-for="notification in notifications"
-                                            :key="notification.id"
-                                            class="p-4 border-b border-gray-100 hover:bg-green-50 transition cursor-pointer flex space-x-4">
+                                        <div v-for="notification in notifications" :key="notification.id"
+                                            class="p-4 border-b border-gray-100 hover:bg-green-50 transition cursor-pointer flex space-x-4"
+                                            @click="markNotificationAsRead(notification)">
                                             <!-- Icon / Status -->
                                             <div class="flex-shrink-0">
-                                                <div
-                                                    class="h-9 w-9 flex items-center justify-center rounded-full"
-                                                    :class="
-                                                        notification.read
-                                                            ? 'bg-gray-100'
-                                                            : 'bg-green-100'
-                                                    ">
-                                                    <Bell
-                                                        class="h-4 w-4 text-green-600" />
+                                                <div class="h-9 w-9 flex items-center justify-center rounded-full"
+                                                    :class="notification.read
+                                                        ? 'bg-gray-100'
+                                                        : 'bg-green-100'
+                                                        ">
+                                                    <Bell class="h-4 w-4 text-green-600" />
                                                 </div>
                                             </div>
 
                                             <!-- Message -->
                                             <div class="flex-1">
-                                                <div
-                                                    class="flex justify-between items-center">
-                                                    <p
-                                                        class="font-medium text-gray-900 text-sm">
+                                                <div class="flex justify-between items-center">
+                                                    <p class="font-medium text-gray-900 text-sm">
                                                         {{ notification.title }}
                                                     </p>
-                                                    <span
-                                                        class="text-xs text-gray-400"
-                                                        >{{
-                                                            notification.time
-                                                        }}</span
-                                                    >
+                                                    <span class="text-xs text-gray-400">{{
+                                                        formatNotificationTime(notification.createdAt)
+                                                        }}</span>
                                                 </div>
-                                                <p
-                                                    class="text-sm text-gray-600 mt-1">
+                                                <p class="text-sm text-gray-600 mt-1">
                                                     {{ notification.message }}
                                                 </p>
-                                                <div
-                                                    v-if="!notification.read"
-                                                    class="mt-1 inline-block bg-green-600 text-white text-[10px] px-2 py-0.5 rounded-full">
-                                                    New
+                                                <div class="flex items-center gap-2 mt-1">
+                                                    <div v-if="!notification.read"
+                                                        class="inline-block bg-green-600 text-white text-[10px] px-2 py-0.5 rounded-full">
+                                                        New
+                                                    </div>
+                                                    <span v-if="notification.type"
+                                                        class="inline-block bg-blue-100 text-blue-800 text-[10px] px-2 py-0.5 rounded-full">
+                                                        {{ notification.type }}
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>
 
                                         <!-- Empty State -->
-                                        <div
-                                            v-if="notifications.length === 0"
-                                            class="p-8 text-center text-gray-500">
-                                            <Bell
-                                                class="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                                        <div v-if="notifications.length === 0" class="p-8 text-center text-gray-500">
+                                            <Bell class="h-12 w-12 text-gray-300 mx-auto mb-3" />
                                             <p class="text-base font-medium">
                                                 No new notifications
                                             </p>
@@ -214,8 +182,7 @@
                                     </div>
 
                                     <!-- Footer -->
-                                    <div
-                                        class="p-3 border-t border-gray-200 bg-gray-50 rounded-b-2xl flex-shrink-0">
+                                    <div class="p-3 border-t border-gray-200 bg-gray-50 rounded-b-2xl flex-shrink-0">
                                         <button
                                             class="w-full text-center text-sm text-green-700 hover:text-green-800 font-medium transition"
                                             @click="viewAllNotifications">
@@ -226,14 +193,13 @@
                             </transition>
 
                             <!-- Original content -->
-                            <div
-                                class="h-full overflow-y-auto overflow-x-hidden pr-2 custom-scrollbar">
+                            <div class="h-full overflow-y-auto overflow-x-hidden pr-2 custom-scrollbar">
                                 <div class="space-y-4">
                                     <!-- Latest Transactions -->
                                     <FinancialCard />
 
                                     <!-- Latest Programs -->
-                                    <ProgramCard />
+                                    <ProgramCard :programs="programStore.latestPrograms" />
                                 </div>
                             </div>
                         </div>
@@ -269,18 +235,25 @@ import { MUNICIPAL_AGRICULTURIST_NAVIGATION } from '@/lib/navigation'
 import { useAuthStore } from '@/stores/auth'
 import { useDashboardStore } from '@/stores/dashboard'
 import { usePostStore } from '@/stores/post'
+import { useNotificationStore } from '@/stores/notification'
+import { useProgramStore } from '@/stores/program'
 
 const postStore = usePostStore()
 const posts = computed(() => postStore.posts)
 const navigation = MUNICIPAL_AGRICULTURIST_NAVIGATION
 const authStore = useAuthStore()
 const dashboardStore = useDashboardStore()
+const notificationStore = useNotificationStore()
+const programStore = useProgramStore()
 
 // Profile and notification states
 const showProfileDropdown = ref(false)
 const showFiltersDropdown = ref(false)
 const showNotificationsDropdown = ref(false)
-const notificationCount = ref(3)
+
+// Get notifications from the store
+const notifications = computed(() => notificationStore.apiNotifications)
+const notificationCount = computed(() => notificationStore.unreadCount)
 
 // User data from auth store
 const userFullName = computed(() => authStore.userFullName)
@@ -319,31 +292,24 @@ const programsTrend = computed(() => {
     return Array(12).fill(count)
 })
 
-// Notifications data
-const notifications = ref([
-    {
-        id: 1,
-        title: 'New Claim Submitted',
-        message:
-            'Farmer Juan Dela Cruz submitted a new insurance claim for rice crop damage',
-        time: '2 minutes ago',
-        read: false,
-    },
-    {
-        id: 2,
-        title: 'Program Update',
-        message: 'Seed Distribution Program has reached 75% completion',
-        time: '1 hour ago',
-        read: false,
-    },
-    {
-        id: 3,
-        title: 'Budget Alert',
-        message: 'Fertilizer Subsidy budget is running low (15% remaining)',
-        time: '3 hours ago',
-        read: true,
-    },
-])
+// Helper function to format notification time
+const formatNotificationTime = (createdAt) => {
+    if (!createdAt) return 'Just now'
+
+    const date = new Date(createdAt)
+    const now = new Date()
+    const diffMs = now - date
+    const diffMins = Math.floor(diffMs / 60000)
+    const diffHours = Math.floor(diffMs / 3600000)
+    const diffDays = Math.floor(diffMs / 86400000)
+
+    if (diffMins < 1) return 'Just now'
+    if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`
+    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`
+    if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`
+
+    return date.toLocaleDateString()
+}
 
 const getTransactionStatusClass = status => {
     switch (status) {
@@ -381,9 +347,15 @@ const toggleNotificationsDropdown = () => {
     }
 }
 
-const markAllAsRead = () => {
-    notifications.value = notifications.value.map(n => ({ ...n, read: true }))
-    notificationCount.value = 0
+const markAllAsRead = async () => {
+    // Mark all unread notifications as read
+    const unreadNotifications = notifications.value.filter(n => !n.read)
+
+    for (const notification of unreadNotifications) {
+        if (notification.id) {
+            await notificationStore.markNotificationAsRead(notification.id)
+        }
+    }
 }
 
 const viewAllNotifications = () => {
@@ -407,6 +379,12 @@ const handlePreferencesClick = () => {
     showProfileDropdown.value = false
     // Navigate to preferences page
     console.log('Navigate to preferences page')
+}
+
+const markNotificationAsRead = async (notification) => {
+    if (!notification.read && notification.id) {
+        await notificationStore.markNotificationAsRead(notification.id)
+    }
 }
 
 
@@ -443,6 +421,12 @@ onMounted(async () => {
     try {
         await dashboardStore.fetchMunicipalDashboard()
         await postStore.fetchPosts()
+
+        // Load all notifications (sorted by createdAt, newest first)
+        await notificationStore.getAllNotifications()
+
+        // Load all programs to display latest 5
+        await programStore.getAllPrograms()
     } catch (error) {
         console.error('Failed to load dashboard data:', error)
     }

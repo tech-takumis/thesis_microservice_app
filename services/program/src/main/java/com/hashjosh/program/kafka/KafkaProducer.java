@@ -1,4 +1,4 @@
-package com.hashjosh.application.kafka;
+package com.hashjosh.program.kafka;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ApplicationProducer {
+public class KafkaProducer {
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
 

@@ -2,6 +2,7 @@ package com.hashjosh.rsbsa.mapper;
 
 
 
+import com.hashjosh.rsbsa.dto.RsbsaUpdateRequestDTO;
 import com.hashjosh.rsbsa.entity.Rsbsa;
 import com.hashjosh.rsbsa.dto.RsbsaRequestDto;
 import com.hashjosh.rsbsa.dto.RsbsaResponseDto;
@@ -51,5 +52,31 @@ public class RsbsaMapper {
                 save.getFarmLocation(), save.getTenureStatus(), save.getSourceOfIncome(), save.getEstimatedIncome(),
                 save.getHouseholdSize(), save.getEducationLevel(),save.isWithDisability()
         );
+    }
+
+    public void updateRsbsaFromDto(Rsbsa rsbsa, RsbsaUpdateRequestDTO dto) {
+        rsbsa.setFirstName(dto.getFirstName());
+        rsbsa.setLastName(dto.getLastName());
+        rsbsa.setMiddleName(dto.getMiddleName());
+        rsbsa.setGender(dto.getGender());
+        rsbsa.setCivilStatus(dto.getCivilStatus());
+        rsbsa.setAddress(dto.getAddress());
+        rsbsa.setBarangay(dto.getBarangay());
+        rsbsa.setMunicipality(dto.getMunicipality());
+        rsbsa.setProvince(dto.getProvince());
+        rsbsa.setContactNumber(dto.getContactNumber());
+        rsbsa.setEmail(dto.getEmail());
+        rsbsa.setDateOfBirth(dto.getDateOfBirth() != null ? java.time.LocalDate.parse(dto.getDateOfBirth()) : rsbsa.getDateOfBirth());
+        rsbsa.setFarmingType(dto.getFarmingType());
+        rsbsa.setPrimaryCrop(dto.getPrimaryCrop());
+        rsbsa.setSecondaryCrop(dto.getSecondaryCrop());
+        rsbsa.setFarmArea(dto.getFarmArea());
+        rsbsa.setFarmLocation(dto.getFarmLocation());
+        rsbsa.setTenureStatus(dto.getTenureStatus());
+        rsbsa.setSourceOfIncome(dto.getSourceOfIncome());
+        rsbsa.setEstimatedIncome(dto.getEstimatedIncome());
+        rsbsa.setHouseholdSize(dto.getHouseholdSize());
+        rsbsa.setEducationLevel(dto.getEducationLevel());
+        rsbsa.setWithDisability(dto.isWithDisability());
     }
 }

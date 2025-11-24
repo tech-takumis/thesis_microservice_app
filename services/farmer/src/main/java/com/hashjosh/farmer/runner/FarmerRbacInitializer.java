@@ -15,7 +15,6 @@ import java.util.*;
 
 @Component
 @RequiredArgsConstructor
-@Order(3)
 @Slf4j
 public class FarmerRbacInitializer implements CommandLineRunner {
 

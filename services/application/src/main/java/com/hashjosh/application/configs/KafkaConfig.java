@@ -65,4 +65,22 @@ public class KafkaConfig {
                 .build();
     }
 
+    @Bean
+    public NewTopic newVoucherCreated(){
+        return TopicBuilder
+                .name("new-voucher-created")
+                .partitions(1)
+                .replicas(1)
+                .build();
+    }
+
+    @Bean
+    public NewTopic voucherClaimed(){
+        return TopicBuilder
+                .name("voucher-claimed")
+                .partitions(1)
+                .replicas(1)
+                .build();
+    }
+
 }

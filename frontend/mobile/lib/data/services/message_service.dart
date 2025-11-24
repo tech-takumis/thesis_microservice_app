@@ -72,20 +72,30 @@ class MessageService extends GetxService {
   }
 
   void _handleIncomingMessage(Map<String, dynamic> data) {
+    print('🔍 [MessageService] Handling incoming data: $data');
+
     // Only process if it looks like a chat message
     if (data.containsKey('messageId') && data.containsKey('senderId') && data.containsKey('receiverId')) {
       try {
+        print('✅ [MessageService] Data has required fields, parsing...');
         final message = Message.fromJson(data);
+        print('✅ [MessageService] Parsed message: ${message.messageId} - "${message.text}"');
+
         if (!_messages.any((m) => m.messageId == message.messageId)) {
+          print('✅ [MessageService] Adding new message to list. Current count: ${_messages.length}');
           _messages.add(message);
           _controller.add([..._messages]); // ✅ notify listeners
+          print('✅ [MessageService] Message added! New count: ${_messages.length}');
+        } else {
+          print('⚠️ [MessageService] Message already exists in list, skipping');
         }
       } catch (e) {
         print('❌ [MessageService] Error parsing incoming message: $e');
+        print('❌ [MessageService] Stack trace: $e');
       }
     } else {
       // Not a chat message, ignore or handle as needed
-      print('ℹ️ [MessageService] Ignored non-chat message: $data');
+      print('ℹ️ [MessageService] Ignored non-chat message (missing required fields): $data');
     }
   }
 

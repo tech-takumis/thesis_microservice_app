@@ -1,11 +1,14 @@
 package com.hashjosh.program.service;
 
+import com.hashjosh.kafkacommon.voucher.NewVoucherCreated;
+import com.hashjosh.kafkacommon.voucher.VoucherClaimedEvent;
 import com.hashjosh.program.config.CustomUserDetails;
 import com.hashjosh.program.dto.CreateVoucherRequestDto;
 import com.hashjosh.program.dto.UpdateVoucherRequestDto;
 import com.hashjosh.program.dto.VoucherResponseDto;
 import com.hashjosh.program.entity.Voucher;
 import com.hashjosh.program.enums.VoucherStatus;
+import com.hashjosh.program.kafka.KafkaProducer;
 import com.hashjosh.program.mapper.VoucherMapper;
 import com.hashjosh.program.repository.VoucherRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +27,7 @@ public class VoucherService {
 
     private final VoucherRepository voucherRepository;
     private final VoucherMapper voucherMapper;
+    private final KafkaProducer producer;
 
     @Transactional
     public VoucherResponseDto createVoucher(CreateVoucherRequestDto dto) {
@@ -35,6 +39,23 @@ public class VoucherService {
         voucher.setCreatedAt(LocalDateTime.now());
 
         Voucher saved = voucherRepository.save(voucher);
+
+        NewVoucherCreated event = NewVoucherCreated.builder()
+                .voucherId(saved.getId())
+                .code(saved.getCode())
+                .ownerUserId(saved.getOwnerUserId())
+                .title(saved.getTitle())
+                .voucherType(saved.getVoucherType().name())
+                .quantity(saved.getQuantity())
+                .unit(saved.getUnit())
+                .issueDate(saved.getIssueDate())
+                .expiryDate(saved.getExpiryDate())
+                .referenceNumber(saved.getReferenceNumber())
+                .build();
+
+
+        producer.publishEvent("new-voucher-created", event);
+
         return voucherMapper.toResponseDto(saved);
     }
 
@@ -49,6 +70,17 @@ public class VoucherService {
         voucher.setClaimedAt(LocalDateTime.now());
         voucher.setUpdatedAt(LocalDateTime.now());
         Voucher saved = voucherRepository.save(voucher);
+
+        VoucherClaimedEvent event = VoucherClaimedEvent.builder()
+                .voucherId(saved.getId())
+                .voucherCode(saved.getCode())
+                .title(saved.getTitle())
+                .claimedByUserId(saved.getClaimedByUserId())
+                .claimedAt(saved.getClaimedAt())
+                .build();
+
+        producer.publishEvent("voucher-claimed", event);
+
         return voucherMapper.toResponseDto(saved);
     }
 

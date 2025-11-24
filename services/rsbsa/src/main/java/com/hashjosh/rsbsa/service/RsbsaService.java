@@ -2,13 +2,13 @@ package com.hashjosh.rsbsa.service;
 
 import com.hashjosh.rsbsa.dto.RsbsaRequestDto;
 import com.hashjosh.rsbsa.dto.RsbsaResponseDto;
+import com.hashjosh.rsbsa.dto.RsbsaUpdateRequestDTO;
 import com.hashjosh.rsbsa.entity.Rsbsa;
 import com.hashjosh.rsbsa.exception.ApiException;
 import com.hashjosh.rsbsa.mapper.RsbsaMapper;
 import com.hashjosh.rsbsa.repository.RsbsaRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -48,5 +48,22 @@ public class RsbsaService {
         return mapper.rsbsaToReponseDto(
             rsbsaOptional.get()
         );
+    }
+
+    public RsbsaResponseDto updateRsbsa(String rsbsaId, RsbsaUpdateRequestDTO dto) {
+        Rsbsa rsbsa = repository.findByRsbsaIdEqualsIgnoreCase(rsbsaId)
+                .orElseThrow(() -> ApiException.notFound("RSBSA with ID " + rsbsaId + " not found"));
+        mapper.updateRsbsaFromDto(rsbsa, dto);
+        return mapper.rsbsaToReponseDto(repository.save(rsbsa));
+    }
+
+    public void deleteRsbsa(String rsbsaId) {
+        Rsbsa rsbsa = repository.findByRsbsaIdEqualsIgnoreCase(rsbsaId)
+                .orElseThrow(() -> ApiException.notFound("RSBSA with ID " + rsbsaId + " not found"));
+        repository.delete(rsbsa);
+    }
+
+    public Boolean existsByRsbsaId(String rsbaId) {
+        return repository.existsByRsbsaIdEqualsIgnoreCase(rsbaId);
     }
 }

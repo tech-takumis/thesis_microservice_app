@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import axios from '@/lib/axios'
+import { data } from 'autoprefixer'
 
 export const useNotificationStore = defineStore('notification', () => {
     // State for local notifications (existing functionality)
@@ -25,7 +26,7 @@ export const useNotificationStore = defineStore('notification', () => {
             message,
             duration,
             visible: true,
-            timestamp: Date.now()
+            timestamp: Date.now(),
         }
 
         notifications.value.push(notification)
@@ -40,7 +41,7 @@ export const useNotificationStore = defineStore('notification', () => {
         return id
     }
 
-    const removeNotification = (id) => {
+    const removeNotification = id => {
         const index = notifications.value.findIndex(n => n.id === id)
         if (index > -1) {
             notifications.value[index].visible = false
@@ -52,7 +53,7 @@ export const useNotificationStore = defineStore('notification', () => {
     }
 
     const clearAllNotifications = () => {
-        notifications.value.forEach(n => n.visible = false)
+        notifications.value.forEach(n => (n.visible = false))
         setTimeout(() => {
             notifications.value.length = 0
         }, 300)
@@ -76,86 +77,149 @@ export const useNotificationStore = defineStore('notification', () => {
     }
 
     // API Methods for backend notification management
-    const createNotification = async (notificationData) => {
+    const createNotification = async notificationData => {
         try {
             loading.value = true
             error.value = null
 
-            const response = await axios.post('/api/v1/notifications', notificationData)
+            const response = await axios.post(
+                '/api/v1/notifications',
+                notificationData,
+            )
 
             return {
                 success: true,
-                message: "Notification created successfully",
-                data: response.data
+                message: 'Notification created successfully',
+                data: response.data,
             }
         } catch (err) {
-            const errorMessage = err.response?.data?.message || err.message || "Failed to create notification"
+            const errorMessage =
+                err.response?.data?.message ||
+                err.message ||
+                'Failed to create notification'
             error.value = errorMessage
             return {
                 success: false,
                 message: errorMessage,
-                data: null
+                data: null,
             }
         } finally {
             loading.value = false
         }
     }
 
-    const createFarmersNotification = async (farmersNotificationData) => {
+    const getAllNotifications = async () => {
         try {
             loading.value = true
             error.value = null
 
-            const response = await axios.post('/api/v1/notifications/farmers', farmersNotificationData)
+            const response = await axios.get('/api/v1/notifications')
+
+            if (response.status >= 200 && response.status < 300) {
+                const notificationsData = Array.isArray(response.data) ? response.data : []
+
+                // Sort by createdAt (most recent first) and populate apiNotifications
+                apiNotifications.value = notificationsData.sort((a, b) => {
+                    const dateA = new Date(a.createdAt || 0)
+                    const dateB = new Date(b.createdAt || 0)
+                    return dateB - dateA // Descending order (newest first)
+                })
+
+                return {
+                    success: true,
+                    message: 'Notifications retrieved successfully',
+                    data: apiNotifications.value,
+                }
+            }
 
             return {
-                success: true,
-                message: response.data || "Farmers notifications sent successfully",
-                data: response.data
+                success: false,
+                message: 'Failed to retrieve notifications',
+                data: null,
             }
         } catch (err) {
-            const errorMessage = err.response?.data?.message || err.message || "Failed to send farmers notifications"
-            error.value = errorMessage
+            console.error('Error fetching notifications:', err)
+            error.value = err.message || 'Failed to retrieve notifications'
+            apiNotifications.value = []
             return {
                 success: false,
-                message: errorMessage,
-                data: null
+                message: error.value,
+                data: null,
             }
         } finally {
             loading.value = false
         }
     }
 
-    const getNotificationsForUser = async (recipientId) => {
+    const createFarmersNotification = async farmersNotificationData => {
         try {
             loading.value = true
             error.value = null
 
-            const response = await axios.get(`/api/v1/notifications/${recipientId}`)
-            const notifications = Array.isArray(response.data) ? response.data : []
-            
+            const response = await axios.post(
+                '/api/v1/notifications/farmers',
+                farmersNotificationData,
+            )
+
+            return {
+                success: true,
+                message:
+                    response.data || 'Farmers notifications sent successfully',
+                data: response.data,
+            }
+        } catch (err) {
+            const errorMessage =
+                err.response?.data?.message ||
+                err.message ||
+                'Failed to send farmers notifications'
+            error.value = errorMessage
+            return {
+                success: false,
+                message: errorMessage,
+                data: null,
+            }
+        } finally {
+            loading.value = false
+        }
+    }
+
+    const getNotificationsForUser = async recipientId => {
+        try {
+            loading.value = true
+            error.value = null
+
+            const response = await axios.get(
+                `/api/v1/notifications/${recipientId}`,
+            )
+            const notifications = Array.isArray(response.data)
+                ? response.data
+                : []
+
             apiNotifications.value = notifications
 
             return {
                 success: true,
-                message: "Notifications retrieved successfully",
-                data: notifications
+                message: 'Notifications retrieved successfully',
+                data: notifications,
             }
         } catch (err) {
-            const errorMessage = err.response?.data?.message || err.message || "Failed to retrieve notifications"
+            const errorMessage =
+                err.response?.data?.message ||
+                err.message ||
+                'Failed to retrieve notifications'
             error.value = errorMessage
             apiNotifications.value = []
             return {
                 success: false,
                 message: errorMessage,
-                data: []
+                data: [],
             }
         } finally {
             loading.value = false
         }
     }
 
-    const markNotificationAsRead = async (notificationId) => {
+    const markNotificationAsRead = async notificationId => {
         try {
             loading.value = true
             error.value = null
@@ -163,28 +227,33 @@ export const useNotificationStore = defineStore('notification', () => {
             await axios.put(`/api/v1/notifications/${notificationId}/read`)
 
             // Update local state if notification exists
-            const notification = apiNotifications.value.find(n => n.id === notificationId)
+            const notification = apiNotifications.value.find(
+                n => n.id === notificationId,
+            )
             if (notification) {
                 notification.read = true
             }
 
             return {
                 success: true,
-                message: "Notification marked as read"
+                message: 'Notification marked as read',
             }
         } catch (err) {
-            const errorMessage = err.response?.data?.message || err.message || "Failed to mark notification as read"
+            const errorMessage =
+                err.response?.data?.message ||
+                err.message ||
+                'Failed to mark notification as read'
             error.value = errorMessage
             return {
                 success: false,
-                message: errorMessage
+                message: errorMessage,
             }
         } finally {
             loading.value = false
         }
     }
 
-    const deleteNotification = async (notificationId) => {
+    const deleteNotification = async notificationId => {
         try {
             loading.value = true
             error.value = null
@@ -192,28 +261,58 @@ export const useNotificationStore = defineStore('notification', () => {
             await axios.delete(`/api/v1/notifications/${notificationId}`)
 
             // Remove from local state
-            apiNotifications.value = apiNotifications.value.filter(n => n.id !== notificationId)
+            apiNotifications.value = apiNotifications.value.filter(
+                n => n.id !== notificationId,
+            )
 
             return {
                 success: true,
-                message: "Notification deleted successfully"
+                message: 'Notification deleted successfully',
             }
         } catch (err) {
-            const errorMessage = err.response?.data?.message || err.message || "Failed to delete notification"
+            const errorMessage =
+                err.response?.data?.message ||
+                err.message ||
+                'Failed to delete notification'
             error.value = errorMessage
             return {
                 success: false,
-                message: errorMessage
+                message: errorMessage,
             }
         } finally {
             loading.value = false
         }
     }
 
+    // WebSocket incoming notification handler
+    const addIncomingNotifications = notification => {
+        console.log('[NotificationStore] Incoming notification:', notification)
+
+        // Add to the beginning of the array (most recent first)
+        apiNotifications.value.unshift({
+            id: notification.id || Date.now(),
+            recipient: notification.recipient,
+            type: notification.type || 'APPLICATION',
+            status: notification.status || 'SENT',
+            title: notification.title,
+            message: notification.message,
+            createdAt: notification.createdAt,
+            read: false, // New notifications are unread by default
+        })
+
+        // Also show a toast notification
+        showInfo(`${notification.title}: ${notification.message}`, 5000)
+    }
+
+    // Computed for unread notification count
+    const unreadCount = computed(
+        () => apiNotifications.value.filter(n => !n.read).length,
+    )
+
     return {
         // Existing local notification state
         notifications,
-        
+
         // API notification state
         apiNotifications,
         loading,
@@ -221,6 +320,7 @@ export const useNotificationStore = defineStore('notification', () => {
         isLoading,
         hasError,
         errorMessage,
+        unreadCount,
 
         // Existing local notification methods (for components)
         addNotification,
@@ -232,10 +332,13 @@ export const useNotificationStore = defineStore('notification', () => {
         showWarning,
 
         // New API methods (for backend integration)
+
         createNotification,
         createFarmersNotification,
+        getAllNotifications,
         getNotificationsForUser,
         markNotificationAsRead,
-        deleteNotification
+        deleteNotification,
+        addIncomingNotifications,
     }
 })

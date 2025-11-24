@@ -133,6 +133,27 @@ public class ApplicationConsumer {
                 "Verification completed",
                 "STAFF"
         );
+
+        messagingTemplate.convertAndSend("/topic/pcic.application.notifications",
+                NotificationResponseDTO.builder()
+                        .id(e.getSubmissionId())
+                        .title("Application Verified")
+                        .message("An application has been verified by Agriculture.")
+                        .time(LocalDateTime.now())
+                        .read(false)
+                        .build()
+        );
+
+        messagingTemplate.convertAndSend("/topic/agriculture.application.notifications",
+                NotificationResponseDTO.builder()
+                        .id(e.getSubmissionId())
+                        .title("New Application Submitted")
+                        .message("A new application has been submitted.")
+                        .time(LocalDateTime.now())
+                        .read(false)
+                        .build()
+        );
+
     }
 
     private void handleInspectionScheduled(InspectionScheduledEvent e) {
@@ -181,6 +202,16 @@ public class ApplicationConsumer {
             "A policy has been issued for your application. Policy #: " + e.getPolicyNumber(),
                 "STAFF"
         );
+
+        messagingTemplate.convertAndSend("/topic/agriculture.application.notifications",
+                NotificationResponseDTO.builder()
+                        .id(e.getSubmissionId())
+                        .title("Policy Issued")
+                        .message("A policy has been issued by PCIC.")
+                        .time(LocalDateTime.now())
+                        .read(false)
+                        .build()
+        );
     }
 
     private void handleClaimProcessed(ClaimProcessedEvent e) {
@@ -197,6 +228,18 @@ public class ApplicationConsumer {
             "Your claim has been processed. Amount: " + e.getClaimAmount() +" wait for further details.",
                 "STAFF"
         );
+
+        messagingTemplate.convertAndSend("/topic/agriculture.application.notifications",
+                NotificationResponseDTO.builder()
+                        .id(e.getSubmissionId())
+                        .title("Claim Processed")
+                        .message("A claim has been processed by PCIC.")
+                        .time(LocalDateTime.now())
+                        .read(false)
+                        .build()
+        );
+
+
     }
 
     private void handleNotification(UUID receiverId, NotificationResponseDTO notification, String emailSubject, String emailMessage, String tenant) {
@@ -217,10 +260,6 @@ public class ApplicationConsumer {
         log.info("✅ Saved notification to database for user {}", receiverId);
         notificationRepository.save(notificationEntity);
 
-        // Tenant
-        // STAFF -> means broadcast to all staff members
-        // PCIC -> means broadcast to all pcic members
-        // AGRICULTURE -> means broadcast to all agriculture users
 
         messagingTemplate.convertAndSendToUser(
                 receiverId.toString(),
@@ -228,12 +267,6 @@ public class ApplicationConsumer {
                 notification
         );
 
-        switch (tenant) {
-            case "STAFF" -> messagingTemplate.convertAndSend("/topic/staff.application.notifications", notification);
-            case "PCIC" -> messagingTemplate.convertAndSend("/topic/pcic.application.notifications", notification);
-            case "AGRICULTURE" ->
-                    messagingTemplate.convertAndSend("/topic/agriculture.application.notifications", notification);
-        }
 
         log.info("✅ Sent WebSocket notification to user {}", receiverId);
         try {

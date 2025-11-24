@@ -32,7 +32,9 @@ spring:
           inspectionCompletedEvent:com.hashjosh.kafkacommon.application.InspectionCompletedEvent,
           policyIssuedEvent:com.hashjosh.kafkacommon.application.PolicyIssuedEvent,
           claimProcessedEvent:com.hashjosh.kafkacommon.application.ClaimProcessedEvent,
-          newInvitationEvent:com.hashjosh.kafkacommon.agriculture.NewInvitationEvent
+          newInvitationEvent:com.hashjosh.kafkacommon.agriculture.NewInvitationEvent,
+          newVoucherCreated:com.hashjosh.kafkacommon.voucher.NewVoucherCreated,
+          voucherClaimedEvent:com.hashjosh.kafkacommon.voucher.VoucherClaimedEvent
 
   mail:
     host: smtp.gmail.com

@@ -16,7 +16,7 @@ public class RsbsaServiceClient {
 
     public RsbsaServiceClient(RestClient.Builder builder) {
         this.restClient = builder
-                .baseUrl("http://rsbsa-service/api/v1/public/rsbsa")
+                .baseUrl("http://rsbsa-service/api/v1/rsbsa")
                 .build();
     }
 

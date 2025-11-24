@@ -114,9 +114,6 @@
                 <div class="flex items-center space-x-4">
                     <h2 class="text-lg font-semibold text-gray-900">
                         RSBSA Records
-                        <span class="text-sm font-normal text-gray-500 ml-2">
-                            ({{ filteredRsbsa.length }} records)
-                        </span>
                     </h2>
 
                     <!-- Bulk Delete Button -->

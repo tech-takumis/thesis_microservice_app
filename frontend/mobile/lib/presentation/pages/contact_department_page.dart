@@ -102,6 +102,7 @@ class _ContactDepartmentPageState extends ConsumerState<ContactDepartmentPage> {
               Expanded(
                 child: messagesAsync.when(
                   data: (messages) {
+                    print('🎨 [ContactDepartmentPage] Rendering ${messages.length} messages');
                     final sortedMessages = List<Message>.from(messages)
                       ..sort((a, b) {
                         if (a.sentAt == null && b.sentAt == null) return 0;
@@ -110,6 +111,12 @@ class _ContactDepartmentPageState extends ConsumerState<ContactDepartmentPage> {
                         return a.sentAt!.compareTo(b.sentAt!);
                       }); // oldest → newest
                     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
+
+                    if (sortedMessages.isEmpty) {
+                      print('⚠️ [ContactDepartmentPage] No messages to display');
+                      return const Center(child: Text('No messages yet. Start a conversation!'));
+                    }
+
                     return ListView.builder(
                       controller: _scrollController,
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -123,10 +130,16 @@ class _ContactDepartmentPageState extends ConsumerState<ContactDepartmentPage> {
                       },
                     );
                   },
-                  loading: () => const Center(child: CircularProgressIndicator()),
-                  error: (err, stack) => Center(
-                    child: Text("Error loading messages: $err"),
-                  ),
+                  loading: () {
+                    print('⏳ [ContactDepartmentPage] Loading messages...');
+                    return const Center(child: CircularProgressIndicator());
+                  },
+                  error: (err, stack) {
+                    print('❌ [ContactDepartmentPage] Error: $err');
+                    return Center(
+                      child: Text("Error loading messages: $err"),
+                    );
+                  },
                 ),
               ),
               // Show uploaded files preview

@@ -11,11 +11,14 @@ final messageServiceProvider = Provider<MessageService>((ref) {
 final messagesProvider = StreamProvider.autoDispose<List<Message>>((ref) async* {
   final service = ref.watch(messageServiceProvider);
 
+  print('📡 [messagesProvider] Initializing, current messages count: ${service.messages.length}');
+
   // Emit the current value immediately if available
   yield [...service.messages];
 
   // Listen to the stream for updates and always yield a new list instance
   await for (final messages in service.messagesStream) {
+    print('📡 [messagesProvider] Received update from stream, count: ${messages.length}');
     yield [...messages];
   }
 });

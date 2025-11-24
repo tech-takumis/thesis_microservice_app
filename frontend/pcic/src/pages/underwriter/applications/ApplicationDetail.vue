@@ -4,10 +4,9 @@
     page-title="Application Details"
   >
     <template #header>
-      <div class="space-y-4">
         <!-- Breadcrumb Navigation -->
-        <nav class="flex" aria-label="Breadcrumb">
-          <ol class="flex items-center space-x-1.5">
+        <nav class="flex mb-4" aria-label="Breadcrumb">
+          <ol class="flex items-center space-x-4">
             <li>
               <router-link
                 :to="{ name: 'dashboard' }"
@@ -27,7 +26,7 @@
             </li>
             <li class="flex items-center">
               <ChevronRightIcon class="h-3 w-3 text-slate-300 mx-1" />
-              <span class="text-xs font-medium text-slate-900">Details</span>
+              <span class="text-xs font-medium text-slate-900">Application Details</span>
             </li>
           </ol>
         </nav>
@@ -75,7 +74,6 @@
             </button>
           </div>
         </div>
-      </div>
     </template>
 
       <!-- Loading State -->

@@ -7,7 +7,7 @@
                 <!-- Left: Logo + Title -->
                 <div class="flex items-center space-x-3">
                     <div>
-                        <h1 class="text-2xl font-semibold text-green-600">
+                        <h1 class="text-2xl font-bold text-green-600">
                             Dashboard
                         </h1>
                         <p class="text-sm text-gray-600">
@@ -94,7 +94,7 @@
                     class="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3">
                     <!-- Applications Pending -->
                     <div
-                        class="bg-yellow-100 rounded-xl border border-gray-300 p-4 shadow-sm flex flex-col justify-between">
+                        class="bg-gray-100 rounded-xl border border-gray-300 p-4 shadow-sm flex flex-col justify-between">
                         <!-- Top: Icon + Title -->
                         <div
                             class="flex items-center gap-2 text-black-200 text-sm font-semibold mb-2">
@@ -134,7 +134,7 @@
 
                     <!-- Applications Approved -->
                     <div
-                        class="bg-green-100 rounded-xl border border-gray-300 p-4 shadow-sm flex flex-col justify-between">
+                        class="bg-gray-100 rounded-xl border border-gray-300 p-4 shadow-sm flex flex-col justify-between">
                         <div
                             class="flex items-center gap-2 text-black-200 text-sm font-semibold mb-2">
                             <CheckCircle class="w-5 h-5 text-green-600" />
@@ -171,7 +171,7 @@
 
                     <!-- Applications Rejected -->
                     <div
-                        class="bg-red-100 rounded-xl border border-gray-300 p-4 shadow-sm flex flex-col justify-between">
+                        class="bg-gray-100 rounded-xl border border-gray-300 p-4 shadow-sm flex flex-col justify-between">
                         <div
                             class="flex items-center gap-2 text-black-200 text-sm font-semibold mb-2">
                             <XCircle class="w-5 h-5 text-red-600" />

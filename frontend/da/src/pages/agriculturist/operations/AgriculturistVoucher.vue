@@ -286,7 +286,6 @@ onMounted(async () => {
                 @click="navigateToVoucherList"
                 class="text-gray-400 hover:text-gray-500 flex items-center gap-1"
               >
-                <TicketIcon class="flex-shrink-0 h-5 w-5" />
                 <span class="text-sm font-medium">Voucher List</span>
               </button>
             </div>

@@ -274,7 +274,7 @@ onBeforeUnmount(async () => {
   >
     <div class="h-full flex flex-col space-y-4 sm:space-y-6 p-2 sm:p-0">
       <!-- Header -->
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 ml-4">
+      <div class="mb-3 mt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 ml-4">
         <div class="flex items-center gap-3 sm:gap-4">
           <div>
             <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-green-600">

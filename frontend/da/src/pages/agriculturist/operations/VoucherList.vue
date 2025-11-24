@@ -336,7 +336,7 @@ onBeforeUnmount(() => {
 <template>
     <AuthenticatedLayout>
         <!-- Header -->
-        <div class="mb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 ml-4">
+        <div class="mb-3 mt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 ml-4">
             <div class="flex items-center gap-3">
                 <div>
                     <h1 class="text-3xl font-bold text-green-600">All Vouchers</h1>
@@ -361,23 +361,19 @@ onBeforeUnmount(() => {
                 </div>
 
                 <!-- Filter Button -->
-                <BaseButton
-                    class="bg-green-600 border-green-600 text-white hover:bg-green-700 hover:border-green-700"
-                    :class="{
-                        'bg-gray-600 border-gray-600 hover:bg-gray-700 hover:border-gray-700':
-                        showFilters || hasActiveFilters
-                    }"
+                <button
+                    class="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium text-gray-700 bg-white border border-gray-300 shadow-sm hover:bg-green-600 hover:text-white focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-300 ease-in-out"
                     @click="showFilters = !showFilters"
                 >
-                    <FunnelIcon class="w-5 h-5 mr-2" />
+                    <FunnelIcon class="w-4 h-4 mr-1" />
                     Filters
                     <span
                         v-if="hasActiveFilters"
-                        class="ml-1 px-2 py-0.5 bg-white/20 text-white text-xs rounded-full"
+                        class="ml-1 px-2 py-0.5 bg-green-600 text-white text-xs rounded-full"
                     >
                         Active
                     </span>
-                </BaseButton>
+                </button>
 
                 <!-- Generate Voucher Button -->
                 <button
@@ -540,7 +536,12 @@ onBeforeUnmount(() => {
                 </div>
 
                 <div class="mt-4 flex justify-end gap-2">
-                    <BaseButton variant="secondary" @click="clearFilters">Clear Filters</BaseButton>
+                    <button
+                        @click="clearFilters"
+                        class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-red-600 hover:text-white transition"
+                    >
+                        Reset
+                    </button>
                 </div>
             </div>
 

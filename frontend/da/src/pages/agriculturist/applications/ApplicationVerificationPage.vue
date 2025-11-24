@@ -677,12 +677,12 @@ onMounted(async () => {
         <!-- Files Summary -->
         <div
           v-if="applicationData.fileUploads?.length > 0"
-          class="bg-blue-50 p-4 rounded-lg"
+          class="bg-green-50 p-4 rounded-lg"
         >
-          <h4 class="text-sm font-medium text-blue-900 mb-2">
+          <h4 class="text-sm font-medium text-green-700 mb-2">
             Files to be submitted:
           </h4>
-          <ul class="text-sm text-blue-700 space-y-1">
+          <ul class="text-sm text-green-600 space-y-1">
             <li
               v-for="(fileUrl, index) in applicationData.fileUploads"
               :key="index"

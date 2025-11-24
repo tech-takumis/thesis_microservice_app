@@ -174,7 +174,7 @@ const formatDate = (dateString) => {
 const getStatusColor = (status) => {
     switch (status?.toUpperCase()) {
         case 'ACTIVE':
-            return 'bg-blue-100 text-blue-800'
+            return 'bg-gray-100 text-green-600'
         case 'COMPLETED':
             return 'bg-green-100 text-green-800'
         case 'PENDING':
@@ -191,7 +191,7 @@ const getStatusColor = (status) => {
 const getTypeColor = (type) => {
     switch (type?.toUpperCase()) {
         case 'TRAINING':
-            return 'bg-purple-100 text-purple-800'
+            return 'bg-yellow-100 text-yellow-800'
         case 'DISTRIBUTION':
             return 'bg-green-100 text-green-800'
         case 'MONITORING':
@@ -490,13 +490,15 @@ onBeforeUnmount(() => {
         page-title="Monitor Programs">
 
         <div class="flex flex-col h-full space-y-4">
-            <!-- Header -->
-            <div class="mb-3 mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 ml-4">
-                <div>
-                    <h1 class="text-3xl font-bold text-green-600">Program Monitoring</h1>
-                </div>
+<div class="mb-3 mt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 ml-4">
+    <div>
+        <h1 class="text-3xl font-bold text-green-600">Program Monitoring</h1>
+        <p class="text-sm text-gray-500 mt-1">
+            Track program activities, analyze progress, and monitor key performance indicators.
+        </p>
+    </div>
                 <BaseButton
-                    class="bg-green-600 hover:bg-green-700"
+                    class="bg-green-600 border-green-600 text-white hover:bg-green-700 hover:border-green-700 focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                     @click="showCreateModal = true">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -559,12 +561,12 @@ onBeforeUnmount(() => {
                             </div>
 
 <!-- Filter Toggle Button -->
-<BaseButton
-  class="bg-green-600 border-green-600 text-white hover:bg-green-700 hover:border-green-700"
+<button
+  class="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium text-gray-700 bg-white border border-gray-300 shadow-sm hover:bg-green-600 hover:text-white focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-300 ease-in-out"
   @click="showFilters = !showFilters"
 >
   <svg
-    class="w-4 h-4 mr-2"
+    class="w-4 h-4 mr-1"
     fill="none"
     stroke="currentColor"
     viewBox="0 0 24 24"
@@ -581,11 +583,11 @@ onBeforeUnmount(() => {
 
   <span
     v-if="hasActiveFilters"
-    class="ml-1 px-2 py-0.5 bg-white/20 text-white text-xs rounded-full"
+    class="ml-1 px-2 py-0.5 bg-green-600 text-white text-xs rounded-full"
   >
     Active
   </span>
-</BaseButton>
+</button>
 
                         </div>
                     </div>
@@ -724,7 +726,12 @@ onBeforeUnmount(() => {
                         </div>
 
                         <div class="mt-4 flex justify-end gap-2">
-                            <BaseButton variant="secondary" @click="clearFilters">Clear Filters</BaseButton>
+                            <button
+                                @click="clearFilters"
+                                class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-red-600 hover:text-white transition"
+                            >
+                                Reset
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -1042,7 +1049,7 @@ onBeforeUnmount(() => {
                                 Cancel
                             </BaseButton>
                             <BaseButton
-                                class="bg-green-600 hover:bg-green-700"
+                                class="bg-green-600 border-green-600 text-white hover:bg-green-700 hover:border-green-700 focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                                 @click="handleCreateProgram"
                                 :disabled="programStore.isLoading">
                                 <svg v-if="programStore.isLoading" class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

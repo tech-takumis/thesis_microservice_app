@@ -6,7 +6,7 @@
             <div class="flex items-start justify-between gap-6">
                 <!-- Left: Title Section -->
                 <div>
-                    <h1 class="text-2xl font-light text-slate-900 tracking-tight">
+                    <h1 class="text-2xl font-bold text-green-600">
                         All Applications
                     </h1>
                     <p class="mt-1 text-sm text-slate-500">
@@ -24,15 +24,15 @@
                             v-model="searchQuery"
                             type="text"
                             placeholder="Search by name, crop, location, ID..."
-                            class="w-full pl-9 pr-4 py-2 rounded-xl border-2 border-slate-200 bg-white text-slate-900 text-sm font-medium placeholder:text-slate-400 focus:border-blue-400 focus:bg-blue-50/30 focus:outline-none focus:ring-4 focus:ring-blue-400/10 hover:border-slate-300 transition-all duration-200" />
+                            class="w-full pl-9 pr-4 py-2 rounded-md border-2 border-gray-300 bg-white text-slate-900 text-sm font-medium placeholder:text-slate-400 focus:border-green-600 focus:bg-green-50/30 focus:outline-none focus:ring-4 focus:ring-green-400/10 hover:border-green-600 transition-all duration-200" />
                     </div>
 
                     <!-- Filter Toggle -->
                     <button
                         :class="[
-                            'inline-flex items-center px-4 py-2 border-2 rounded-xl text-sm font-medium transition-all duration-200 flex-shrink-0',
+                            'inline-flex items-center px-4 py-2 border-2 border-gray-300 rounded-xl text-sm font-medium transition-all duration-200 flex-shrink-0',
                             showFilters
-                                ? 'border-blue-400 bg-blue-50 text-blue-700'
+                                ? 'border-green-600 bg-green-100 text-gray-800'
                                 : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300',
                         ]"
                         @click="toggleFilters">
@@ -53,7 +53,7 @@
             <div v-if="showFilters" class="flex-shrink-0 mb-4">
                 <!-- Advanced Filters Panel -->
                 <div
-                    class="bg-slate-50/50 border border-slate-200/60 rounded-2xl p-5 backdrop-blur-sm">
+                    class="bg-slate-50/50 border border-gray-300 rounded-2xl p-5 backdrop-blur-sm">
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <!-- Status Filter -->
                         <div>
@@ -146,10 +146,10 @@
             </div>
 
             <!-- Applications List - Takes all remaining space -->
-            <div class="bg-white/70 backdrop-blur-sm rounded-2xl border border-slate-200/60 shadow-sm flex flex-col flex-1 overflow-hidden">
+            <div class="bg-gray-100 backdrop-blur-sm rounded-2xl border border-gray-300 flex flex-col flex-1 overflow-hidden">
                 <!-- Header -->
                 <div
-                    class="flex items-center justify-between px-6 py-4 border-b border-slate-100/80 flex-shrink-0">
+                    class="flex items-center justify-between px-6 py-4 border-b border-gray-300 flex-shrink-0">
                     <div class="flex items-center space-x-3">
                         <h2
                             class="text-sm font-medium text-slate-700">
@@ -177,7 +177,7 @@
                 <div class="flex-1 overflow-auto">
                     <table class="min-w-full">
                         <thead
-                            class="bg-slate-50 border-b border-slate-200 sticky top-0 z-10">
+                            class="bg-slate-50 border-b border-gray-300 sticky top-0 z-10">
                                 <tr>
                                     <th class="px-6 py-3 text-left">
                                         <input
@@ -212,7 +212,7 @@
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white/50 divide-y divide-slate-100">
+                            <tbody class="bg-white divide-y divide-gray-300">
                         <tr v-if="loading">
                             <td
                                 colspan="7"
@@ -235,7 +235,7 @@
                                 v-for="insurance in filteredApplications"
                                 :key="insurance.insuranceId"
                                 :class="[
-                                    'hover:bg-blue-50/50 transition-all duration-200',
+                                    'hover:bg-green-50 transition-all duration-200',
                                     selectedInsuranceIds.includes(
                                         insurance.insuranceId,
                                     )

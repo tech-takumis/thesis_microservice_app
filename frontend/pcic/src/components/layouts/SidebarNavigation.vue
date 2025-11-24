@@ -1,33 +1,34 @@
 <template>
   <div class="flex flex-col h-screen w-full bg-green-600 border border-gray-300">
     <!-- Logo / Header -->
-    <div class="relative flex flex-col items-center py-4 px-4 bg-green-600 border-b border-green-700 flex-shrink-0">
-      <!-- Toggle Button (Top Right when expanded, Center when collapsed) -->
+    <div class="relative flex flex-col items-center py-4 px-4 bg-gray-100 border-b border-gray-300 flex-shrink-0">
+      <!-- Toggle Button (Top Right when expanded, Top Center when collapsed) -->
       <button
         @click="$emit('toggle-sidebar')"
         :class="[
-          'p-2 rounded-lg text-white hover:bg-green-700 transition-all duration-200',
+          'flex items-center justify-center transition-all duration-300 ease-in-out',
+          'hover:scale-110 active:scale-95',
           isCollapsed
-            ? 'mb-3'
-            : 'absolute top-3 right-3'
+            ? 'w-10 h-10 rounded-full bg-green-600 text-white shadow-md hover:bg-green-700 hover:shadow-lg mb-3'
+            : 'absolute top-4 right-4 w-9 h-9 mb-1 rounded-full bg-white text-green-600 border border-gray-300 hover:text-gray-800 hover:shadow-xl border-2 border-gray-300'
         ]"
         :title="isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'"
       >
         <Menu v-if="isCollapsed" class="h-5 w-5" />
-        <X v-else class="h-5 w-5" />
+        <ChevronLeft v-else class="h-4 w-4" />
       </button>
 
       <!-- Logo -->
       <img src="@/assets/pcic.svg" alt="PCIC Logo" :class="[isCollapsed ? 'h-10 w-8 mb-2' : 'h-12 w-10 mb-2']" />
 
       <!-- Title (Hidden when collapsed) -->
-      <h1 v-if="!isCollapsed" class="text-2xl font-bold text-white leading-tight">PCIC</h1>
+      <h1 v-if="!isCollapsed" class="text-2xl font-bold text-green-600 leading-tight">PCIC</h1>
     </div>
 
     <!-- Navigation -->
     <nav
       ref="navMenu"
-      class="flex-1 px-4 py-4 space-y-1 bg-green-600 overflow-y-auto min-h-0"
+      class="flex-1 px-4 py-4 space-y-1 bg-gray-100 overflow-y-auto min-h-0"
     >
       <template v-for="item in navigation" :key="item.name || item.title">
         <!-- Single Navigation Item -->
@@ -36,8 +37,8 @@
           :to="item.to"
           :class="[
             isActive(item.to, { exact: item.exact })
-              ? 'bg-white text-green-700 font-semibold shadow-sm'
-              : 'text-white hover:bg-green-700 hover:text-white',
+              ? 'bg-green-600 text-white font-semibold shadow-sm'
+              : 'text-gray-800 hover:bg-green-50 hover:text-gray-800',
             'group flex items-center px-3 py-2.5 text-sm rounded-md transition-colors duration-200',
             isCollapsed ? 'justify-center' : ''
           ]"
@@ -48,7 +49,7 @@
             :class="[
               isActive(item.to, { exact: item.exact })
                 ? 'text-yellow-500'
-                : 'text-white group-hover:text-yellow-300',
+                : 'text-green-600 group-hover:text-yellow-300',
               'h-5 w-5 transition-colors duration-200',
               isCollapsed ? '' : 'mr-3'
             ]"
@@ -80,7 +81,7 @@
           <button
             @click.stop="handleGroupClick(item)"
             :class="[
-              'text-white hover:bg-green-700 hover:text-white',
+              'text-gray-800 hover:bg-green-50 hover:text-gray-800',
               'group w-full flex items-center justify-between px-3 py-2.5 text-sm rounded-md transition-colors duration-200',
               isCollapsed ? 'justify-center' : ''
             ]"
@@ -90,7 +91,7 @@
               <component
                 :is="item.icon"
                 :class="[
-                  'text-white group-hover:text-yellow-300 h-5 w-5 transition-colors duration-200',
+                  'text-green-600 group-hover:text-yellow-300 h-5 w-5 transition-colors duration-200',
                   isCollapsed ? '' : 'mr-3'
                 ]"
               />
@@ -101,7 +102,7 @@
               :class="[
                 expandedGroups.includes(item.title || item.name)
                   ? 'rotate-180 text-yellow-300'
-                  : 'text-white',
+                  : 'text-gray-800',
                 'h-4 w-4 transition-transform duration-200'
               ]"
             />
@@ -120,8 +121,8 @@
                 @click.stop="handleChildRouteClick(item)"
                 :class="[
                   isActive(child.to)
-                    ? 'bg-white text-green-700 font-semibold shadow-sm'
-                    : 'text-white hover:bg-green-700 hover:text-yellow-300',
+                    ? 'bg-green-600 text-white font-semibold shadow-sm'
+                    : 'text-gray-800 hover:text-yellow-300',
                   'group relative flex items-center pl-5 pr-3 py-2 text-sm rounded-md transition-colors duration-200'
                 ]"
               >
@@ -149,11 +150,11 @@
     </nav>
 
     <!-- Logout Section -->
-    <div class="flex-shrink-0 px-4 py-4 bg-green-600">
+    <div class="flex-shrink-0 px-4 py-4 bg-gray-100">
       <button
         @click="$emit('logout')"
         :class="[
-          'group flex w-full items-center px-4 py-2.5 text-sm font-semibold bg-white text-red-600 rounded-lg transition-all duration-200 hover:bg-red-500 hover:text-white hover:shadow-md active:scale-95',
+          'group flex w-full items-center px-4 py-2.5 text-sm border border-gray-300 font-semibold bg-white text-red-600 rounded-lg transition-all duration-200 hover:bg-red-500 hover:text-white hover:shadow-md active:scale-95',
           isCollapsed ? 'justify-center' : 'justify-center'
         ]"
         :title="isCollapsed ? 'Logout' : ''"
@@ -167,7 +168,7 @@
 <script setup>
 import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ChevronDown, LogOut, Menu, X } from 'lucide-vue-next'
+import { ChevronDown, ChevronLeft, LogOut, Menu } from 'lucide-vue-next'
 
 const route = useRoute()
 const router = useRouter()

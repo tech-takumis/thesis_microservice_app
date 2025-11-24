@@ -1,5 +1,5 @@
 <template>
-  <div class="h-screen bg-gray-50 flex flex-col">
+  <div class="h-screen bg-white flex flex-col">
     <!-- Mobile Sidebar (Off-canvas) -->
     <div v-if="sidebarOpen" class="fixed inset-0 z-40 md:hidden">
       <!-- Overlay -->
@@ -79,15 +79,15 @@
         <!-- Page Header -->
         <header
           v-if="$slots.header"
-          class="bg-gray-50 flex-shrink-0"
+          class="bg-white flex-shrink-0"
         >
-          <div class="px-6 py-5">
+          <div class="px-2 py-2">
             <slot name="header" />
           </div>
         </header>
 
         <!-- Dashboard Content -->
-        <div class="flex-1 bg-gray-50 overflow-hidden">
+        <div class="flex-1 bg-white overflow-hidden">
           <div class="px-2 py-2 h-full overflow-y-auto scrollbar-hide">
             <slot />
           </div>

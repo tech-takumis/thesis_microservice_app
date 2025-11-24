@@ -88,6 +88,7 @@ const selectVoucherType = (type) => {
   voucherInfo.value.voucherType = type
   voucherInfo.value.unit = unitOptions.value[0]
   closeVoucherDropdown()
+  closeUnitDropdown()
 }
 
 const onVoucherKeyDown = (e) => {
@@ -114,11 +115,55 @@ const onVoucherKeyDown = (e) => {
   }
 }
 
+// Custom dropdown state for unit
+const isUnitDropdownOpen = ref(false)
+const highlightedUnitIndex = ref(-1)
+
+const toggleUnitDropdown = () => {
+  isUnitDropdownOpen.value = !isUnitDropdownOpen.value
+  if (isUnitDropdownOpen.value) highlightedUnitIndex.value = unitOptions.value.indexOf(voucherInfo.value.unit)
+}
+
+const closeUnitDropdown = () => {
+  isUnitDropdownOpen.value = false
+  highlightedUnitIndex.value = -1
+}
+
+const selectUnit = (unit) => {
+  voucherInfo.value.unit = unit
+  closeUnitDropdown()
+}
+
+const onUnitKeyDown = (e) => {
+  if (!isUnitDropdownOpen.value && (e.key === 'Enter' || e.key === ' ')) {
+    e.preventDefault()
+    toggleUnitDropdown()
+    return
+  }
+
+  if (isUnitDropdownOpen.value) {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      highlightedUnitIndex.value = Math.min(highlightedUnitIndex.value + 1, unitOptions.value.length - 1)
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      highlightedUnitIndex.value = Math.max(highlightedUnitIndex.value - 1, 0)
+    } else if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      if (highlightedUnitIndex.value >= 0) selectUnit(unitOptions.value[highlightedUnitIndex.value])
+    } else if (e.key === 'Escape') {
+      e.preventDefault()
+      closeUnitDropdown()
+    }
+  }
+}
+
 // Close on outside click
 const onClickOutside = (e) => {
-  const el = document.querySelector('#voucher-type-dropdown')
-  if (!el) return
-  if (!el.contains(e.target)) closeVoucherDropdown()
+  const voucherEl = document.querySelector('#voucher-type-dropdown')
+  const unitEl = document.querySelector('#unit-dropdown')
+  if (voucherEl && !voucherEl.contains(e.target)) closeVoucherDropdown()
+  if (unitEl && !unitEl.contains(e.target)) closeUnitDropdown()
 }
 
 onMounted(() => {
@@ -241,7 +286,6 @@ onMounted(async () => {
                 @click="navigateToVoucherList"
                 class="text-gray-400 hover:text-gray-500 flex items-center gap-1"
               >
-                <TicketIcon class="flex-shrink-0 h-5 w-5" />
                 <span class="text-sm font-medium">Voucher List</span>
               </button>
             </div>
@@ -303,7 +347,7 @@ onMounted(async () => {
               v-model="searchQuery"
               type="text"
               placeholder="Search farmers..."
-              class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:border-green-400 focus:ring-2 focus:ring-green-300 transition duration-200"
+              class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:ring-1 focus:ring-green-500 focus:border-transparent"
             />
           </div>
           <div class="flex gap-3 mb-4">
@@ -348,7 +392,9 @@ onMounted(async () => {
             <FileText class="w-5 h-5 text-green-600" />
             <h2 class="text-lg font-semibold text-gray-900">Voucher Information</h2>
           </div>
-          <div class="flex-1 space-y-5 pr-1 min-h-0 overflow-y-auto">
+
+
+          <div class="flex-1 space-y-4 pr-1 min-h-0 overflow-y-auto p-2">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">
                 Voucher Title <span class="text-red-500">*</span>
@@ -357,7 +403,7 @@ onMounted(async () => {
                 v-model="voucherInfo.title"
                 type="text"
                 placeholder="e.g., Rice Seeds Distribution 2024"
-                class="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:border-green-400 focus:ring-2 focus:ring-green-300 transition duration-200"
+                class="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:ring-1 focus:ring-green-500 focus:border-transparent"
               />
             </div>
             <div>
@@ -371,7 +417,7 @@ onMounted(async () => {
                   @keydown.stop.prevent="onVoucherKeyDown"
                   :aria-expanded="isVoucherDropdownOpen"
                   aria-haspopup="listbox"
-                  class="w-full flex items-center justify-between px-3 py-2.5 border border-gray-300 rounded-xl bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-green-300 focus:border-green-400"
+                  class="w-full flex items-center justify-between px-3 py-2.5 border border-gray-300 rounded-xl bg-white shadow-sm  focus:ring-1 focus:ring-green-500 focus:border-transparent"
                 >
                   <span class="text-gray-900">{{ voucherInfo.voucherType }}</span>
                   <svg
@@ -415,9 +461,52 @@ onMounted(async () => {
               <label class="block text-sm font-medium text-gray-700 mb-1">
                 Unit <span class="text-red-500">*</span>
               </label>
-              <select v-model="voucherInfo.unit" class="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:border-green-400 focus:ring-2 focus:ring-green-300 transition duration-200">
-                <option v-for="unit in unitOptions" :key="unit" :value="unit">{{ unit }}</option>
-              </select>
+              <div id="unit-dropdown" class="relative">
+                <button
+                  type="button"
+                  @click="toggleUnitDropdown"
+                  @keydown.stop.prevent="onUnitKeyDown"
+                  :aria-expanded="isUnitDropdownOpen"
+                  aria-haspopup="listbox"
+                  class="w-full flex items-center justify-between px-3 py-2.5 border border-gray-300 rounded-xl bg-white shadow-sm  focus:ring-1 focus:ring-green-500 focus:border-transparent"
+                >
+                  <span class="text-gray-900">{{ voucherInfo.unit }}</span>
+                  <svg
+                    class="w-4 h-4 text-green-600 transform transition-transform duration-200"
+                    :class="isUnitDropdownOpen ? 'rotate-180' : ''"
+                    viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                  >
+                    <path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+                <ul
+                  v-show="isUnitDropdownOpen"
+                  role="listbox"
+                  tabindex="-1"
+                  class="origin-top-right absolute right-0 left-0 mt-2 bg-white rounded-xl shadow-lg ring-1 ring-black ring-opacity-5 overflow-auto max-h-56 py-1 focus:outline-none z-50 transition-transform duration-150"
+                >
+                  <li
+                    v-for="(unit, idx) in unitOptions"
+                    :key="unit"
+                    role="option"
+                    :aria-selected="unit === voucherInfo.unit"
+                    @mouseenter="highlightedUnitIndex = idx"
+                    @mouseleave="highlightedUnitIndex = -1"
+                    @click="selectUnit(unit)"
+                    :class=" [
+                      'px-3 py-2 cursor-pointer flex items-center justify-between',
+                      highlightedUnitIndex === idx ? 'bg-green-50' : 'hover:bg-green-50',
+                      unit === voucherInfo.unit ? 'font-semibold text-green-700' : 'text-gray-700'
+                    ]"
+                  >
+                    <span>{{ unit }}</span>
+                    <svg v-if="unit === voucherInfo.unit" class="w-4 h-4 text-green-600" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </li>
+                </ul>
+              </div>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">
@@ -428,7 +517,7 @@ onMounted(async () => {
                 type="number"
                 min="1"
                 placeholder="e.g., 5"
-                class="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:border-green-400 focus:ring-2 focus:ring-green-300 transition duration-200"
+                class="w-full px-3 py-2.5 border border-gray-300 rounded-xl  focus:ring-1 focus:ring-green-500 focus:border-transparent"
               />
             </div>
             <div>
@@ -485,19 +574,23 @@ onMounted(async () => {
   background-color: rgba(16, 185, 129, 0.12); /* soft green selection */
 }
 
-#voucher-type-dropdown button {
+#voucher-type-dropdown button,
+#unit-dropdown button {
   -webkit-tap-highlight-color: transparent;
 }
 
-#voucher-type-dropdown ul {
+#voucher-type-dropdown ul,
+#unit-dropdown ul {
   -webkit-overflow-scrolling: touch;
 }
 
-#voucher-type-dropdown li {
+#voucher-type-dropdown li,
+#unit-dropdown li {
   transition: background-color 160ms ease, color 160ms ease;
 }
 
-#voucher-type-dropdown svg {
+#voucher-type-dropdown svg,
+#unit-dropdown svg {
   transition: transform 200ms ease;
 }
 </style>

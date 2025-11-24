@@ -64,7 +64,7 @@
             <router-link
               v-if="applicationData?.id && applicationData?.coordinates"
               :to="{ name: 'agriculturist-submit-crop-data-map', params: { applicationId: route.params.id } }"
-              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+              class="inline-flex mr-2 items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
             >
               <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
@@ -79,8 +79,22 @@
       <div class="flex-1 min-h-0 overflow-hidden">
         <div class="h-full">
         <!-- Loading State -->
-        <div v-if="loading" class="flex justify-center items-center flex-1">
-          <LoadingSpinner />
+        <div
+          v-if="loading"
+          class="flex flex-col items-center justify-center flex-1 space-y-4 min-h-[60vh]"
+        >
+          <!-- Spinner -->
+          <div class="relative">
+            <div
+              class="h-14 w-14 rounded-full border-4 border-gray-200"></div>
+            <div
+              class="absolute top-0 left-0 h-14 w-14 rounded-full border-4 border-green-600 border-t-transparent animate-spin"></div>
+          </div>
+
+          <!-- Loading Label -->
+          <p class="text-gray-600 font-medium tracking-wide">
+            Loading data…
+          </p>
         </div>
 
         <!-- Error State -->
@@ -97,7 +111,7 @@
         </div>
 
 <!-- Application Details -->
-<div v-else-if="applicationData" :key="route.params.id" class="bg-gray-50 rounded-xl shadow-sm p-3 grid grid-cols-1 lg:grid-cols-3 gap-1 h-full">
+<div v-else-if="applicationData" :key="route.params.id" class="bg-white rounded-xl shadow-sm p-3 grid grid-cols-1 lg:grid-cols-3 gap-1 h-full">
 
   <!-- LEFT SIDE — Application Info (scrollable) -->
   <div
@@ -274,7 +288,7 @@
 
 
 <!-- Uploaded Files (carded) --> 
-<div v-if="applicationData.fileUploads?.length > 0" class="bg-gray-50 overflow-hidden">
+<div v-if="applicationData.fileUploads?.length > 0" class="bg-white overflow-hidden">
   <div class="px-6 py-3 flex items-center gap-2">
     <ImageIcon class="w-4 h-4 text-green-700" />
     <h3 class="text-xs font-bold text-gray-700 uppercase tracking-wide">Uploaded Files</h3>
@@ -286,7 +300,7 @@
         v-for="(file, index) in applicationData.fileUploads"
         :key="index"
         @click="openImageModal(file)"
-        class="group relative overflow-hidden rounded-md bg-gray-50 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-green-300 transition"
+        class="group relative overflow-hidden rounded-md bg-white hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-green-300 transition"
       >
         <div class="aspect-square bg-gray-100 flex items-center justify-center">
           <img

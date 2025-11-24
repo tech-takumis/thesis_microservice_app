@@ -1,16 +1,20 @@
 <template>
     <AuthenticatedLayout>
-        <div class="p-4 sm:p-6 min-h-screen flex flex-col space-y-6">
+        <div class="p-4 sm:p-2 min-h-screen flex flex-col space-y-6 ml-3">
             <!-- Header Section -->
             <div
-                class="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center border-b border-gray-200 pb-3">
-                <div class="flex items-center gap-2">
-                    <FileText class="w-6 h-6 text-green-600" />
-                    <h1
-                        class="text-2xl font-semibold text-green-600 leading-tight">
+                class="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center border-b border-gray-300 pb-3">
+
+                <div class="flex items-start flex-col gap-1">
+                    <h1 class="text-3xl font-bold text-green-600">
                         Application Workspace
                     </h1>
+
+                    <p class="text-sm text-gray-500">
+                        Manage, review, and monitor all application activities in one organized workspace.
+                    </p>
                 </div>
+
             </div>
 
             <!-- Loading state -->

@@ -231,7 +231,7 @@
                 v-model="messageInput"
                 type="text"
                 placeholder="Type a message..."
-                class="flex-1 px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition"
+                class="flex-1 px-4 py-3 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-green-500 focus:border-transparent"
               />
 
               <button
@@ -261,15 +261,29 @@
               v-model="searchQuery"
               type="text"
               placeholder="Search farmers..."
-              class="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition"
+              class="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-full focus:ring-1 focus:ring-green-500 focus:border-transparent"
             />
           </div>
         </div>
 
         <!-- 👨‍🌾 Farmer List -->
         <div class="flex-1 overflow-y-auto">
-          <div v-if="farmerStore.isLoading" class="p-4 text-center text-gray-500">
-            Loading farmers...
+          <div
+            v-if="farmerStore.isLoading"
+            class="flex flex-col items-center justify-center py-12 space-y-4"
+          >
+            <!-- Spinner -->
+            <div class="relative">
+              <div
+                class="h-14 w-14 rounded-full border-4 border-gray-200"></div>
+              <div
+                class="absolute top-0 left-0 h-14 w-14 rounded-full border-4 border-green-600 border-t-transparent animate-spin"></div>
+            </div>
+
+            <!-- Loading Label -->
+            <p class="text-gray-600 font-medium tracking-wide">
+              Loading data…
+            </p>
           </div>
           <div v-else-if="filteredFarmers.length === 0" class="p-4 text-center text-gray-500">
             No farmers found

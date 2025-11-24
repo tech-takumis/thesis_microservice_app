@@ -274,13 +274,13 @@ onBeforeUnmount(async () => {
   >
     <div class="h-full flex flex-col space-y-4 sm:space-y-6 p-2 sm:p-0">
       <!-- Header -->
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div class="mb-3 mt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 ml-4">
         <div class="flex items-center gap-3 sm:gap-4">
           <div>
             <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-green-600">
               Scan Voucher QR Code
             </h1>
-            <p class="text-xs sm:text-sm text-gray-500 mt-1">
+            <p class="mt-1 text-sm text-gray-600">
               Scan a voucher QR code to claim it
             </p>
           </div>
@@ -347,9 +347,9 @@ onBeforeUnmount(async () => {
       </div>
 
       <!-- Scanner Container -->
-      <div v-if="!scanResult" class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div v-if="!scanResult" class="bg-gray-100 rounded-xl border border-gray-300 overflow-hidden">
         <!-- Mode Selector -->
-        <div class="flex border-b border-gray-200">
+        <div class="flex border-b border-gray-300">
           <button
             @click="switchToCamera"
             class="flex-1 px-4 py-3 text-sm font-medium transition-colors"
@@ -389,15 +389,20 @@ onBeforeUnmount(async () => {
 
             <!-- Processing Indicator -->
             <div v-if="processing" class="flex flex-col items-center justify-center gap-3 py-6">
-              <LoadingSpinner />
-              <p class="text-sm text-gray-600">Processing voucher...</p>
+              <div class="relative">
+                <div
+                  class="h-14 w-14 rounded-full border-4 border-gray-200"></div>
+                <div
+                  class="absolute top-0 left-0 h-14 w-14 rounded-full border-4 border-green-600 border-t-transparent animate-spin"></div>
+              </div>
+              <p class="text-gray-600 font-medium tracking-wide">Processing voucher…</p>
             </div>
           </div>
 
           <!-- File Upload -->
           <div v-else-if="scanMode === 'file'" class="space-y-4">
             <div class="flex flex-col items-center justify-center py-12 px-4">
-              <QrCodeIcon class="w-16 h-16 text-gray-300 mb-4" />
+              <QrCodeIcon class="w-16 h-16 text-green-600 mb-4" />
               <h3 class="text-lg font-medium text-gray-900 mb-2">Upload QR Code Image</h3>
               <p class="text-sm text-gray-500 text-center mb-6">
                 Select an image file containing the voucher QR code
@@ -422,8 +427,13 @@ onBeforeUnmount(async () => {
 
               <!-- Processing Indicator -->
               <div v-if="processing" class="flex flex-col items-center justify-center gap-3 py-6 mt-4">
-                <LoadingSpinner />
-                <p class="text-sm text-gray-600">Processing image...</p>
+                <div class="relative">
+                  <div
+                    class="h-14 w-14 rounded-full border-4 border-gray-200"></div>
+                  <div
+                    class="absolute top-0 left-0 h-14 w-14 rounded-full border-4 border-green-600 border-t-transparent animate-spin"></div>
+                </div>
+                <p class="text-gray-600 font-medium tracking-wide">Processing image…</p>
               </div>
 
               <!-- Hidden reader for file scanning -->
